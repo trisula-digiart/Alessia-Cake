@@ -21,11 +21,26 @@ window.fetchInitialDataFromGAS = async function() {
     const res = await fetch(`${savedUrl}?action=getInitialData`);
     const result = await res.json();
     if (result.success && result.data) {
-      if (result.data.products && result.data.products.length > 0) appData.products = result.data.products;
-      if (result.data.ingredients && result.data.ingredients.length > 0) appData.ingredients = result.data.ingredients;
-      if (result.data.orders && result.data.orders.length > 0) appData.orders = result.data.orders;
-      if (result.data.recipes && result.data.recipes.length > 0) appData.recipes = result.data.recipes;
-      window.renderViewport();
+      let shouldRender = false;
+      if (result.data.products && result.data.products.length > 0) {
+        appData.products = result.data.products;
+        shouldRender = true;
+      }
+      if (result.data.ingredients && result.data.ingredients.length > 0) {
+        appData.ingredients = result.data.ingredients;
+        shouldRender = true;
+      }
+      if (result.data.orders && result.data.orders.length > 0) {
+        appData.orders = result.data.orders;
+        shouldRender = true;
+      }
+      if (result.data.recipes && result.data.recipes.length > 0) {
+        appData.recipes = result.data.recipes;
+        shouldRender = true;
+      }
+      if (shouldRender) {
+        window.renderViewport();
+      }
     }
   } catch (err) {
     console.error('GAS Sync error:', err);
@@ -58,7 +73,19 @@ window.sendOrderToGAS = async function(newOrder, cartItems) {
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify(payload)
     });
+
+    // Panggil sync ulang agar data terverifikasi
+    setTimeout(() => {
+      window.fetchInitialDataFromGAS();
+    }, 1000);
   } catch (err) {
     console.error('Order save error:', err);
   }
 };
+
+// Fitur Auto-Polling Realtime Sync: Cek data baru dari Google Sheets setiap 8 detik
+if (!window.gasSyncInterval) {
+  window.gasSyncInterval = setInterval(() => {
+    window.fetchInitialDataFromGAS();
+  }, 8000);
+}
