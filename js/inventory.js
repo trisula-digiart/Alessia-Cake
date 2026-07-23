@@ -182,13 +182,22 @@ window.deleteIngredient = function(ingId) {
 };
 
 window.renderBOMViewer = function(container) {
-  const selectedProduct = appData.products.find(p => String(p.product_id) === String(activeBomProductId)) || appData.products[0];
-  if (!selectedProduct) return;
+  if (!appData.products || appData.products.length === 0) return;
 
-  activeBomProductId = selectedProduct.product_id;
-  let recipe = appData.recipes.find(r => String(r.product_id) === String(activeBomProductId));
+  // Preserve selected product ID safely without resetting to default product
+  if (!window.activeBomProductId) {
+    window.activeBomProductId = appData.products[0].product_id;
+  }
+
+  let selectedProduct = appData.products.find(p => String(p.product_id).trim() === String(window.activeBomProductId).trim());
+  if (!selectedProduct) {
+    selectedProduct = appData.products[0];
+    window.activeBomProductId = selectedProduct.product_id;
+  }
+
+  let recipe = appData.recipes.find(r => String(r.product_id).trim() === String(window.activeBomProductId).trim());
   if (!recipe) {
-    recipe = { product_id: activeBomProductId, items: [] };
+    recipe = { product_id: window.activeBomProductId, items: [] };
     appData.recipes.push(recipe);
   }
 
@@ -218,7 +227,7 @@ window.renderBOMViewer = function(container) {
           <label class="text-xs font-bold text-pinkglass-900 block mb-1">Pilih Produk Kue:</label>
           <select onchange="window.selectBomProduct(this.value)" class="bg-white border border-pinkglass-300 rounded-2xl px-4 py-2.5 text-xs md:text-sm font-bold text-charcoal focus:ring-2 focus:ring-pinkglass-400">
             ${appData.products.map(p => `
-              <option value="${p.product_id}" ${String(p.product_id) === String(activeBomProductId) ? 'selected' : ''}>
+              <option value="${p.product_id}" ${String(p.product_id).trim() === String(window.activeBomProductId).trim() ? 'selected' : ''}>
                 ${p.name} (Rp ${Number(p.base_price).toLocaleString('id-ID')})
               </option>
             `).join('')}
@@ -273,7 +282,7 @@ window.renderBOMViewer = function(container) {
                     <td class="py-3 px-3 text-right text-pinkglass-800">Rp ${item.costPerUnit.toLocaleString('id-ID')}/${item.unit}</td>
                     <td class="py-3 px-3 text-right font-bold text-charcoal">Rp ${item.subtotal.toLocaleString('id-ID')}</td>
                     <td class="py-3 px-3 text-center">
-                      <button onclick="window.removeRecipeItem('${activeBomProductId}', ${idx})" class="text-rose-500 hover:text-rose-700 p-1">
+                      <button onclick="window.removeRecipeItem('${window.activeBomProductId}', ${idx})" class="text-rose-500 hover:text-rose-700 p-1">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                       </button>
                     </td>
@@ -312,7 +321,7 @@ window.renderBOMViewer = function(container) {
 };
 
 window.selectBomProduct = function(productId) {
-  activeBomProductId = productId;
+  window.activeBomProductId = productId;
   window.renderViewport();
 };
 
@@ -331,13 +340,13 @@ window.addIngredientToRecipe = function() {
   // Lock polling from overwriting local memory while saving to sheet
   if (typeof window.lockSync === 'function') window.lockSync(10000);
 
-  let recipe = appData.recipes.find(r => String(r.product_id) === String(activeBomProductId));
+  let recipe = appData.recipes.find(r => String(r.product_id).trim() === String(window.activeBomProductId).trim());
   if (!recipe) {
-    recipe = { product_id: activeBomProductId, items: [] };
+    recipe = { product_id: window.activeBomProductId, items: [] };
     appData.recipes.push(recipe);
   }
 
-  const existingItem = recipe.items.find(i => String(i.ingredient_id) === String(ingId));
+  const existingItem = recipe.items.find(i => String(i.ingredient_id).trim() === String(ingId).trim());
   if (existingItem) {
     existingItem.qty += qty;
   } else {
@@ -359,7 +368,7 @@ window.addIngredientToRecipe = function() {
 };
 
 window.removeRecipeItem = function(productId, index) {
-  const recipe = appData.recipes.find(r => String(r.product_id) === String(productId));
+  const recipe = appData.recipes.find(r => String(r.product_id).trim() === String(productId).trim());
   if (recipe && recipe.items[index]) {
     // Lock polling from overwriting local memory while saving removal to sheet
     if (typeof window.lockSync === 'function') window.lockSync(10000);
@@ -383,10 +392,10 @@ window.removeRecipeItem = function(productId, index) {
 window.autoDeductIngredients = function(cartItems) {
   let deductedLog = [];
   cartItems.forEach(cartItem => {
-    const recipe = appData.recipes.find(r => String(r.product_id) === String(cartItem.product_id));
+    const recipe = appData.recipes.find(r => String(r.product_id).trim() === String(cartItem.product_id).trim());
     if (recipe && recipe.items) {
       recipe.items.forEach(rItem => {
-        const ing = appData.ingredients.find(i => String(i.ingredient_id) === String(rItem.ingredient_id));
+        const ing = appData.ingredients.find(i => String(i.ingredient_id).trim() === String(rItem.ingredient_id).trim());
         if (ing) {
           const totalNeeded = rItem.qty * cartItem.qty;
           ing.current_stock = Math.max(0, ing.current_stock - totalNeeded);
