@@ -18,7 +18,6 @@ const STORE_CONFIG = {
   qris_image_url: 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=ALESSIA-PINK-GLASS-QRIS'
 };
 
-/* STREAMING_CHUNK:Initializing user profile and application data... */
 let currentUser = {
   name: '',
   phone: '',
@@ -82,3 +81,24 @@ let appData = {
   ],
   cart: []
 };
+
+const roleTabs = {
+  owner: [
+    { id: 'dashboard', name: 'Dashboard', icon: 'bar-chart-3' },
+    { id: 'web_orders', name: 'Pesanan Masuk', icon: 'bell' },
+    { id: 'offline_orders', name: 'Pesanan Offline', icon: 'calculator' },
+    { id: 'kds', name: 'KDS Dapur', icon: 'chef-hat' },
+    { id: 'catalog', name: 'Katalog Produk', icon: 'package' },
+    { id: 'bom', name: 'Resep BOM', icon: 'book-open' },
+    { id: 'update_stock', name: 'Stok Bahan', icon: 'database' },
+    { id: 'audit', name: 'Audit Log', icon: 'file-text' }
+  ],
+  customer: [
+    { id: 'catalog', name: 'Menu Utama', icon: 'shopping-bag' },
+    { id: 'custom_builder', name: 'Custom Cake', icon: 'sliders' },
+    { id: 'checkout', name: 'Keranjang', icon: 'shopping-cart' }
+  ]
+};
+
+// Selected product state in BOM Manager
+let activeBomProductId = 'PRD-01';
