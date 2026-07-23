@@ -1,3 +1,8 @@
+/* ==========================================================
+ * ALESSIA CAKE - AUTHENTICATION & VIEWPORT ROUTER ENGINE (JS)
+ * TRISULACODER v9.6 Enterprise Engine
+ * ========================================================== */
+
 window.openAuthModal = function() {
   const modal = document.getElementById('auth-gatekeeper-modal');
   if (modal) modal.classList.remove('hidden');
@@ -62,13 +67,22 @@ window.submitStaffLogin = function() {
   const selectedRole = roleEl ? roleEl.value : 'owner';
   const pinInput = pinEl ? pinEl.value.trim() : '';
 
+  const validPin = (typeof STORE_CONFIG !== 'undefined' && STORE_CONFIG.staff_pin) ? STORE_CONFIG.staff_pin : '123456';
+
   if (!pinInput) {
     if (typeof window.showToast === 'function') window.showToast('Masukkan PIN staf kamu!');
     return;
   }
 
+  if (pinInput !== validPin) {
+    if (typeof window.showToast === 'function') window.showToast('PIN Keamanan Staf salah! Silakan coba lagi.');
+    return;
+  }
+
+  const ownerName = (typeof STORE_CONFIG !== 'undefined' && STORE_CONFIG.owner_name) ? STORE_CONFIG.owner_name : 'OWNER Staff';
+
   currentUser = {
-    name: 'OWNER Staff',
+    name: ownerName,
     phone: 'INTERNAL',
     role: 'owner',
     isLoggedIn: true
@@ -178,6 +192,7 @@ window.renderViewport = function() {
     else if (currentTab === 'bom' && typeof window.renderBOMViewer === 'function') window.renderBOMViewer(vp);
     else if (currentTab === 'update_stock' && typeof window.renderUpdateStock === 'function') window.renderUpdateStock(vp);
     else if (currentTab === 'finance' && typeof window.renderFinanceManager === 'function') window.renderFinanceManager(vp);
+    else if (currentTab === 'settings' && typeof window.renderOwnerSettings === 'function') window.renderOwnerSettings(vp);
     else if (currentTab === 'audit' && typeof window.renderAudit === 'function') window.renderAudit(vp);
   }
   if (typeof lucide !== 'undefined') lucide.createIcons();
