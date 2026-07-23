@@ -103,6 +103,3 @@ const roleTabs = {
 
 // Selected product state in BOM Manager
 let activeBomProductId = 'PRD-01';
-```eof
-
-Silakan gunakan file **`js/data.js`** di atas, bro! Sekarang semua tab menu Owner (Dashboard, Pesanan Masuk, Pesanan Offline, KDS Dapur, Katalog Produk, Resep BOM, Stok Bahan, dan Audit Log) sudah terhubung sempurna dengan fungsi render masing-masing.
