@@ -1,16 +1,13 @@
-/* STREAMING_CHUNK:Opening authentication modal... */
 window.openAuthModal = function() {
   const modal = document.getElementById('auth-gatekeeper-modal');
   if (modal) modal.classList.remove('hidden');
 };
 
-/* STREAMING_CHUNK:Closing authentication modal... */
 window.closeAuthModal = function() {
   const modal = document.getElementById('auth-gatekeeper-modal');
   if (modal) modal.classList.add('hidden');
 };
 
-/* STREAMING_CHUNK:Switching authentication tabs... */
 window.switchAuthTab = function(type) {
   const custBtn = document.getElementById('tab-auth-customer');
   const staffBtn = document.getElementById('tab-auth-staff');
@@ -32,7 +29,6 @@ window.switchAuthTab = function(type) {
   }
 };
 
-/* STREAMING_CHUNK:Submitting customer login form... */
 window.submitCustomerLogin = function() {
   const nameEl = document.getElementById('login-cust-name');
   const phoneEl = document.getElementById('login-cust-phone');
@@ -59,7 +55,6 @@ window.submitCustomerLogin = function() {
   if (typeof window.showToast === 'function') window.showToast(`Selamat datang, ${currentUser.name}! Silakan pilih kue impian kamu.`);
 };
 
-/* STREAMING_CHUNK:Submitting staff login form... */
 window.submitStaffLogin = function() {
   const roleEl = document.getElementById('login-staff-role');
   const pinEl = document.getElementById('login-staff-pin');
@@ -86,13 +81,11 @@ window.submitStaffLogin = function() {
   if (typeof window.showToast === 'function') window.showToast(`Akses Owner Berhasil: Selamat bekerja, ${currentUser.name}!`);
 };
 
-/* STREAMING_CHUNK:Updating user profile display... */
 window.updateUserProfileDisplay = function() {
   const nameEl = document.getElementById('display-user-name');
   if (nameEl) nameEl.innerText = currentUser.name || 'Tamu VIP';
 };
 
-/* STREAMING_CHUNK:Logging out current user... */
 window.logoutUser = function() {
   localStorage.removeItem('ALESSIA_USER');
   currentUser = {
@@ -107,7 +100,6 @@ window.logoutUser = function() {
   if (typeof window.showToast === 'function') window.showToast('Berhasil keluar dari sistem.');
 };
 
-/* STREAMING_CHUNK:Switching system user role... */
 window.switchRole = function(role) {
   currentRole = role;
   currentUser.role = role;
@@ -118,14 +110,12 @@ window.switchRole = function(role) {
   window.renderViewport();
 };
 
-/* STREAMING_CHUNK:Changing active view tab... */
 window.changeTab = function(tabId) {
   currentTab = tabId;
   window.renderNavigation();
   window.renderViewport();
 };
 
-/* STREAMING_CHUNK:Rendering sidebar and mobile navigation... */
 window.renderNavigation = function() {
   const sidebar = document.getElementById('sidebar-nav');
   const mobileNav = document.getElementById('mobile-bottom-nav');
@@ -161,12 +151,10 @@ window.renderNavigation = function() {
   if (typeof lucide !== 'undefined') lucide.createIcons();
 };
 
-/* STREAMING_CHUNK:Rendering current view into main viewport... */
 window.renderViewport = function() {
   const vp = document.getElementById('main-viewport');
   if (!vp) return;
   
-  // Clean up any running KDS timers from previous views
   if (window.kdsIntervalId) {
     clearInterval(window.kdsIntervalId);
     window.kdsIntervalId = null;
@@ -188,6 +176,3 @@ window.renderViewport = function() {
   }
   if (typeof lucide !== 'undefined') lucide.createIcons();
 };
-```eof
-
-Tolong ketik **"LANJUT"** jika lu mau gue kirimkan file berikutnya (`js/sales.js`), bro!
