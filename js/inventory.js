@@ -598,6 +598,3 @@ window.renderDashboard = function(container) {
 window.renderAudit = function(container) { 
   container.innerHTML = `<div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 text-charcoal glass-card font-semibold">Audit Logs Sistem & Riwayat Keamanan (Ready)</div>`; 
 };
-```eof
-
-Silakan salin dan timpa isi file **`js/inventory.js`** di repositori lu, bro! Sekarang semua file modular (`auth.js`, `sales.js`, `inventory.js`) sudah terpisah bersih, rapi, dan tidak ada yang saling tumpang tindih.
