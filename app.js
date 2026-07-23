@@ -3,6 +3,9 @@
  * Handles State, 4-Role Matrix, IndexedDB Offline-First Sync, POS, KDS, and Custom Cake Builder.
  */
 
+// URL Web App Deployment GAS kamu (Bisa diisi langsung di sini atau diatur lewat browser console/Local Storage)
+let GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzX4rjfDx1V31yJsgoxHsnyA78EghxGTCnS7llUalyGClZEQNzYfaQvq5Egl-TL6mjJ/exec'; 
+
 let currentRole = 'customer';
 let currentTab = 'catalog';
 
@@ -53,12 +56,93 @@ const roleTabs = {
   ]
 };
 
-function switchRole(role) {
-  currentRole = role;
-  const tabs = roleTabs[role];
-  currentTab = tabs[0].id;
-  renderNavigation();
-  renderViewport();
+/**
+ * Mengatur URL Endpoint GAS secara dinamis
+ */
+function setGasApiUrl(url) {
+  if (!url) return;
+  GAS_API_URL = url.trim();
+  localStorage.setItem('ALESSIA_GAS_URL', GAS_API_URL);
+  showToast('URL Endpoint GAS berhasil disimpan!');
+  fetchInitialDataFromGAS();
+}
+
+/**
+ * Mengambil data terbaru dari Google Sheets via GAS API
+ */
+async function fetchInitialDataFromGAS() {
+  const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
+  if (!savedUrl || savedUrl.includes('PASTE_YOUR')) {
+    console.log('GAS Endpoint belum diatur, menggunakan mock data lokal.');
+    return;
+  }
+  
+  const statusEl = document.getElementById('sync-status');
+  if (statusEl) statusEl.innerText = 'Syncing...';
+
+  try {
+    const res = await fetch(`${savedUrl}?action=getInitialData`);
+    const result = await res.json();
+    if (result.success && result.data) {
+      if (result.data.products && result.data.products.length > 0) appData.products = result.data.products;
+      if (result.data.ingredients && result.data.ingredients.length > 0) appData.ingredients = result.data.ingredients;
+      if (result.data.orders && result.data.orders.length > 0) appData.orders = result.data.orders;
+      
+      if (statusEl) {
+        statusEl.innerText = 'Online Sync Active';
+        statusEl.className = 'text-emerald-700 font-medium';
+      }
+      renderViewport();
+      showToast('Data berhasil disinkronkan dengan Google Sheets!');
+    }
+  } catch (err) {
+    console.error('Gagal sync ke GAS:', err);
+    if (statusEl) {
+      statusEl.innerText = 'Offline Mode';
+      statusEl.className = 'text-amber-700 font-medium';
+    }
+  }
+}
+
+/**
+ * Mengirim transaksi pesanan baru ke Google Apps Script (Backend)
+ */
+async function sendOrderToGAS(newOrder, cartItems) {
+  const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
+  if (!savedUrl || savedUrl.includes('PASTE_YOUR')) {
+    console.log('Order disimpan secara lokal (Offline/Demo mode).');
+    return;
+  }
+
+  try {
+    const payload = {
+      action: 'createOrder',
+      user_role: currentRole,
+      order: newOrder,
+      items: cartItems.map(item => ({
+        item_id: 'ITM-' + Date.now() + Math.floor(Math.random() * 100),
+        product_id: item.product_id,
+        product_name: item.name,
+        variant_details: item.custom_message || '',
+        qty: item.qty,
+        unit_price: item.price,
+        subtotal: item.price * item.qty
+      }))
+    };
+
+    const res = await fetch(savedUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+    if (result.success) {
+      showToast('Pesanan tersimpan di Google Sheets & Stok terpotong!');
+    }
+  } catch (err) {
+    console.error('Gagal kirim order ke GAS:', err);
+    showToast('Koneksi terputus. Order disimpan lokal.');
+  }
 }
 
 function renderNavigation() {
@@ -437,12 +521,20 @@ function processCheckout() {
     order_type: 'Takeaway',
     customer_name: document.getElementById('cust-name')?.value || 'Tamu VIP Pink Glass',
     customer_phone: document.getElementById('cust-phone')?.value || '0811111111',
+    table_no: '-',
     total_amount: appData.cart.reduce((a, b) => a + (b.price * b.qty), 0),
+    dp_amount: 0,
     payment_status: 'PAID',
     order_status: 'Pending',
-    created_at: new Date().toISOString()
+    reference_photo_url: '',
+    created_at: new Date().toISOString(),
+    pickup_delivery_date: new Date().toISOString().split('T')[0]
   };
   appData.orders.unshift(newOrder);
+  
+  // Kirim ke Backend GAS Google Sheets
+  sendOrderToGAS(newOrder, [...appData.cart]);
+  
   appData.cart = [];
   showToast('Pesanan berhasil dibuat & masuk ke sistem KDS!');
   switchRole('owner');
@@ -450,18 +542,27 @@ function processCheckout() {
 
 function updateOrderStatus(orderId, status) {
   const ord = appData.orders.find(o => o.order_id === orderId);
-  if (ord) { ord.order_status = status; renderViewport(); showToast('Status pesanan diperbarui!'); }
+  if (ord) { 
+    ord.order_status = status; 
+    renderViewport(); 
+    showToast('Status pesanan diperbarui!');
+    
+    // Sync update status ke GAS
+    const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
+    if (savedUrl && !savedUrl.includes('PASTE_YOUR')) {
+      fetch(savedUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'updateOrderStatus', order_id: orderId, new_status: status, user_role: currentRole })
+      }).catch(e => console.error(e));
+    }
+  }
 }
 
-function showToast(msg) {
-  const t = document.createElement('div');
-  t.className = 'fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-charcoal text-white text-xs px-4 py-2.5 rounded-2xl shadow-xl z-50 font-medium transition-all';
-  t.innerText = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 2500);
-}
-
-// Initialize SPA on Load
+// Initialize SPA on Load with GAS Auto-sync
 window.onload = function() {
+  const savedUrl = localStorage.getItem('ALESSIA_GAS_URL');
+  if (savedUrl) GAS_API_URL = savedUrl;
   switchRole('customer');
+  fetchInitialDataFromGAS();
 };
