@@ -492,12 +492,18 @@ window.formatOrderTime = function(isoString) {
   }
 };
 
-window.getElapsedTimeFormatted = function(isoString) {
-  if (!isoString) return '00m 00s';
-  const created = new Date(isoString).getTime();
+window.getElapsedTimeFormatted = function(createdIso, readyIso = null, status = 'Pending') {
+  if (!createdIso) return '00m 00s';
+  const created = new Date(createdIso).getTime();
   if (isNaN(created)) return '00m 00s';
-  const now = Date.now();
-  const diffMs = Math.max(0, now - created);
+  
+  let endTime = Date.now();
+  if (status === 'Ready' && readyIso) {
+    const readyTime = new Date(readyIso).getTime();
+    if (!isNaN(readyTime)) endTime = readyTime;
+  }
+  
+  const diffMs = Math.max(0, endTime - created);
   const totalSeconds = Math.floor(diffMs / 1000);
   const mins = Math.floor(totalSeconds / 60);
   const secs = totalSeconds % 60;
@@ -505,7 +511,6 @@ window.getElapsedTimeFormatted = function(isoString) {
 };
 
 window.renderKDS = function(container) {
-  // Clear any existing live timer interval to prevent duplicates
   if (window.kdsIntervalId) {
     clearInterval(window.kdsIntervalId);
     window.kdsIntervalId = null;
@@ -540,9 +545,8 @@ window.renderKDS = function(container) {
     appData.orders.forEach(o => {
       const isOffline = String(o.order_type || '').includes('Offline');
       const formattedTime = window.formatOrderTime(o.created_at);
-      const initialElapsed = window.getElapsedTimeFormatted(o.created_at);
+      const initialElapsed = window.getElapsedTimeFormatted(o.created_at, o.ready_at, o.order_status);
 
-      // Status Badge Color Logic
       let statusBadgeClass = 'bg-sky-100 text-sky-800 border-sky-300';
       let statusLabel = o.order_status || 'Pending';
 
@@ -574,8 +578,8 @@ window.renderKDS = function(container) {
               </div>
               <div class="flex justify-between items-center text-xs pt-1.5 border-t border-pinkglass-200">
                 <span class="text-pinkglass-800 font-semibold">Durasi Pemprosesan:</span>
-                <span id="kds-timer-${o.order_id}" data-created="${o.created_at}" class="font-mono font-bold text-pinkglass-900 text-xs bg-white px-2 py-0.5 rounded-lg border border-pinkglass-200 shadow-2xs">
-                  ⏱️ ${initialElapsed}
+                <span id="kds-timer-${o.order_id}" data-created="${o.created_at}" data-ready="${o.ready_at || ''}" data-status="${o.order_status}" class="font-mono font-bold text-pinkglass-900 text-xs bg-white px-2 py-0.5 rounded-lg border border-pinkglass-200 shadow-2xs">
+                  ⏱️ ${initialElapsed} ${o.order_status === 'Ready' ? '(Selesai)' : ''}
                 </span>
               </div>
             </div>
@@ -590,7 +594,7 @@ window.renderKDS = function(container) {
             ` : `
               <button onclick="window.updateOrderStatus('${o.order_id}', 'Ready')" class="w-full bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-bold py-2.5 rounded-2xl text-xs shadow-md transition-all active:scale-95 flex items-center justify-center space-x-1.5">
                 <i data-lucide="check" class="w-4 h-4"></i>
-                <span>Tandai Siap (Ready)</span>
+                <span>Tandai Jika  Kue Siap (Ready)</span>
               </button>
             `}
           </div>
@@ -602,13 +606,14 @@ window.renderKDS = function(container) {
   html += `</div></div>`;
   container.innerHTML = html;
 
-  // Start real-time interval to update dynamic running seconds timer
   window.kdsIntervalId = setInterval(() => {
     appData.orders.forEach(o => {
-      const el = document.getElementById(`kds-timer-${o.order_id}`);
-      if (el) {
-        const createdIso = el.getAttribute('data-created');
-        el.innerText = `⏱️ ${window.getElapsedTimeFormatted(createdIso)}`;
+      if (o.order_status !== 'Ready') {
+        const el = document.getElementById(`kds-timer-${o.order_id}`);
+        if (el) {
+          const createdIso = el.getAttribute('data-created');
+          el.innerText = `⏱️ ${window.getElapsedTimeFormatted(createdIso, o.ready_at, o.order_status)}`;
+        }
       }
     });
   }, 1000);
@@ -618,6 +623,9 @@ window.updateOrderStatus = function(orderId, status) {
   const ord = appData.orders.find(o => o.order_id === orderId);
   if (ord) { 
     ord.order_status = status; 
+    if (status === 'Ready' && !ord.ready_at) {
+      ord.ready_at = new Date().toISOString();
+    }
     window.renderViewport(); 
     if (typeof window.showToast === 'function') window.showToast('Status pesanan diperbarui!');
     
@@ -626,7 +634,7 @@ window.updateOrderStatus = function(orderId, status) {
       fetch(savedUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: 'updateOrderStatus', order_id: orderId, new_status: status, user_role: currentRole })
+        body: JSON.stringify({ action: 'updateOrderStatus', order_id: orderId, new_status: status, ready_at: ord.ready_at, user_role: currentRole })
       }).catch(e => console.error(e));
     }
   }
