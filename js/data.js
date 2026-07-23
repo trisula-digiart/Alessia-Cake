@@ -9,7 +9,7 @@ let catalogFilter = {
   sort: 'default'
 };
 
-// Incoming Orders Hub Channel Filter State ('all', 'online', 'offline')
+// Incoming Orders Hub Channel Filter State ('all', 'online', 'offline') 
 let orderHubFilter = 'all';
 
 // Toko Config for WhatsApp & Permanently Locked QRIS
