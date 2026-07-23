@@ -1,3 +1,8 @@
+/* ==========================================================
+ * ALESSIA CAKE - BANK ALESSIA & FINANCIAL MANAGER (JS)
+ * Fully Synchronized with Orders, Expenses, & Filter States
+ * ========================================================== */
+
 let financePeriod = 'all'; // Options: 'today', '7days', '30days', 'all'
 
 // Temporary row buffer for multi-ingredient purchase modal
@@ -163,7 +168,6 @@ window.renderExpenseIngredientRows = function() {
     html += `
       <div class="bg-white p-3 rounded-xl border border-pinkglass-200 shadow-2xs space-y-2">
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
-          <!-- Select Ingredient -->
           <div class="sm:col-span-5">
             <label class="text-[10px] font-bold text-pinkglass-800 block mb-0.5">Nama Bahan Baku</label>
             <select onchange="window.onExpenseIngredientChange(${idx}, 'ingredient_id', this.value)" class="w-full bg-pinkglass-50/50 border border-pinkglass-300 rounded-lg p-2 text-xs font-semibold text-charcoal focus:ring-1 focus:ring-pinkglass-400">
@@ -175,19 +179,16 @@ window.renderExpenseIngredientRows = function() {
             </select>
           </div>
 
-          <!-- Quantity Purchased -->
           <div class="sm:col-span-3">
             <label class="text-[10px] font-bold text-pinkglass-800 block mb-0.5">Jumlah (${unit})</label>
             <input type="number" value="${row.qty}" oninput="window.onExpenseIngredientChange(${idx}, 'qty', this.value)" placeholder="Qty" class="w-full bg-white border border-pinkglass-300 rounded-lg p-2 text-xs text-charcoal font-bold focus:ring-1 focus:ring-pinkglass-400">
           </div>
 
-          <!-- Unit Price (Editable Baseline) -->
           <div class="sm:col-span-3">
             <label class="text-[10px] font-bold text-pinkglass-800 block mb-0.5">Harga Beli/Unit (Rp)</label>
             <input type="number" value="${row.cost_per_unit}" oninput="window.onExpenseIngredientChange(${idx}, 'cost_per_unit', this.value)" placeholder="Rp" class="w-full bg-white border border-pinkglass-300 rounded-lg p-2 text-xs text-charcoal font-bold focus:ring-1 focus:ring-pinkglass-400">
           </div>
 
-          <!-- Delete Action -->
           <div class="sm:col-span-1 flex justify-end sm:justify-center pt-2 sm:pt-4">
             <button type="button" onclick="window.removeExpenseIngredientRow(${idx})" class="text-rose-500 hover:text-rose-700 p-1" title="Hapus Item">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -213,7 +214,6 @@ window.onExpenseIngredientChange = function(index, field, value) {
 
   if (field === 'ingredient_id') {
     window.expenseIngredientRows[index].ingredient_id = value;
-    // Auto-fill price per unit baseline from master Stok Bahan table
     const targetIng = appData.ingredients.find(i => i.ingredient_id === value);
     if (targetIng) {
       window.expenseIngredientRows[index].cost_per_unit = Number(targetIng.cost_per_unit || 0);
@@ -273,7 +273,6 @@ window.saveExpenseFromModal = function() {
   if (!appData.expenses) appData.expenses = [];
 
   if (category.includes('Bahan Baku')) {
-    // Process Multi-Row Ingredient Purchases
     if (!window.expenseIngredientRows || window.expenseIngredientRows.length === 0) {
       if (typeof window.showToast === 'function') window.showToast('Mohon pilih minimal 1 item bahan baku!');
       return;
@@ -292,12 +291,10 @@ window.saveExpenseFromModal = function() {
         grandTotal += rowTotal;
         itemSummaryList.push(`${ing.name} (${row.qty} ${ing.unit} @ Rp ${row.cost_per_unit})`);
 
-        // Automatically update physical stock quantity
         if (autoAddStock) {
           ing.current_stock = Number(ing.current_stock || 0) + Number(row.qty);
         }
 
-        // Automatically update master unit price if checked
         if (updateMasterPrice && row.cost_per_unit > 0) {
           ing.cost_per_unit = Number(row.cost_per_unit);
         }
@@ -319,7 +316,6 @@ window.saveExpenseFromModal = function() {
 
     appData.expenses.unshift(newExp);
 
-    // Save to Google Apps Script backend if URL configured
     const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
     if (savedUrl && !savedUrl.includes('PASTE_YOUR')) {
       fetch(savedUrl, {
@@ -334,7 +330,6 @@ window.saveExpenseFromModal = function() {
     if (typeof window.showToast === 'function') window.showToast(`Pengeluaran bahan baku Rp ${grandTotal.toLocaleString('id-ID')} berhasil dicatat & stok bertambah!`);
 
   } else {
-    // Process Regular Expense (Operasional, Kemasan, etc.)
     const descEl = document.getElementById('exp-desc');
     const amountEl = document.getElementById('exp-amount');
 
@@ -356,7 +351,6 @@ window.saveExpenseFromModal = function() {
 
     appData.expenses.unshift(newExp);
 
-    // Save to Google Apps Script backend if URL configured
     const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
     if (savedUrl && !savedUrl.includes('PASTE_YOUR')) {
       fetch(savedUrl, {
@@ -395,16 +389,19 @@ window.filterItemsByPeriod = function(items, dateField) {
 window.renderFinanceManager = function(container) {
   if (!appData.expenses) appData.expenses = [];
 
-  const filteredOrders = window.filterItemsByPeriod(appData.orders, 'created_at');
+  // EXCLUDE 'Pending' and 'Cancelled' orders from financial income calculations
+  const confirmedOrders = appData.orders.filter(o => o.order_status !== 'Pending' && o.order_status !== 'Cancelled');
+
+  const filteredOrders = window.filterItemsByPeriod(confirmedOrders, 'created_at');
   const filteredExpenses = window.filterItemsByPeriod(appData.expenses, 'date');
 
   const totalIncome = filteredOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
   const totalExpense = filteredExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
   const netBalance = totalIncome - totalExpense;
 
-  // Split Channel Calculation
-  const qrisIncome = filteredOrders.filter(o => !String(o.order_type || '').includes('Offline')).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
-  const cashIncome = filteredOrders.filter(o => String(o.order_type || '').includes('Offline')).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+  // Split Channel Calculation for Valid Confirmed Orders
+  const bankIncome = filteredOrders.filter(o => !String(o.order_type || '').includes('Tunai')).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+  const cashIncome = filteredOrders.filter(o => String(o.order_type || '').includes('Tunai')).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
 
   let periodLabel = 'Seluruh Waktu (Lifetime)';
   if (financePeriod === 'today') periodLabel = '24 Jam Hari Ini';
@@ -419,7 +416,7 @@ window.renderFinanceManager = function(container) {
           <h2 class="text-xl md:text-2xl font-extrabold text-charcoal flex items-center gap-2">
             <span>🏦 Bank Alessia Cake - Pusat Arus Kas & Laporan Keuangan</span>
           </h2>
-          <p class="text-xs md:text-sm text-pinkglass-800">Pemantauan real-time pemasukan omnichannel, pengeluaran kas, dan saldo laba bersih.</p>
+          <p class="text-xs md:text-sm text-pinkglass-800">Pemantauan real-time pemasukan pesanan terkonfirmasi, pengeluaran kas, dan saldo laba bersih.</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
@@ -448,11 +445,11 @@ window.renderFinanceManager = function(container) {
         <!-- Card Pemasukan -->
         <div class="bg-white/80 p-5 rounded-3xl border border-pinkglass-200 glass-card shadow-sm space-y-1">
           <div class="flex justify-between items-center text-emerald-700">
-            <span class="text-[11px] font-bold uppercase tracking-wider">Total Pemasukan Masuk</span>
+            <span class="text-[11px] font-bold uppercase tracking-wider">Total Pemasukan Sah</span>
             <div class="p-2 rounded-xl bg-emerald-100"><i data-lucide="arrow-down-left" class="w-4 h-4 text-emerald-700"></i></div>
           </div>
           <h3 class="text-xl md:text-2xl font-extrabold text-emerald-700">Rp ${totalIncome.toLocaleString('id-ID')}</h3>
-          <p class="text-[10px] text-pinkglass-800 font-medium">Periode: ${periodLabel} (${filteredOrders.length} Trx)</p>
+          <p class="text-[10px] text-pinkglass-800 font-medium">Periode: ${periodLabel} (${filteredOrders.length} Trx Terkonfirmasi)</p>
         </div>
 
         <!-- Card Pengeluaran -->
@@ -478,14 +475,14 @@ window.renderFinanceManager = function(container) {
         </div>
       </div>
 
-      <!-- Split QRIS vs Cash Breakdown Card -->
+      <!-- Split QRIS/Bank vs Cash Breakdown Card -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="bg-white/80 p-4 rounded-2xl border border-pinkglass-200 glass-card flex items-center justify-between shadow-2xs">
           <div class="flex items-center space-x-3">
             <div class="p-3 rounded-xl bg-sky-100 text-sky-800"><i data-lucide="qr-code" class="w-5 h-5"></i></div>
             <div>
-              <span class="text-[10px] font-bold text-pinkglass-800 uppercase">Transfer QRIS / Web</span>
-              <h4 class="font-bold text-base text-charcoal">Rp ${qrisIncome.toLocaleString('id-ID')}</h4>
+              <span class="text-[10px] font-bold text-pinkglass-800 uppercase">Transfer QRIS / Bank Transfer / COD</span>
+              <h4 class="font-bold text-base text-charcoal">Rp ${bankIncome.toLocaleString('id-ID')}</h4>
             </div>
           </div>
           <span class="text-xs font-bold text-sky-800 bg-sky-50 px-2.5 py-1 rounded-full border border-sky-200">Rekening Bank</span>
@@ -508,7 +505,7 @@ window.renderFinanceManager = function(container) {
         <!-- Tabel Pemasukan -->
         <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card space-y-4 shadow-sm">
           <h3 class="font-bold text-base text-charcoal border-b border-pinkglass-200 pb-3 flex justify-between items-center">
-            <span class="flex items-center gap-1.5"><i data-lucide="trending-up" class="w-4 h-4 text-emerald-600"></i> Rincian Kas Masuk (Pemasukan)</span>
+            <span class="flex items-center gap-1.5"><i data-lucide="trending-up" class="w-4 h-4 text-emerald-600"></i> Rincian Kas Masuk (Pesanan Diterima)</span>
             <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">${filteredOrders.length} Trx</span>
           </h3>
 
@@ -517,13 +514,13 @@ window.renderFinanceManager = function(container) {
               <thead>
                 <tr class="border-b border-pinkglass-100 text-[10px] font-bold text-pinkglass-900 uppercase">
                   <th class="py-2 px-3">ID / Pelanggan</th>
-                  <th class="py-2 px-3">Channel</th>
+                  <th class="py-2 px-3">Channel / Metode</th>
                   <th class="py-2 px-3 text-right">Nominal</th>
                 </tr>
               </thead>
               <tbody class="divide-y border-pinkglass-50 text-xs">
                 ${filteredOrders.length === 0 ? `
-                  <tr><td colspan="3" class="py-6 text-center text-pinkglass-800">Belum ada transaksi pemasukan pada periode ini.</td></tr>
+                  <tr><td colspan="3" class="py-6 text-center text-pinkglass-800">Belum ada transaksi pemasukan terkonfirmasi pada periode ini.</td></tr>
                 ` : filteredOrders.map(o => `
                   <tr class="hover:bg-pinkglass-50/50">
                     <td class="py-2.5 px-3">
