@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Alessia Cake - Soft Pink Glass Luxury Enterprise Hub</title>
+  <title>Alessia Cake - Manis di Setiap Momen</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script>
@@ -87,7 +87,7 @@
           🛍️ Pelanggan
         </button>
         <button id="tab-auth-staff" onclick="window.switchAuthTab('staff')" class="flex-1 py-2 text-xs font-bold rounded-xl text-pinkglass-800 hover:text-charcoal transition-all">
-          🔐 Staf Internal
+          🔐 Owner / Pemilik Toko
         </button>
       </div>
 
@@ -110,14 +110,12 @@
         </button>
       </div>
 
-      <!-- FORM 2: STAFF LOGIN -->
+      <!-- FORM 2: STAFF/OWNER LOGIN -->
       <div id="auth-staff-form" class="space-y-4 hidden relative z-10">
         <div class="space-y-1.5">
-          <label class="text-xs font-bold text-pinkglass-900">Pilih Role Akses</label>
+          <label class="text-xs font-bold text-pinkglass-900">Akses Pemilik Toko (Owner)</label>
           <select id="login-staff-role" class="w-full bg-white/90 border border-pinkglass-300 rounded-2xl p-3 text-xs md:text-sm text-charcoal font-semibold focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
-            <option value="owner">👑 Owner / Super Admin</option>
-            <option value="cashier">💵 Kasir Front-Store</option>
-            <option value="baker">👨‍🍳 Head Baker (KDS Dapur)</option>
+            <option value="owner">👑 Owner / Pemilik Toko (Akses Penuh)</option>
           </select>
         </div>
         <div class="space-y-1.5">
@@ -126,7 +124,7 @@
         </div>
         <button onclick="window.submitStaffLogin()" class="w-full bg-charcoal hover:bg-black text-white font-bold py-3.5 rounded-2xl text-xs md:text-sm shadow-lg transition-all active:scale-95 flex items-center justify-center space-x-2">
           <i data-lucide="shield-check" class="w-4 h-4"></i>
-          <span>Masuk Sistem Staf</span>
+          <span>Masuk Sistem Owner</span>
         </button>
       </div>
     </div>
@@ -194,7 +192,7 @@
       </div>
     </div>
 
-    <!-- Active User Profile & Role Switcher -->
+    <!-- Active User Profile & Logout -->
     <div class="flex items-center space-x-2 md:space-x-4">
       <div class="hidden lg:flex items-center space-x-2 text-xs bg-white/80 px-3 py-1.5 rounded-full border border-pinkglass-200 shadow-sm">
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -278,21 +276,11 @@
         { id: 'pos', name: 'Kasir POS', icon: 'calculator' },
         { id: 'web_orders', name: 'Order Web', icon: 'bell' },
         { id: 'kds', name: 'KDS Dapur', icon: 'chef-hat' },
-        { id: 'catalog', name: 'Katalog', icon: 'package' },
-        { id: 'bom', name: 'Stok BOM', icon: 'layers' },
-        { id: 'audit', name: 'Audit Log', icon: 'file-text' }
-      ],
-      cashier: [
-        { id: 'pos', name: 'Kasir POS', icon: 'calculator' },
-        { id: 'web_orders', name: 'Order Web', icon: 'bell' },
-        { id: 'pickup', name: 'Pick-Up', icon: 'truck' },
-        { id: 'cash_shift', name: 'Shift Kas', icon: 'dollar-sign' }
-      ],
-      baker: [
-        { id: 'kds', name: 'KDS Dapur', icon: 'chef-hat' },
         { id: 'batch_baking', name: 'Batch Oven', icon: 'flame' },
-        { id: 'bom_viewer', name: 'Resep BOM', icon: 'book-open' },
-        { id: 'update_stock', name: 'Stok Bahan', icon: 'database' }
+        { id: 'catalog', name: 'Katalog', icon: 'package' },
+        { id: 'bom', name: 'Resep BOM', icon: 'book-open' },
+        { id: 'update_stock', name: 'Stok Bahan', icon: 'database' },
+        { id: 'audit', name: 'Audit Log', icon: 'file-text' }
       ],
       customer: [
         { id: 'catalog', name: 'Menu Utama', icon: 'shopping-bag' },
@@ -364,7 +352,7 @@
       const roleEl = document.getElementById('login-staff-role');
       const pinEl = document.getElementById('login-staff-pin');
 
-      const selectedRole = roleEl ? roleEl.value : 'cashier';
+      const selectedRole = roleEl ? roleEl.value : 'owner';
       const pinInput = pinEl ? pinEl.value.trim() : '';
 
       if (!pinInput) {
@@ -373,25 +361,22 @@
       }
 
       currentUser = {
-        name: selectedRole.toUpperCase() + ' Staff',
+        name: 'OWNER Staff',
         phone: 'INTERNAL',
-        role: selectedRole,
+        role: 'owner',
         isLoggedIn: true
       };
 
       localStorage.setItem('ALESSIA_USER', JSON.stringify(currentUser));
       window.updateUserProfileDisplay();
       window.closeAuthModal();
-      window.switchRole(selectedRole);
-      window.showToast(`Akses Staf Berhasil: Selamat bekerja, ${currentUser.name}!`);
+      window.switchRole('owner');
+      window.showToast(`Akses Owner Berhasil: Selamat bekerja, ${currentUser.name}!`);
     };
 
     window.updateUserProfileDisplay = function() {
       const nameEl = document.getElementById('display-user-name');
       if (nameEl) nameEl.innerText = currentUser.name || 'Tamu VIP';
-      
-      const roleSel = document.getElementById('role-select');
-      if (roleSel) roleSel.value = currentUser.role;
     };
 
     window.logoutUser = function() {
@@ -414,9 +399,6 @@
       currentUser.role = role;
       const tabs = roleTabs[role] || roleTabs['customer'];
       currentTab = tabs[0].id;
-      
-      const roleSelectEl = document.getElementById('role-select');
-      if (roleSelectEl) roleSelectEl.value = role;
 
       window.renderNavigation();
       window.renderViewport();
@@ -472,23 +454,15 @@
         else if (currentTab === 'custom_builder') window.renderCustomBuilder(vp);
         else if (currentTab === 'checkout') window.renderCheckout(vp);
         else if (currentTab === 'tracker') window.renderTracker(vp);
-      } else if (currentRole === 'cashier') {
-        if (currentTab === 'pos') window.renderPOS(vp);
-        else if (currentTab === 'web_orders') window.renderWebOrders(vp);
-        else if (currentTab === 'pickup') window.renderPickup(vp);
-        else if (currentTab === 'cash_shift') window.renderCashShift(vp);
-      } else if (currentRole === 'baker') {
-        if (currentTab === 'kds') window.renderKDS(vp);
-        else if (currentTab === 'batch_baking') window.renderBatchBaking(vp);
-        else if (currentTab === 'bom_viewer') window.renderBOMViewer(vp);
-        else if (currentTab === 'update_stock') window.renderUpdateStock(vp);
-      } else if (currentRole === 'owner') {
+      } else {
         if (currentTab === 'dashboard') window.renderDashboard(vp);
         else if (currentTab === 'pos') window.renderPOS(vp);
         else if (currentTab === 'web_orders') window.renderWebOrders(vp);
         else if (currentTab === 'kds') window.renderKDS(vp);
+        else if (currentTab === 'batch_baking') window.renderBatchBaking(vp);
         else if (currentTab === 'catalog') window.renderCustomerCatalog(vp);
         else if (currentTab === 'bom') window.renderBOMViewer(vp);
+        else if (currentTab === 'update_stock') window.renderUpdateStock(vp);
         else if (currentTab === 'audit') window.renderAudit(vp);
       }
       if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -901,7 +875,7 @@
     window.renderDashboard = function(container) {
       container.innerHTML = `
         <div class="space-y-6">
-          <h2 class="text-xl md:text-2xl font-bold text-charcoal">Dashboard Analitik Omset</h2>
+          <h2 class="text-xl md:text-2xl font-bold text-charcoal">Dashboard Analitik Omset Owner</h2>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-white/80 p-5 rounded-3xl border border-pinkglass-200 glass-card shadow-sm">
               <p class="text-[11px] text-pinkglass-700">Omset Hari Ini</p>
@@ -925,11 +899,11 @@
     };
 
     window.renderPickup = function(container) { window.renderWebOrders(container); };
-    window.renderCashShift = function(container) { container.innerHTML = `<div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 text-charcoal glass-card">Kas Harian & Rekonsiliasi Shift Kasir (Ready)</div>`; };
-    window.renderBatchBaking = function(container) { container.innerHTML = `<div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 text-charcoal glass-card">Consolidated Batch Baking Oven View (Ready)</div>`; };
-    window.renderBOMViewer = function(container) { container.innerHTML = `<div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 text-charcoal glass-card">Resep & Gramasi BOM Manager (Ready)</div>`; };
-    window.renderUpdateStock = function(container) { container.innerHTML = `<div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 text-charcoal glass-card">Manajemen Stok & Loss Tracking Bahan Baku (Ready)</div>`; };
-    window.renderAudit = function(container) { container.innerHTML = `<div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 text-charcoal glass-card">Audit Logs Sistem & Riwayat Keamanan (Ready)</div>`; };
+    window.renderCashShift = function(container) { container.innerHTML = `<div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 text-charcoal glass-card font-semibold">Kas Harian & Rekonsiliasi Shift Kasir (Ready)</div>`; };
+    window.renderBatchBaking = function(container) { container.innerHTML = `<div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 text-charcoal glass-card font-semibold">Consolidated Batch Baking Oven View (Ready)</div>`; };
+    window.renderBOMViewer = function(container) { container.innerHTML = `<div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 text-charcoal glass-card font-semibold">Resep & Gramasi BOM Manager (Ready)</div>`; };
+    window.renderUpdateStock = function(container) { container.innerHTML = `<div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 text-charcoal glass-card font-semibold">Manajemen Stok & Loss Tracking Bahan Baku (Ready)</div>`; };
+    window.renderAudit = function(container) { container.innerHTML = `<div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 text-charcoal glass-card font-semibold">Audit Logs Sistem & Riwayat Keamanan (Ready)</div>`; };
 
     // --- ACTIONS ---
     window.addToCart = function(productId) {
