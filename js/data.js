@@ -23,12 +23,11 @@ const STORE_CONFIG = {
   phone: '6281298406844', // Nomor WhatsApp Toko Penerima Pesanan Online
   staff_pin: '123456',    // PIN Keamanan Login Staff/Owner
   location_name: 'Kab. Bekasi',
-  printer_type: 'browser', // 'bluetooth', 'usb', 'browser'
-  printer_paper: '58mm',    // '58mm', '80mm'
+  printer_type: 'driver', // 'bluetooth', 'usb', 'driver'
+  printer_paper: '58mm',  // '58mm', '80mm'
   qris_image_url: 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=ALESSIA-PINK-GLASS-QRIS'
 };
 
-// Load saved STORE_CONFIG if available in localStorage
 try {
   const savedConfig = localStorage.getItem('ALESSIA_STORE_CONFIG');
   if (savedConfig) {
@@ -41,6 +40,9 @@ try {
     if (parsed.printer_paper) STORE_CONFIG.printer_paper = parsed.printer_paper;
   }
 } catch(e) { console.error(e); }
+
+// Global active hardware printer device reference
+window.activePrinterDevice = null;
 
 let currentUser = {
   name: '',
@@ -154,8 +156,21 @@ window.initLuxuryClock = function() {
   window.clockTimerId = setInterval(updateClock, 1000);
 };
 
-// Render Tab Pengaturan Owner (Settings View)
 window.renderOwnerSettings = function(container) {
+  if (!container) return;
+
+  const pType = STORE_CONFIG.printer_type || 'driver';
+  const pPaper = STORE_CONFIG.printer_paper || '58mm';
+
+  let statusBadge = '';
+  if (pType === 'driver' || pType === 'browser') {
+    statusBadge = `<span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">✓ Terhubung via Driver Windows/Mac (Default PC)</span>`;
+  } else if (window.activePrinterDevice) {
+    statusBadge = `<span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">✓ Device Terhubung: ${window.activePrinterDevice.name || window.activePrinterDevice.productName || 'Printer Thermal'}</span>`;
+  } else {
+    statusBadge = `<span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">⚠️ Belum Ada Device Terpasang (Klik Pairing)</span>`;
+  }
+
   let html = `
     <div class="max-w-5xl mx-auto space-y-6">
       <div class="bg-white/80 p-6 md:p-8 rounded-3xl border border-pinkglass-200 glass-card shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -217,29 +232,43 @@ window.renderOwnerSettings = function(container) {
           </div>
         </div>
 
-        <!-- Card 3: Pengaturan Printer Thermal (Bluetooth & USB) -->
+        <!-- Card 3: Pengaturan Printer Thermal (Bluetooth/USB/Driver) -->
         <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card space-y-4 shadow-sm flex flex-col justify-between">
           <div class="space-y-3">
             <h3 class="font-bold text-base text-charcoal border-b border-pinkglass-200 pb-3 flex items-center gap-2">
               <i data-lucide="printer" class="w-5 h-5 text-pinkglass-600"></i>
-              <span>Printer Thermal POS (Bluetooth/USB)</span>
+              <span>Printer Thermal POS (Bluetooth/USB/Driver)</span>
             </h3>
 
             <div>
               <label class="text-xs font-bold text-pinkglass-900 block mb-1">Tipe / Koneksi Printer</label>
-              <select id="setting-printer-type" class="w-full bg-white border border-pinkglass-300 rounded-xl p-3 text-xs md:text-sm text-charcoal font-bold focus:ring-2 focus:ring-pinkglass-400">
-                <option value="browser" ${STORE_CONFIG.printer_type === 'browser' ? 'selected' : ''}>🖨️ Thermal Auto Direct / Driver Windows/Mac</option>
-                <option value="bluetooth" ${STORE_CONFIG.printer_type === 'bluetooth' ? 'selected' : ''}>📲 Web Bluetooth Thermal Printer (Wireless)</option>
-                <option value="usb" ${STORE_CONFIG.printer_type === 'usb' ? 'selected' : ''}>🔌 WebUSB Thermal Printer (Kabel USB POS)</option>
+              <select id="setting-printer-type" onchange="window.onPrinterTypeSelectChange(this.value)" class="w-full bg-white border border-pinkglass-300 rounded-xl p-3 text-xs md:text-sm text-charcoal font-bold focus:ring-2 focus:ring-pinkglass-400">
+                <option value="driver" ${pType === 'driver' || pType === 'browser' ? 'selected' : ''}>🖨️ Thermal Auto Direct / Driver Windows/Mac</option>
+                <option value="bluetooth" ${pType === 'bluetooth' ? 'selected' : ''}>📲 Web Bluetooth Thermal Printer (Wireless)</option>
+                <option value="usb" ${pType === 'usb' ? 'selected' : ''}>🔌 WebUSB Thermal Printer (Kabel USB POS)</option>
               </select>
             </div>
 
             <div>
               <label class="text-xs font-bold text-pinkglass-900 block mb-1">Ukuran Kertas Thermal Struk</label>
               <select id="setting-printer-paper" class="w-full bg-white border border-pinkglass-300 rounded-xl p-3 text-xs md:text-sm text-charcoal font-bold focus:ring-2 focus:ring-pinkglass-400">
-                <option value="58mm" ${STORE_CONFIG.printer_paper === '58mm' ? 'selected' : ''}>58 mm (Struk Kasir Standar Kecil)</option>
-                <option value="80mm" ${STORE_CONFIG.printer_paper === '80mm' ? 'selected' : ''}>80 mm (Struk Kasir Lebar/Besar)</option>
+                <option value="58mm" ${pPaper === '58mm' ? 'selected' : ''}>58 mm (Struk Kasir Standar Kecil)</option>
+                <option value="80mm" ${pPaper === '80mm' ? 'selected' : ''}>80 mm (Struk Kasir Lebar/Besar)</option>
               </select>
+            </div>
+
+            <!-- Dynamic Printer Hardware Connection Badge -->
+            <div class="py-1">
+              <label class="text-[11px] font-bold text-pinkglass-800 block mb-1">Status Koneksi Perangkat:</label>
+              <div id="printer-hardware-status">${statusBadge}</div>
+            </div>
+
+            <!-- Dynamic Pairing Button -->
+            <div id="printer-pairing-container" class="pt-1">
+              <button type="button" onclick="window.pairPrinterDevice()" class="w-full bg-pinkglass-100 hover:bg-pinkglass-200 text-pinkglass-900 font-bold py-2.5 rounded-xl text-xs border border-pinkglass-300 transition-all flex items-center justify-center space-x-2 shadow-2xs">
+                <i data-lucide="radio" class="w-4 h-4 text-pinkglass-700"></i>
+                <span id="btn-pairing-text">${pType === 'bluetooth' || pType === 'usb' ? '📲 Sambungkan / Pair Device Printer' : '🔍 Cek Driver Printer System'}</span>
+              </button>
             </div>
 
             <button type="button" onclick="window.testThermalPrinter()" class="w-full bg-charcoal hover:bg-black text-white font-bold py-2.5 rounded-xl text-xs transition-all active:scale-95 flex items-center justify-center space-x-1.5 shadow-sm">
@@ -261,7 +290,59 @@ window.renderOwnerSettings = function(container) {
   if (typeof lucide !== 'undefined') lucide.createIcons();
 };
 
-// Save Owner Settings Handler
+window.onPrinterTypeSelectChange = function(type) {
+  STORE_CONFIG.printer_type = type;
+  window.renderOwnerSettings(document.getElementById('main-viewport'));
+};
+
+window.pairPrinterDevice = async function() {
+  const pType = document.getElementById('setting-printer-type')?.value || STORE_CONFIG.printer_type;
+
+  if (pType === 'driver' || pType === 'browser') {
+    if (typeof window.showToast === 'function') {
+      window.showToast('Printer Wireless terdeteksi via Driver Windows/Mac! Saat transaksi, perintah langsung terlempar ke printer default.');
+    }
+    return;
+  }
+
+  if (pType === 'bluetooth') {
+    if (!navigator.bluetooth) {
+      alert('Web Bluetooth tidak didukung di browser ini. Gunakan Google Chrome / Edge terbaru!');
+      return;
+    }
+
+    try {
+      if (typeof window.showToast === 'function') window.showToast('Mencari perangkat printer Bluetooth...');
+      const device = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', '00001101-0000-1000-8000-00805f9b34fb', '49535343-fe7d-4ae5-8fa9-9fafd205e455']
+      });
+
+      window.activePrinterDevice = device;
+      if (typeof window.showToast === 'function') window.showToast(`Berhasil terhubung ke: ${device.name || 'Printer Bluetooth'}`);
+      window.renderOwnerSettings(document.getElementById('main-viewport'));
+    } catch (err) {
+      console.error('Bluetooth Pairing Error:', err);
+      if (typeof window.showToast === 'function') window.showToast('Proses pairing Bluetooth dibatalkan atau gagal.');
+    }
+  } else if (pType === 'usb') {
+    if (!navigator.usb) {
+      alert('WebUSB tidak didukung di browser ini. Gunakan Google Chrome / Edge!');
+      return;
+    }
+
+    try {
+      const device = await navigator.usb.requestDevice({ filters: [] });
+      window.activePrinterDevice = device;
+      if (typeof window.showToast === 'function') window.showToast(`Berhasil terhubung ke USB: ${device.productName || 'Printer POS'}`);
+      window.renderOwnerSettings(document.getElementById('main-viewport'));
+    } catch (err) {
+      console.error('USB Pairing Error:', err);
+      if (typeof window.showToast === 'function') window.showToast('Proses pairing USB dibatalkan.');
+    }
+  }
+};
+
 window.saveOwnerSettings = function() {
   const nameEl = document.getElementById('setting-owner-name');
   const phoneEl = document.getElementById('setting-store-phone');
@@ -289,7 +370,6 @@ window.saveOwnerSettings = function() {
   window.renderViewport();
 };
 
-// Universal Thermal Printer Receipt Print Engine
 window.printThermalReceipt = function(orderObj = null) {
   const order = orderObj || {
     order_id: 'ORD-TEST-99',
@@ -402,7 +482,6 @@ window.testThermalPrinter = function() {
   });
 };
 
-// Global Viewport Router Handler Guaranteeing Settings Tab Availability
 window.renderViewport = function() {
   const vp = document.getElementById('main-viewport');
   if (!vp) return;
