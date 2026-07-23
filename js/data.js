@@ -90,8 +90,7 @@ const roleTabs = {
   customer: [
     { id: 'catalog', name: 'Menu Utama', icon: 'shopping-bag' },
     { id: 'custom_builder', name: 'Custom Cake', icon: 'sliders' },
-    { id: 'checkout', name: 'Keranjang', icon: 'shopping-cart' },
-    { id: 'tracker', name: 'Lacak Pesanan', icon: 'map-pin' }
+    { id: 'checkout', name: 'Keranjang', icon: 'shopping-cart' }
   ]
 };
 
