@@ -37,7 +37,7 @@
     }
   </script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@600;800&display=swap');
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: linear-gradient(135deg, #FFF0F5 0%, #FFE4EE 50%, #F9E2EC 100%); color: #2D2227; min-height: 100vh; }
     .glass-card {
       background: rgba(255, 255, 255, 0.85);
@@ -59,6 +59,7 @@
       border: 1px solid rgba(240, 117, 158, 0.35);
       box-shadow: 0 20px 50px -10px rgba(209, 45, 97, 0.28);
     }
+    .font-digital { font-family: 'JetBrains Mono', monospace; }
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #F7A8C4; border-radius: 4px; }
@@ -240,9 +241,25 @@
       </div>
     </div>
 
-    <!-- Active User Profile & Logout -->
+    <!-- Active User Profile, Realtime Clock Widget & Logout -->
     <div class="flex items-center space-x-2 md:space-x-4">
-      <div class="hidden lg:flex items-center space-x-2 text-xs bg-white/80 px-3 py-1.5 rounded-full border border-pinkglass-200 shadow-sm">
+      
+      <!-- LUXURY BIG REALTIME CLOCK WIDGET -->
+      <div class="hidden lg:flex items-center space-x-3 bg-gradient-to-r from-pinkglass-100/90 via-white/80 to-pinkglass-50/90 px-4 py-2 rounded-2xl border border-pinkglass-300/80 shadow-xs">
+        <div class="p-2 bg-pinkglass-600 text-white rounded-xl shadow-xs animate-pulse">
+          <i data-lucide="clock" class="w-4 h-4"></i>
+        </div>
+        <div>
+          <div id="luxury-clock-time" class="text-sm md:text-base font-extrabold text-pinkglass-950 font-digital tracking-wider">
+            00:00:00 WIB
+          </div>
+          <div id="luxury-clock-date" class="text-[10px] font-bold text-pinkglass-800">
+            Kab. Bekasi • Loading...
+          </div>
+        </div>
+      </div>
+
+      <div class="hidden xl:flex items-center space-x-2 text-xs bg-white/80 px-3 py-1.5 rounded-full border border-pinkglass-200 shadow-sm">
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
         <span id="sync-status" class="text-pinkglass-800 font-medium">Online Sync Active</span>
       </div>
@@ -291,6 +308,9 @@
   <!-- INITIALIZATION BOOTSTRAPPER -->
   <script>
     window.addEventListener('DOMContentLoaded', () => {
+      // Start Realtime Luxury Clock
+      if (typeof window.initLuxuryClock === 'function') window.initLuxuryClock();
+
       const savedUrl = localStorage.getItem('ALESSIA_GAS_URL');
       if (savedUrl) GAS_API_URL = savedUrl;
 
