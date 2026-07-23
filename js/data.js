@@ -135,7 +135,6 @@ const roleTabs = {
 // Selected product state in BOM Manager
 let activeBomProductId = 'PRD-01';
 
-// Global Realtime Clock Timer Helper
 window.initLuxuryClock = function() {
   if (window.clockTimerId) clearInterval(window.clockTimerId);
   
