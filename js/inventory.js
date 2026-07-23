@@ -474,7 +474,6 @@ window.renderUpdateStock = function(container) {
   container.innerHTML = html;
 };
 
-/* STREAMING_CHUNK:Rendering analytical dashboard cleanly without double clock widget... */
 window.renderDashboard = function(container) {
   if (window.dashboardClockInterval) {
     clearInterval(window.dashboardClockInterval);
@@ -492,12 +491,21 @@ window.renderDashboard = function(container) {
 
   container.innerHTML = `
     <div class="space-y-6 max-w-7xl mx-auto">
+      <!-- HEADER DASHBOARD ANALITIK OWNER WITH SEARCH BAR -->
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card">
         <div>
           <h2 class="text-xl md:text-2xl font-extrabold text-charcoal flex items-center gap-2">
             <span>👑 Dashboard Analitik Owner</span>
           </h2>
           <p class="text-xs md:text-sm text-pinkglass-800">Ringkasan performa finansial, tren penjualan, dan pemantauan ketersediaan stok dapur.</p>
+        </div>
+
+        <!-- SISI KANAN HEADER DASHBOARD (DASHBOARD SEARCH INPUT) -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full md:w-auto">
+          <div class="relative flex items-center bg-white border border-pinkglass-300 rounded-2xl px-3.5 py-2 shadow-2xs w-full sm:w-64 focus-within:ring-2 focus-within:ring-pinkglass-400">
+            <i data-lucide="search" class="w-4 h-4 text-pinkglass-500 mr-2 shrink-0"></i>
+            <input type="text" oninput="if(typeof window.setCatalogSearch==='function') window.setCatalogSearch(this.value)" placeholder="Cari di dashboard..." class="w-full bg-transparent text-xs text-charcoal font-medium placeholder-pinkglass-400 focus:outline-none">
+          </div>
         </div>
       </div>
 
