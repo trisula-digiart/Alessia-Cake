@@ -160,11 +160,11 @@ window.saveIngredientFromModal = function() {
 
 window.deleteIngredient = function(ingId) {
   if (confirm('Apakah kamu yakin ingin menghapus bahan baku ini?')) {
+    if (typeof window.lockSync === 'function') window.lockSync(10000);
     appData.ingredients = appData.ingredients.filter(i => i.ingredient_id !== ingId);
     window.renderViewport();
     if (typeof window.showToast === 'function') window.showToast('Bahan baku berhasil dihapus!');
 
-    // Sync deletion to Google Apps Script backend
     const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
     if (savedUrl && !savedUrl.includes('PASTE_YOUR')) {
       fetch(savedUrl, {
@@ -177,11 +177,11 @@ window.deleteIngredient = function(ingId) {
 };
 
 window.renderBOMViewer = function(container) {
-  const selectedProduct = appData.products.find(p => p.product_id === activeBomProductId) || appData.products[0];
+  const selectedProduct = appData.products.find(p => String(p.product_id) === String(activeBomProductId)) || appData.products[0];
   if (!selectedProduct) return;
 
   activeBomProductId = selectedProduct.product_id;
-  let recipe = appData.recipes.find(r => r.product_id === activeBomProductId);
+  let recipe = appData.recipes.find(r => String(r.product_id) === String(activeBomProductId));
   if (!recipe) {
     recipe = { product_id: activeBomProductId, items: [] };
     appData.recipes.push(recipe);
@@ -189,7 +189,7 @@ window.renderBOMViewer = function(container) {
 
   let totalHpp = 0;
   let recipeDetails = recipe.items.map(item => {
-    const ing = appData.ingredients.find(i => i.ingredient_id === item.ingredient_id);
+    const ing = appData.ingredients.find(i => String(i.ingredient_id) === String(item.ingredient_id));
     const name = ing ? ing.name : 'Bahan Tidak Ditemukan';
     const unit = ing ? ing.unit : 'unit';
     const costPerUnit = ing ? ing.cost_per_unit : 0;
@@ -213,7 +213,7 @@ window.renderBOMViewer = function(container) {
           <label class="text-xs font-bold text-pinkglass-900 block mb-1">Pilih Produk Kue:</label>
           <select onchange="window.selectBomProduct(this.value)" class="bg-white border border-pinkglass-300 rounded-2xl px-4 py-2.5 text-xs md:text-sm font-bold text-charcoal focus:ring-2 focus:ring-pinkglass-400">
             ${appData.products.map(p => `
-              <option value="${p.product_id}" ${p.product_id === activeBomProductId ? 'selected' : ''}>
+              <option value="${p.product_id}" ${String(p.product_id) === String(activeBomProductId) ? 'selected' : ''}>
                 ${p.name} (Rp ${Number(p.base_price).toLocaleString('id-ID')})
               </option>
             `).join('')}
@@ -323,13 +323,16 @@ window.addIngredientToRecipe = function() {
     return;
   }
 
-  let recipe = appData.recipes.find(r => r.product_id === activeBomProductId);
+  // Lock polling from overwriting local memory while saving to sheet
+  if (typeof window.lockSync === 'function') window.lockSync(10000);
+
+  let recipe = appData.recipes.find(r => String(r.product_id) === String(activeBomProductId));
   if (!recipe) {
     recipe = { product_id: activeBomProductId, items: [] };
     appData.recipes.push(recipe);
   }
 
-  const existingItem = recipe.items.find(i => i.ingredient_id === ingId);
+  const existingItem = recipe.items.find(i => String(i.ingredient_id) === String(ingId));
   if (existingItem) {
     existingItem.qty += qty;
   } else {
@@ -351,8 +354,11 @@ window.addIngredientToRecipe = function() {
 };
 
 window.removeRecipeItem = function(productId, index) {
-  const recipe = appData.recipes.find(r => r.product_id === productId);
+  const recipe = appData.recipes.find(r => String(r.product_id) === String(productId));
   if (recipe && recipe.items[index]) {
+    // Lock polling from overwriting local memory while saving removal to sheet
+    if (typeof window.lockSync === 'function') window.lockSync(10000);
+
     recipe.items.splice(index, 1);
     window.renderViewport();
     if (typeof window.showToast === 'function') window.showToast('Bahan berhasil dihapus dari resep!');
@@ -372,10 +378,10 @@ window.removeRecipeItem = function(productId, index) {
 window.autoDeductIngredients = function(cartItems) {
   let deductedLog = [];
   cartItems.forEach(cartItem => {
-    const recipe = appData.recipes.find(r => r.product_id === cartItem.product_id);
+    const recipe = appData.recipes.find(r => String(r.product_id) === String(cartItem.product_id));
     if (recipe && recipe.items) {
       recipe.items.forEach(rItem => {
-        const ing = appData.ingredients.find(i => i.ingredient_id === rItem.ingredient_id);
+        const ing = appData.ingredients.find(i => String(i.ingredient_id) === String(rItem.ingredient_id));
         if (ing) {
           const totalNeeded = rItem.qty * cartItem.qty;
           ing.current_stock = Math.max(0, ing.current_stock - totalNeeded);
