@@ -1,28 +1,3 @@
-const roleTabs = {
-  owner: [
-    { id: 'dashboard', name: 'Dashboard', icon: 'bar-chart-3' },
-    { id: 'web_orders', name: 'Pesanan Masuk', icon: 'bell' },
-    { id: 'offline_orders', name: 'Pesanan Offline', icon: 'calculator' },
-    { id: 'kds', name: 'KDS Dapur', icon: 'chef-hat' },
-    { id: 'catalog', name: 'Katalog Produk', icon: 'package' },
-    { id: 'bom', name: 'Resep BOM', icon: 'book-open' },
-    { id: 'update_stock', name: 'Stok Bahan', icon: 'database' },
-    { id: 'audit', name: 'Audit Log', icon: 'file-text' }
-  ],
-  customer: [
-    { id: 'catalog', name: 'Menu Utama', icon: 'shopping-bag' },
-    { id: 'custom_builder', name: 'Custom Cake', icon: 'sliders' },
-    { id: 'checkout', name: 'Keranjang', icon: 'shopping-cart' }
-  ]
-};
-
-// Selected product state in BOM Manager
-let activeBomProductId = 'PRD-01';
-```eof
-
-js/sales.js
-```javascript:js/sales.js
-/* STREAMING_CHUNK:Setting catalog filter handlers... */
 window.setCatalogSearch = function(query) {
   catalogFilter.search = query;
   window.renderViewport();
@@ -38,7 +13,6 @@ window.setCatalogSort = function(sortType) {
   window.renderViewport();
 };
 
-/* STREAMING_CHUNK:Rendering customer catalog view... */
 window.renderCustomerCatalog = function(container) {
   const isOwner = (currentRole === 'owner');
 
@@ -144,7 +118,6 @@ window.renderCustomerCatalog = function(container) {
   container.innerHTML = html;
 };
 
-/* STREAMING_CHUNK:Handling shopping cart actions... */
 window.addToCart = function(productId) {
   const prod = appData.products.find(p => p.product_id === productId);
   if (!prod) return;
@@ -157,7 +130,6 @@ window.addToCart = function(productId) {
 window.addToCartPOS = function(productId) { window.addToCart(productId); };
 window.removeFromCart = function(idx) { appData.cart.splice(idx, 1); window.renderViewport(); };
 
-/* STREAMING_CHUNK:Rendering custom cake builder... */
 window.renderCustomBuilder = function(container) {
   container.innerHTML = `
     <div class="max-w-3xl mx-auto space-y-6 bg-white/80 p-6 md:p-8 rounded-3xl border border-pinkglass-200 glass-card">
@@ -213,7 +185,6 @@ window.submitCustomCake = function() {
   window.changeTab('checkout');
 };
 
-/* STREAMING_CHUNK:Rendering checkout page with permanently locked QRIS... */
 window.renderCheckout = function(container) {
   let subtotal = appData.cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
   let html = `
@@ -275,7 +246,6 @@ window.renderCheckout = function(container) {
   container.innerHTML = html;
 };
 
-/* STREAMING_CHUNK:Processing checkout and opening WhatsApp & Proof Modal... */
 window.processCheckout = function(channel = 'Online (Web)') {
   if (appData.cart.length === 0) { window.showToast('Keranjang belanja masih kosong!'); return; }
   
@@ -317,7 +287,6 @@ window.processCheckout = function(channel = 'Online (Web)') {
   }
 };
 
-/* STREAMING_CHUNK:Rendering confirmation modal with proof upload & WhatsApp button... */
 window.openOrderConfirmationModal = function(order, cartItems) {
   let modal = document.getElementById('online-order-success-modal');
   if (!modal) {
@@ -380,7 +349,6 @@ window.closeOrderConfirmationModal = function() {
   window.changeTab('catalog');
 };
 
-/* STREAMING_CHUNK:Rendering POS kasir offline... */
 window.renderPOS = function(container) {
   let html = `
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
@@ -418,13 +386,11 @@ window.renderPOS = function(container) {
   container.innerHTML = html;
 };
 
-/* STREAMING_CHUNK:Filtering incoming order hub... */
 window.setOrderHubFilter = function(filter) {
   orderHubFilter = filter;
   window.renderViewport();
 };
 
-/* STREAMING_CHUNK:Rendering Central Order Hub for incoming web/store orders... */
 window.renderWebOrders = function(container) {
   const onlineOrdersCount = appData.orders.filter(o => !String(o.order_type || '').includes('Offline')).length;
   const offlineOrdersCount = appData.orders.filter(o => String(o.order_type || '').includes('Offline')).length;
@@ -510,7 +476,6 @@ window.renderWebOrders = function(container) {
   `;
 };
 
-/* STREAMING_CHUNK:Rendering Kitchen Display System... */
 window.renderKDS = function(container) {
   container.innerHTML = `
     <div class="space-y-6 max-w-7xl mx-auto">
@@ -536,7 +501,6 @@ window.renderKDS = function(container) {
   `;
 };
 
-/* STREAMING_CHUNK:Updating order status... */
 window.updateOrderStatus = function(orderId, status) {
   const ord = appData.orders.find(o => o.order_id === orderId);
   if (ord) { 
