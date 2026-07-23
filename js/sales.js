@@ -1,3 +1,4 @@
+/* STREAMING_CHUNK:Setting catalog filter handlers... */
 window.setCatalogSearch = function(query) {
   catalogFilter.search = query;
   window.renderViewport();
@@ -13,6 +14,7 @@ window.setCatalogSort = function(sortType) {
   window.renderViewport();
 };
 
+/* STREAMING_CHUNK:Rendering customer catalog view... */
 window.renderCustomerCatalog = function(container) {
   const isOwner = (currentRole === 'owner');
 
@@ -118,6 +120,7 @@ window.renderCustomerCatalog = function(container) {
   container.innerHTML = html;
 };
 
+/* STREAMING_CHUNK:Handling shopping cart actions... */
 window.addToCart = function(productId) {
   const prod = appData.products.find(p => p.product_id === productId);
   if (!prod) return;
@@ -130,6 +133,7 @@ window.addToCart = function(productId) {
 window.addToCartPOS = function(productId) { window.addToCart(productId); };
 window.removeFromCart = function(idx) { appData.cart.splice(idx, 1); window.renderViewport(); };
 
+/* STREAMING_CHUNK:Rendering custom cake builder... */
 window.renderCustomBuilder = function(container) {
   container.innerHTML = `
     <div class="max-w-3xl mx-auto space-y-6 bg-white/80 p-6 md:p-8 rounded-3xl border border-pinkglass-200 glass-card">
@@ -185,6 +189,7 @@ window.submitCustomCake = function() {
   window.changeTab('checkout');
 };
 
+/* STREAMING_CHUNK:Rendering checkout page with permanently locked QRIS... */
 window.renderCheckout = function(container) {
   let subtotal = appData.cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
   let html = `
@@ -246,6 +251,7 @@ window.renderCheckout = function(container) {
   container.innerHTML = html;
 };
 
+/* STREAMING_CHUNK:Processing checkout and opening WhatsApp & Proof Modal... */
 window.processCheckout = function(channel = 'Online (Web)') {
   if (appData.cart.length === 0) { window.showToast('Keranjang belanja masih kosong!'); return; }
   
@@ -287,6 +293,7 @@ window.processCheckout = function(channel = 'Online (Web)') {
   }
 };
 
+/* STREAMING_CHUNK:Rendering confirmation modal with proof upload & WhatsApp button... */
 window.openOrderConfirmationModal = function(order, cartItems) {
   let modal = document.getElementById('online-order-success-modal');
   if (!modal) {
@@ -349,6 +356,7 @@ window.closeOrderConfirmationModal = function() {
   window.changeTab('catalog');
 };
 
+/* STREAMING_CHUNK:Rendering POS kasir offline... */
 window.renderPOS = function(container) {
   let html = `
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
@@ -386,11 +394,13 @@ window.renderPOS = function(container) {
   container.innerHTML = html;
 };
 
+/* STREAMING_CHUNK:Filtering incoming order hub... */
 window.setOrderHubFilter = function(filter) {
   orderHubFilter = filter;
   window.renderViewport();
 };
 
+/* STREAMING_CHUNK:Rendering Central Order Hub for incoming web/store orders... */
 window.renderWebOrders = function(container) {
   const onlineOrdersCount = appData.orders.filter(o => !String(o.order_type || '').includes('Offline')).length;
   const offlineOrdersCount = appData.orders.filter(o => String(o.order_type || '').includes('Offline')).length;
@@ -476,31 +486,142 @@ window.renderWebOrders = function(container) {
   `;
 };
 
+/* STREAMING_CHUNK:KDS Time and Elapsed formatting helpers... */
+window.formatOrderTime = function(isoString) {
+  if (!isoString) return '-';
+  try {
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) return '-';
+    return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+  } catch (e) {
+    return '-';
+  }
+};
+
+window.getElapsedTimeFormatted = function(isoString) {
+  if (!isoString) return '00m 00s';
+  const created = new Date(isoString).getTime();
+  if (isNaN(created)) return '00m 00s';
+  const now = Date.now();
+  const diffMs = Math.max(0, now - created);
+  const totalSeconds = Math.floor(diffMs / 1000);
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  return `${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
+};
+
+/* STREAMING_CHUNK:Rendering Kitchen Display System with live timer & status colors... */
 window.renderKDS = function(container) {
-  container.innerHTML = `
+  // Clear any existing live timer interval to prevent duplicates
+  if (window.kdsIntervalId) {
+    clearInterval(window.kdsIntervalId);
+    window.kdsIntervalId = null;
+  }
+
+  let html = `
     <div class="space-y-6 max-w-7xl mx-auto">
-      <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card">
-        <h2 class="text-xl md:text-2xl font-bold text-charcoal">Kitchen Display System (KDS Queue)</h2>
-        <p class="text-xs text-pinkglass-800">Antrean pembuatan kue dapur realtime dari seluruh channel pesanan masuk.</p>
+      <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h2 class="text-xl md:text-2xl font-bold text-charcoal flex items-center gap-2">
+            <i data-lucide="chef-hat" class="w-6 h-6 text-pinkglass-600"></i>
+            <span>Kitchen Display System (KDS Queue)</span>
+          </h2>
+          <p class="text-xs text-pinkglass-800">Antrean pembuatan kue dapur realtime dari seluruh channel pesanan masuk.</p>
+        </div>
+        <div class="flex items-center space-x-2 bg-pinkglass-100 px-3.5 py-1.5 rounded-2xl border border-pinkglass-200 shadow-xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-xs font-bold text-pinkglass-900">Timer Live Running</span>
+        </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        ${appData.orders.map(o => `
-          <div class="bg-white/80 p-5 rounded-3xl border border-pinkglass-300 space-y-3 glass-card shadow-sm">
+  `;
+
+  if (appData.orders.length === 0) {
+    html += `
+      <div class="col-span-full bg-white/80 p-8 rounded-3xl border border-pinkglass-200 text-center text-pinkglass-800 text-sm glass-card">
+        Belum ada antrean pesanan di dapur.
+      </div>
+    `;
+  } else {
+    appData.orders.forEach(o => {
+      const isOffline = String(o.order_type || '').includes('Offline');
+      const formattedTime = window.formatOrderTime(o.created_at);
+      const initialElapsed = window.getElapsedTimeFormatted(o.created_at);
+
+      // Status Badge Color Logic
+      let statusBadgeClass = 'bg-sky-100 text-sky-800 border-sky-300';
+      let statusLabel = o.order_status || 'Pending';
+
+      if (o.order_status === 'Baking') {
+        statusBadgeClass = 'bg-amber-100 text-amber-800 border-amber-300 animate-pulse font-bold';
+      } else if (o.order_status === 'Ready') {
+        statusBadgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold';
+      }
+
+      html += `
+        <div class="bg-white/80 p-5 rounded-3xl border border-pinkglass-300 space-y-3 glass-card shadow-sm flex flex-col justify-between">
+          <div class="space-y-2">
             <div class="flex justify-between items-center">
               <span class="text-[10px] font-bold bg-pinkglass-100 text-pinkglass-900 px-2.5 py-1 rounded-full font-mono">${o.order_id}</span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${String(o.order_type || '').includes('Offline') ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800'}">${o.order_type}</span>
+              <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full ${isOffline ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800'}">${o.order_type}</span>
             </div>
-            <h4 class="font-bold text-charcoal text-base">${o.customer_name}</h4>
-            <p class="text-xs text-pinkglass-800 font-medium">Status Saat Ini: <strong class="text-charcoal">${o.order_status}</strong></p>
-            <button onclick="window.updateOrderStatus('${o.order_id}', 'Ready')" class="w-full bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-bold py-2.5 rounded-2xl text-xs shadow-md transition-all active:scale-95">Tandai Siap (Ready)</button>
+
+            <div>
+              <h4 class="font-bold text-charcoal text-base">${o.customer_name}</h4>
+              <p class="text-[11px] text-pinkglass-800 font-medium mt-0.5">🕒 Jam Pesan: <strong class="text-charcoal font-semibold">${formattedTime}</strong></p>
+            </div>
+
+            <div class="p-3 bg-pinkglass-50/70 rounded-2xl border border-pinkglass-200 space-y-2 mt-2">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-pinkglass-800 font-semibold">Status Dapur:</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] border ${statusBadgeClass}">
+                  ${statusLabel}
+                </span>
+              </div>
+              <div class="flex justify-between items-center text-xs pt-1.5 border-t border-pinkglass-200">
+                <span class="text-pinkglass-800 font-semibold">Durasi Pemprosesan:</span>
+                <span id="kds-timer-${o.order_id}" data-created="${o.created_at}" class="font-mono font-bold text-pinkglass-900 text-xs bg-white px-2 py-0.5 rounded-lg border border-pinkglass-200 shadow-2xs">
+                  ⏱️ ${initialElapsed}
+                </span>
+              </div>
+            </div>
           </div>
-        `).join('')}
-      </div>
-    </div>
-  `;
+
+          <div class="pt-2">
+            ${o.order_status === 'Ready' ? `
+              <div class="w-full bg-emerald-100 text-emerald-800 font-bold py-2.5 rounded-2xl text-xs text-center border border-emerald-300 flex items-center justify-center space-x-1.5 shadow-2xs">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
+                <span>Pesanan Selesai (Ready)</span>
+              </div>
+            ` : `
+              <button onclick="window.updateOrderStatus('${o.order_id}', 'Ready')" class="w-full bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-bold py-2.5 rounded-2xl text-xs shadow-md transition-all active:scale-95 flex items-center justify-center space-x-1.5">
+                <i data-lucide="check" class="w-4 h-4"></i>
+                <span>Tandai Siap (Ready)</span>
+              </button>
+            `}
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  html += `</div></div>`;
+  container.innerHTML = html;
+
+  // Start real-time interval to update dynamic running seconds timer
+  window.kdsIntervalId = setInterval(() => {
+    appData.orders.forEach(o => {
+      const el = document.getElementById(`kds-timer-${o.order_id}`);
+      if (el) {
+        const createdIso = el.getAttribute('data-created');
+        el.innerText = `⏱️ ${window.getElapsedTimeFormatted(createdIso)}`;
+      }
+    });
+  }, 1000);
 };
 
+/* STREAMING_CHUNK:Updating order status... */
 window.updateOrderStatus = function(orderId, status) {
   const ord = appData.orders.find(o => o.order_id === orderId);
   if (ord) { 
@@ -518,3 +639,19 @@ window.updateOrderStatus = function(orderId, status) {
     }
   }
 };
+```eof
+
+---
+
+### 📋 Ringkasan Perubahan pada `js/sales.js`:
+
+1. **Perbedaan Warna Status Dapur:**
+   - **`Baking` (Sedang Dimasak):** Memakai badge warna **Oranye / Amber** berkedip halus (`bg-amber-100 text-amber-800 border-amber-300 animate-pulse`).
+   - **`Ready` (Siap Disajikan):** Memakai badge warna **Hijau Emerald** tebal & jelas (`bg-emerald-100 text-emerald-800 border-emerald-300`).
+   - **`Pending`:** Memakai badge warna **Biru Sky** (`bg-sky-100 text-sky-800 border-sky-300`).
+
+2. **Informasi Jam Pesan:**
+   - Menampilkan jam waktu spesifik kapan pesanan dibuat dalam format local time WIB (misal: `🕒 Jam Pesan: 20:49:16 WIB`).
+
+3. **Live Running Timer Detik Berjalan:**
+   - Setiap kartu pesanan memiliki elemen timer real-time `⏱️ 02m 15s` yang terus bergerak bertambah detik demi detik secara otomatis tanpa memicu flicker layar.
