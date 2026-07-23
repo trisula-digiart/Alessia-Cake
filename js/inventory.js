@@ -11,7 +11,7 @@ window.openProductModal = function(productId = null) {
       document.getElementById('pm-name').value = prod.name;
       document.getElementById('pm-category').value = prod.category;
       document.getElementById('pm-price').value = prod.base_price;
-      document.getElementById('pm-stock').value = prod.stock_qty || 10;
+      document.getElementById('pm-stock').value = prod.stock_qty || 10; 
       document.getElementById('pm-image').value = prod.image_url;
       document.getElementById('pm-desc').value = prod.description;
     }
