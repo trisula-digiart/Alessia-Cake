@@ -1,3 +1,4 @@
+/* STREAMING_CHUNK:Setting catalog search and filter state handlers... */
 window.setCatalogSearch = function(query) {
   catalogFilter.search = query;
   window.renderViewport();
@@ -13,6 +14,7 @@ window.setCatalogSort = function(sortType) {
   window.renderViewport();
 };
 
+/* STREAMING_CHUNK:Rendering customer catalog with search and filters... */
 window.renderCustomerCatalog = function(container) {
   const isOwner = (currentRole === 'owner');
 
@@ -118,6 +120,7 @@ window.renderCustomerCatalog = function(container) {
   container.innerHTML = html;
 };
 
+/* STREAMING_CHUNK:Handling cart management functions... */
 window.addToCart = function(productId) {
   const prod = appData.products.find(p => p.product_id === productId);
   if (!prod) return;
@@ -127,9 +130,17 @@ window.addToCart = function(productId) {
   if (typeof window.showToast === 'function') window.showToast('Kue berhasil ditambahkan ke keranjang!');
 };
 
-window.addToCartPOS = function(productId) { window.addToCart(productId); };
-window.removeFromCart = function(idx) { appData.cart.splice(idx, 1); window.renderViewport(); };
+window.addToCartPOS = function(productId) { 
+  window.addToCart(productId); 
+  window.renderViewport();
+};
 
+window.removeFromCart = function(idx) { 
+  appData.cart.splice(idx, 1); 
+  window.renderViewport(); 
+};
+
+/* STREAMING_CHUNK:Rendering custom cake builder module... */
 window.renderCustomBuilder = function(container) {
   container.innerHTML = `
     <div class="max-w-3xl mx-auto space-y-6 bg-white/80 p-6 md:p-8 rounded-3xl border border-pinkglass-200 glass-card">
@@ -185,6 +196,7 @@ window.submitCustomCake = function() {
   window.changeTab('checkout');
 };
 
+/* STREAMING_CHUNK:Rendering web checkout page... */
 window.renderCheckout = function(container) {
   let subtotal = appData.cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
   let html = `
@@ -354,7 +366,9 @@ window.closeOrderConfirmationModal = function() {
   window.changeTab('catalog');
 };
 
+/* STREAMING_CHUNK:Rendering POS front-store module with payment modal trigger... */
 window.renderPOS = function(container) {
+  let subtotal = appData.cart.reduce((a, b) => a + (b.price * b.qty), 0);
   let html = `
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
       <div class="md:col-span-2 space-y-4">
@@ -382,20 +396,259 @@ window.renderPOS = function(container) {
       <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 space-y-4 glass-card shadow-sm h-fit">
         <h3 class="font-bold text-base text-charcoal border-b border-pinkglass-200 pb-3">Keranjang Kasir Offline</h3>
         <div class="space-y-2 max-h-48 overflow-y-auto">
-          ${appData.cart.length === 0 ? '<p class="text-xs text-pinkglass-800 text-center py-4">Belum ada item dipilih</p>' : appData.cart.map(c => `<div class="flex justify-between text-xs text-pinkglass-900 font-medium"><span>${c.name} (${c.qty})</span><span>Rp ${(c.price*c.qty).toLocaleString('id-ID')}</span></div>`).join('')}
+          ${appData.cart.length === 0 ? '<p class="text-xs text-pinkglass-800 text-center py-4">Belum ada item dipilih</p>' : appData.cart.map((c, idx) => `
+            <div class="flex justify-between items-center text-xs text-pinkglass-900 font-medium bg-pinkglass-50/60 p-2 rounded-xl border border-pinkglass-100">
+              <span class="truncate max-w-[120px] font-bold">${c.name} (${c.qty}x)</span>
+              <div class="flex items-center space-x-2">
+                <span class="font-extrabold text-charcoal">Rp ${(c.price*c.qty).toLocaleString('id-ID')}</span>
+                <button onclick="window.removeFromCart(${idx})" class="text-rose-500 hover:text-rose-700 p-0.5"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+              </div>
+            </div>
+          `).join('')}
         </div>
-        <button onclick="window.processCheckout('Offline (Kasir Toko)')" class="w-full bg-pinkglass-600 text-white font-bold py-3 rounded-2xl text-xs md:text-sm shadow-md active:scale-95">Proses Pembayaran Offline</button>
+        <div class="pt-2 border-t border-pinkglass-200 flex justify-between items-center text-sm font-extrabold text-charcoal">
+          <span>Total Belanja:</span>
+          <span class="text-pinkglass-700 text-base">Rp ${subtotal.toLocaleString('id-ID')}</span>
+        </div>
+        <button onclick="window.openPOSPaymentModal()" class="w-full bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-bold py-3.5 rounded-2xl text-xs md:text-sm shadow-md transition-all active:scale-95 flex items-center justify-center space-x-2">
+          <i data-lucide="credit-card" class="w-4 h-4"></i>
+          <span>Proses Pembayaran Offline</span>
+        </button>
       </div>
     </div>
   `;
   container.innerHTML = html;
 };
 
+/* STREAMING_CHUNK:Handling POS offline payment method modal and calculation... */
+window.posPaymentMethod = 'Tunai';
+
+window.openPOSPaymentModal = function() {
+  if (appData.cart.length === 0) {
+    if (typeof window.showToast === 'function') window.showToast('Keranjang kasir masih kosong!');
+    return;
+  }
+
+  let modal = document.getElementById('pos-payment-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'pos-payment-modal';
+    modal.className = 'fixed inset-0 z-[250] flex items-center justify-center p-4 bg-charcoal/50 backdrop-blur-md transition-all duration-300';
+    document.body.appendChild(modal);
+  }
+
+  window.posPaymentMethod = 'Tunai';
+  window.renderPOSPaymentModalContent(modal);
+};
+
+window.switchPOSPaymentTab = function(method) {
+  window.posPaymentMethod = method;
+  const modal = document.getElementById('pos-payment-modal');
+  if (modal) window.renderPOSPaymentModalContent(modal);
+};
+
+window.renderPOSPaymentModalContent = function(modal) {
+  const totalAmount = appData.cart.reduce((a, b) => a + (b.price * b.qty), 0);
+
+  let html = `
+    <div class="glass-modal w-full max-w-lg rounded-3xl p-6 md:p-8 space-y-5 shadow-2xl relative border border-pinkglass-300 bg-white/95 max-h-[92vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-pinkglass-200 pb-3">
+        <div>
+          <h3 class="text-lg font-bold text-charcoal flex items-center gap-2">
+            <span>💳 Pembayaran POS Kasir Offline</span>
+          </h3>
+          <p class="text-xs text-pinkglass-800">Pilih metode pembayaran tatap muka pelanggan.</p>
+        </div>
+        <button onclick="window.closePOSPaymentModal()" class="text-pinkglass-700 hover:text-charcoal p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Ringkasan Order & Total -->
+      <div class="bg-pinkglass-50/80 p-4 rounded-2xl border border-pinkglass-200 space-y-2">
+        <div class="text-xs font-bold text-pinkglass-900 border-b border-pinkglass-200 pb-2 flex justify-between items-center">
+          <span>Rincian Item (${appData.cart.reduce((a,b)=>a+b.qty, 0)} kue)</span>
+          <span class="text-pinkglass-700 font-mono text-[11px]">${appData.cart.map(c => c.name).join(', ')}</span>
+        </div>
+        <div class="flex justify-between items-center pt-1">
+          <span class="text-xs font-bold text-charcoal uppercase tracking-wider">Total Harus Dibayar:</span>
+          <span class="text-lg font-extrabold text-pinkglass-700 font-mono">Rp ${totalAmount.toLocaleString('id-ID')}</span>
+        </div>
+      </div>
+
+      <!-- Tab Metode Pembayaran -->
+      <div class="space-y-1.5">
+        <label class="text-xs font-bold text-pinkglass-900 block">Pilih Metode Pembayaran Kasir:</label>
+        <div class="grid grid-cols-3 gap-2">
+          <button onclick="window.switchPOSPaymentTab('Tunai')" class="py-2.5 px-3 rounded-2xl text-xs font-bold transition-all border ${window.posPaymentMethod === 'Tunai' ? 'bg-pinkglass-600 text-white border-pinkglass-600 shadow-md' : 'bg-white text-charcoal border-pinkglass-300 hover:bg-pinkglass-50'} flex flex-col items-center gap-1">
+            <i data-lucide="banknote" class="w-4 h-4"></i>
+            <span>💵 Tunai (Cash)</span>
+          </button>
+
+          <button onclick="window.switchPOSPaymentTab('QRIS')" class="py-2.5 px-3 rounded-2xl text-xs font-bold transition-all border ${window.posPaymentMethod === 'QRIS' ? 'bg-pinkglass-600 text-white border-pinkglass-600 shadow-md' : 'bg-white text-charcoal border-pinkglass-300 hover:bg-pinkglass-50'} flex flex-col items-center gap-1">
+            <i data-lucide="qr-code" class="w-4 h-4"></i>
+            <span>📱 QRIS Toko</span>
+          </button>
+
+          <button onclick="window.switchPOSPaymentTab('Bank Transfer')" class="py-2.5 px-3 rounded-2xl text-xs font-bold transition-all border ${window.posPaymentMethod === 'Bank Transfer' ? 'bg-pinkglass-600 text-white border-pinkglass-600 shadow-md' : 'bg-white text-charcoal border-pinkglass-300 hover:bg-pinkglass-50'} flex flex-col items-center gap-1">
+            <i data-lucide="building-2" class="w-4 h-4"></i>
+            <span>🏦 Bank Transfer</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- DYNAMIC PAYMENT METHOD BODY -->
+      <div id="pos-payment-body" class="space-y-3 pt-2 border-t border-pinkglass-200">
+  `;
+
+  if (window.posPaymentMethod === 'Tunai') {
+    html += `
+      <div class="space-y-3 bg-pinkglass-50/50 p-4 rounded-2xl border border-pinkglass-200">
+        <div>
+          <label class="text-xs font-bold text-pinkglass-900 block mb-1">Uang Diterima Dari Pelanggan (Rp):</label>
+          <input type="number" id="pos-cash-given" value="${totalAmount}" oninput="window.calculatePOSChange(${totalAmount})" placeholder="misal: 100000" class="w-full bg-white border border-pinkglass-300 rounded-xl p-3 text-sm text-charcoal font-bold focus:ring-2 focus:ring-pinkglass-400">
+        </div>
+
+        <!-- Quick Cash Buttons -->
+        <div class="flex flex-wrap gap-1.5">
+          <button type="button" onclick="document.getElementById('pos-cash-given').value=${totalAmount}; window.calculatePOSChange(${totalAmount});" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-white border border-pinkglass-300 text-pinkglass-800 hover:bg-pinkglass-100">Uang Pas</button>
+          <button type="button" onclick="document.getElementById('pos-cash-given').value=50000; window.calculatePOSChange(${totalAmount});" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-white border border-pinkglass-300 text-pinkglass-800 hover:bg-pinkglass-100">Rp 50.000</button>
+          <button type="button" onclick="document.getElementById('pos-cash-given').value=100000; window.calculatePOSChange(${totalAmount});" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-white border border-pinkglass-300 text-pinkglass-800 hover:bg-pinkglass-100">Rp 100.000</button>
+          <button type="button" onclick="document.getElementById('pos-cash-given').value=200000; window.calculatePOSChange(${totalAmount});" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-white border border-pinkglass-300 text-pinkglass-800 hover:bg-pinkglass-100">Rp 200.000</button>
+        </div>
+
+        <!-- Realtime Change Display -->
+        <div class="p-3 bg-white rounded-xl border border-pinkglass-200 flex justify-between items-center">
+          <span class="text-xs font-bold text-charcoal">Uang Kembalian:</span>
+          <span id="pos-cash-change" class="text-base font-extrabold text-emerald-600 font-mono">Rp 0</span>
+        </div>
+      </div>
+    `;
+  } else if (window.posPaymentMethod === 'QRIS') {
+    html += `
+      <div class="p-4 bg-pinkglass-50/80 rounded-2xl border border-pinkglass-200 text-center space-y-2">
+        <p class="text-xs font-bold text-pinkglass-900">Tunjukkan QRIS Toko Kepada Pelanggan</p>
+        <img src="${(typeof STORE_CONFIG !== 'undefined' && STORE_CONFIG.qris_image_url) ? STORE_CONFIG.qris_image_url : 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=ALESSIA-PINK-GLASS-QRIS'}" alt="QRIS Toko Alessia" class="mx-auto w-36 h-32 rounded-xl border border-pinkglass-300 bg-white p-2 shadow-sm">
+        <p class="text-[11px] text-pinkglass-800 font-medium">Dana transfer QRIS akan masuk otomatis ke kategori <strong class="text-charcoal">Rekening Bank (Bank Alessia)</strong>.</p>
+      </div>
+    `;
+  } else if (window.posPaymentMethod === 'Bank Transfer') {
+    html += `
+      <div class="p-4 bg-pinkglass-50/80 rounded-2xl border border-pinkglass-200 text-xs space-y-2 text-charcoal">
+        <div class="font-bold text-pinkglass-900 border-b border-pinkglass-200 pb-1.5 flex justify-between items-center">
+          <span>Rekening Bank Resmi Toko:</span>
+          <span class="text-emerald-700 font-bold">BCA / Mandiri</span>
+        </div>
+        <p class="text-[11px] font-mono bg-white p-2.5 rounded-xl border border-pinkglass-200 text-pinkglass-900 font-bold">
+          BCA: 8820-1234-99a/n Alessia Cake Luxury<br>
+          MANDIRI: 156-000-888-222a/n Alessia Cake
+        </p>
+        <p class="text-[10px] text-pinkglass-800 font-medium">Harap verifikasi bukti mutasi sebelum menekan tombol selesaikan pembayaran.</p>
+      </div>
+    `;
+  }
+
+  html += `
+      </div>
+
+      <button onclick="window.submitPOSOfflinePayment(${totalAmount})" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-2xl text-xs md:text-sm shadow-md transition-all active:scale-95 flex items-center justify-center space-x-2 mt-4">
+        <i data-lucide="check-circle" class="w-4 h-4"></i>
+        <span>Selesaikan Pembayaran Offline (${window.posPaymentMethod})</span>
+      </button>
+    </div>
+  `;
+
+  modal.innerHTML = html;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  
+  if (window.posPaymentMethod === 'Tunai') {
+    window.calculatePOSChange(totalAmount);
+  }
+};
+
+window.calculatePOSChange = function(totalAmount) {
+  const cashInput = document.getElementById('pos-cash-given');
+  const changeEl = document.getElementById('pos-cash-change');
+  if (!cashInput || !changeEl) return;
+
+  const cashGiven = Number(cashInput.value) || 0;
+  const change = cashGiven - totalAmount;
+
+  if (change >= 0) {
+    changeEl.innerText = `Rp ${change.toLocaleString('id-ID')}`;
+    changeEl.className = 'text-base font-extrabold text-emerald-600 font-mono';
+  } else {
+    changeEl.innerText = `Kurang Rp ${Math.abs(change).toLocaleString('id-ID')}`;
+    changeEl.className = 'text-base font-extrabold text-rose-600 font-mono';
+  }
+};
+
+window.closePOSPaymentModal = function() {
+  const modal = document.getElementById('pos-payment-modal');
+  if (modal) modal.remove();
+};
+
+window.submitPOSOfflinePayment = function(totalAmount) {
+  const method = window.posPaymentMethod || 'Tunai';
+
+  if (method === 'Tunai') {
+    const cashInput = document.getElementById('pos-cash-given');
+    const cashGiven = Number(cashInput ? cashInput.value : 0);
+    if (cashGiven < totalAmount) {
+      if (typeof window.showToast === 'function') window.showToast('Jumlah uang tunai yang diterima kurang dari total belanja!');
+      return;
+    }
+  }
+
+  const orderType = `Offline (${method})`;
+  const cartItemsCopy = [...appData.cart];
+
+  const newOrder = {
+    order_id: 'ORD-' + Math.floor(1000 + Math.random() * 9000),
+    order_type: orderType,
+    customer_name: `Pelanggan Kasir (${method})`,
+    customer_phone: '08110000111',
+    table_no: '-',
+    total_amount: totalAmount,
+    dp_amount: 0,
+    payment_status: 'PAID',
+    order_status: 'Pending',
+    reference_photo_url: '',
+    created_at: new Date().toISOString(),
+    pickup_delivery_date: new Date().toISOString().split('T')[0]
+  };
+
+  // Lock polling sync to ensure local write completes safely
+  if (typeof window.lockSync === 'function') window.lockSync(10000);
+
+  // Auto deduct raw ingredients according to BOM recipes
+  if (typeof window.autoDeductIngredients === 'function') {
+    window.autoDeductIngredients([...cartItemsCopy]);
+  }
+
+  appData.orders.unshift(newOrder);
+
+  // Sync to GAS backend
+  if (typeof window.sendOrderToGAS === 'function') {
+    window.sendOrderToGAS(newOrder, [...cartItemsCopy]);
+  }
+
+  appData.cart = [];
+  window.closePOSPaymentModal();
+  window.renderViewport();
+
+  if (typeof window.showToast === 'function') {
+    window.showToast(`Pembayaran ${orderType} sebesar Rp ${totalAmount.toLocaleString('id-ID')} berhasil! Terhitung di Bank Alessia & Omset.`);
+  }
+};
+
+/* STREAMING_CHUNK:Filtering order hub tabs... */
 window.setOrderHubFilter = function(filter) {
   orderHubFilter = filter;
   window.renderViewport();
 };
 
+/* STREAMING_CHUNK:Rendering Central Order Hub for incoming web/offline orders... */
 window.renderWebOrders = function(container) {
   const onlineOrdersCount = appData.orders.filter(o => !String(o.order_type || '').includes('Offline')).length;
   const offlineOrdersCount = appData.orders.filter(o => String(o.order_type || '').includes('Offline')).length;
@@ -453,7 +706,7 @@ window.renderWebOrders = function(container) {
                   <h4 class="font-bold text-sm md:text-base text-charcoal">${o.customer_name}</h4>
                   <span class="text-[10px] bg-pinkglass-100 text-pinkglass-900 px-2.5 py-0.5 rounded-full font-mono font-bold">${o.order_id}</span>
                   <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${isOffline ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800'}">
-                    ${isOffline ? '🏪 Offline (Toko)' : '🌐 Online (Web)'}
+                    ${o.order_type}
                   </span>
                 </div>
                 <p class="text-xs text-pinkglass-800 font-medium">
@@ -481,6 +734,7 @@ window.renderWebOrders = function(container) {
   `;
 };
 
+/* STREAMING_CHUNK:Formatting order timestamps and KDS duration timers... */
 window.formatOrderTime = function(isoString) {
   if (!isoString) return '-';
   try {
@@ -510,6 +764,7 @@ window.getElapsedTimeFormatted = function(createdIso, readyIso = null, status = 
   return `${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
 };
 
+/* STREAMING_CHUNK:Rendering Kitchen Display System queue... */
 window.renderKDS = function(container) {
   if (window.kdsIntervalId) {
     clearInterval(window.kdsIntervalId);
@@ -594,7 +849,7 @@ window.renderKDS = function(container) {
             ` : `
               <button onclick="window.updateOrderStatus('${o.order_id}', 'Ready')" class="w-full bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-bold py-2.5 rounded-2xl text-xs shadow-md transition-all active:scale-95 flex items-center justify-center space-x-1.5">
                 <i data-lucide="check" class="w-4 h-4"></i>
-                <span>Tandai Jika  Kue Siap (Ready)</span>
+                <span>Tandai Siap (Ready)</span>
               </button>
             `}
           </div>
@@ -619,6 +874,7 @@ window.renderKDS = function(container) {
   }, 1000);
 };
 
+/* STREAMING_CHUNK:Updating order status... */
 window.updateOrderStatus = function(orderId, status) {
   const ord = appData.orders.find(o => o.order_id === orderId);
   if (ord) { 
