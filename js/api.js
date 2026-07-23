@@ -8,9 +8,25 @@ window.showToast = function(msg) {
 
 window.setGasApiUrl = function(url) {
   GAS_API_URL = url;
-  localStorage.setItem('ALESSIA_GAS_URL', url); 
+  localStorage.setItem('ALESSIA_GAS_URL', url);
   window.showToast('URL Backend GAS berhasil disimpan!');
   window.fetchInitialDataFromGAS();
+};
+
+window.isSyncLocked = false;
+window.syncLockTimer = null;
+
+window.lockSync = function(durationMs = 10000) {
+  window.isSyncLocked = true;
+  if (window.syncLockTimer) clearTimeout(window.syncLockTimer);
+  window.syncLockTimer = setTimeout(() => {
+    window.isSyncLocked = false;
+  }, durationMs);
+};
+
+window.unlockSync = function() {
+  window.isSyncLocked = false;
+  if (window.syncLockTimer) clearTimeout(window.syncLockTimer);
 };
 
 window.fetchInitialDataFromGAS = async function() {
@@ -22,6 +38,7 @@ window.fetchInitialDataFromGAS = async function() {
     const result = await res.json();
     if (result.success && result.data) {
       let shouldRender = false;
+      
       if (result.data.products && result.data.products.length > 0) {
         appData.products = result.data.products;
         shouldRender = true;
@@ -34,10 +51,18 @@ window.fetchInitialDataFromGAS = async function() {
         appData.orders = result.data.orders;
         shouldRender = true;
       }
-      if (result.data.recipes && result.data.recipes.length > 0) {
+      
+      // Protect recipes from being overwritten by stale polling data if a write is locked
+      if (!window.isSyncLocked && result.data.recipes) {
         appData.recipes = result.data.recipes;
         shouldRender = true;
       }
+
+      if (result.data.expenses && result.data.expenses.length > 0) {
+        appData.expenses = result.data.expenses;
+        shouldRender = true;
+      }
+
       if (shouldRender) {
         window.renderViewport();
       }
@@ -74,7 +99,7 @@ window.sendOrderToGAS = async function(newOrder, cartItems) {
       body: JSON.stringify(payload)
     });
 
-    // Panggil sync ulang agar data terverifikasi
+    // Sync refresh after short delay
     setTimeout(() => {
       window.fetchInitialDataFromGAS();
     }, 1000);
@@ -83,7 +108,6 @@ window.sendOrderToGAS = async function(newOrder, cartItems) {
   }
 };
 
-// Fitur Auto-Polling Realtime Sync: Cek data baru dari Google Sheets setiap 8 detik
 if (!window.gasSyncInterval) {
   window.gasSyncInterval = setInterval(() => {
     window.fetchInitialDataFromGAS();
