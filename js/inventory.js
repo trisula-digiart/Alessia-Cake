@@ -425,7 +425,21 @@ window.renderUpdateStock = function(container) {
   container.innerHTML = html;
 };
 
+window.updateBekasiClock = function() {
+  const clockEl = document.getElementById('bekasi-realtime-clock');
+  if (!clockEl) return;
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta' });
+  const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Asia/Jakarta' });
+  clockEl.innerText = `📍 Kab. Bekasi: ${dateStr} • ${timeStr} WIB`;
+};
+
 window.renderDashboard = function(container) {
+  if (window.dashboardClockInterval) {
+    clearInterval(window.dashboardClockInterval);
+    window.dashboardClockInterval = null;
+  }
+
   const totalOmset = appData.orders.reduce((acc, o) => acc + (Number(o.total_amount) || 0), 0);
   const lowStockCount = appData.ingredients.filter(i => i.current_stock <= i.min_stock_alert).length;
   const activeOrdersCount = appData.orders.filter(o => o.order_status !== 'Ready' && o.order_status !== 'Completed').length;
@@ -442,9 +456,14 @@ window.renderDashboard = function(container) {
           </h2>
           <p class="text-xs md:text-sm text-pinkglass-800">Ringkasan performa finansial, tren penjualan, dan pemantauan ketersediaan stok dapur.</p>
         </div>
-        <div class="flex items-center space-x-2 bg-pinkglass-100 px-4 py-2 rounded-2xl border border-pinkglass-300">
-          <i data-lucide="calendar" class="w-4 h-4 text-pinkglass-700"></i>
-          <span class="text-xs font-bold text-charcoal">Periode: Realtime Hari Ini</span>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <!-- Widget Jam Realtime Kab. Bekasi (WIB) -->
+          <div class="flex items-center space-x-2 bg-pinkglass-100 px-4 py-2 rounded-2xl border border-pinkglass-300 shadow-2xs">
+            <i data-lucide="clock" class="w-4 h-4 text-pinkglass-700 animate-pulse"></i>
+            <span id="bekasi-realtime-clock" class="text-xs font-extrabold text-charcoal font-mono">
+              📍 Kab. Bekasi: Mengabaikan waktu...
+            </span>
+          </div>
         </div>
       </div>
 
@@ -582,6 +601,10 @@ window.renderDashboard = function(container) {
       </div>
     </div>
   `;
+
+  // Start live clock interval for Kab. Bekasi WIB
+  window.updateBekasiClock();
+  window.dashboardClockInterval = setInterval(window.updateBekasiClock, 1000);
 };
 
 window.renderAudit = function(container) { 
