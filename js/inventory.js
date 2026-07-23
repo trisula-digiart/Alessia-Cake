@@ -1,3 +1,4 @@
+/* STREAMING_CHUNK:Opening product modal... */
 window.openProductModal = function(productId = null) {
   const modal = document.getElementById('product-modal');
   const title = document.getElementById('product-modal-title');
@@ -29,11 +30,13 @@ window.openProductModal = function(productId = null) {
   modal.classList.remove('hidden');
 };
 
+/* STREAMING_CHUNK:Closing product modal... */
 window.closeProductModal = function() {
   const modal = document.getElementById('product-modal');
   if (modal) modal.classList.add('hidden');
 };
 
+/* STREAMING_CHUNK:Saving product modal form data... */
 window.saveProductFromModal = function() {
   const pid = document.getElementById('pm-product-id').value;
   const name = document.getElementById('pm-name').value.trim();
@@ -81,6 +84,7 @@ window.saveProductFromModal = function() {
   }
 };
 
+/* STREAMING_CHUNK:Opening ingredient modal... */
 window.openIngredientModal = function(ingId = null) {
   const modal = document.getElementById('ingredient-modal');
   const title = document.getElementById('ingredient-modal-title');
@@ -110,11 +114,13 @@ window.openIngredientModal = function(ingId = null) {
   modal.classList.remove('hidden');
 };
 
+/* STREAMING_CHUNK:Closing ingredient modal... */
 window.closeIngredientModal = function() {
   const modal = document.getElementById('ingredient-modal');
   if (modal) modal.classList.add('hidden');
 };
 
+/* STREAMING_CHUNK:Saving ingredient modal form data... */
 window.saveIngredientFromModal = function() {
   const ingId = document.getElementById('im-ingredient-id').value;
   const name = document.getElementById('im-name').value.trim();
@@ -158,6 +164,7 @@ window.saveIngredientFromModal = function() {
   }
 };
 
+/* STREAMING_CHUNK:Deleting ingredient... */
 window.deleteIngredient = function(ingId) {
   if (confirm('Apakah kamu yakin ingin menghapus bahan baku ini?')) {
     appData.ingredients = appData.ingredients.filter(i => i.ingredient_id !== ingId);
@@ -166,6 +173,7 @@ window.deleteIngredient = function(ingId) {
   }
 };
 
+/* STREAMING_CHUNK:Rendering BOM recipe viewer and HPP calculator... */
 window.renderBOMViewer = function(container) {
   const selectedProduct = appData.products.find(p => p.product_id === activeBomProductId) || appData.products[0];
   if (!selectedProduct) return;
@@ -301,6 +309,7 @@ window.selectBomProduct = function(productId) {
   window.renderViewport();
 };
 
+/* STREAMING_CHUNK:Adding ingredient to recipe with GAS backend persistence... */
 window.addIngredientToRecipe = function() {
   const ingSelect = document.getElementById('bom-add-ing-id');
   const qtyInput = document.getElementById('bom-add-qty');
@@ -328,14 +337,35 @@ window.addIngredientToRecipe = function() {
 
   window.renderViewport();
   if (typeof window.showToast === 'function') window.showToast('Komposisi resep berhasil diperbarui!');
+
+  // Save changes to GAS backend
+  const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
+  if (savedUrl && !savedUrl.includes('PASTE_YOUR')) {
+    fetch(savedUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'saveRecipeBOM', recipe: recipe, user_role: currentRole })
+    }).catch(e => console.error('Save Recipe BOM Error:', e));
+  }
 };
 
+/* STREAMING_CHUNK:Removing recipe item with GAS backend sync... */
 window.removeRecipeItem = function(productId, index) {
   const recipe = appData.recipes.find(r => r.product_id === productId);
   if (recipe && recipe.items[index]) {
     recipe.items.splice(index, 1);
     window.renderViewport();
     if (typeof window.showToast === 'function') window.showToast('Bahan berhasil dihapus dari resep!');
+
+    // Sync removal to GAS backend
+    const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
+    if (savedUrl && !savedUrl.includes('PASTE_YOUR')) {
+      fetch(savedUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'saveRecipeBOM', recipe: recipe, user_role: currentRole })
+      }).catch(e => console.error('Save Recipe BOM Error:', e));
+    }
   }
 };
 
@@ -360,6 +390,7 @@ window.autoDeductIngredients = function(cartItems) {
   }
 };
 
+/* STREAMING_CHUNK:Rendering ingredient stock management view... */
 window.renderUpdateStock = function(container) {
   let html = `
     <div class="space-y-6 max-w-7xl mx-auto">
@@ -434,6 +465,7 @@ window.updateBekasiClock = function() {
   clockEl.innerText = `📍 Kab. Bekasi: ${dateStr} • ${timeStr} WIB`;
 };
 
+/* STREAMING_CHUNK:Rendering analytical dashboard view... */
 window.renderDashboard = function(container) {
   if (window.dashboardClockInterval) {
     clearInterval(window.dashboardClockInterval);
@@ -607,6 +639,7 @@ window.renderDashboard = function(container) {
   window.dashboardClockInterval = setInterval(window.updateBekasiClock, 1000);
 };
 
+/* STREAMING_CHUNK:Rendering system audit logs view... */
 window.renderAudit = function(container) { 
   container.innerHTML = `<div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 text-charcoal glass-card font-semibold">Audit Logs Sistem & Riwayat Keamanan (Ready)</div>`; 
 };
