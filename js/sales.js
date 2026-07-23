@@ -3,7 +3,6 @@
  * TRISULACODER v9.6 Enterprise Engine
  * ========================================================== */
 
-/* STREAMING_CHUNK:Setting catalog search and filter state handlers... */
 window.setCatalogSearch = function(query) {
   catalogFilter.search = query;
   window.renderViewport();
@@ -19,7 +18,6 @@ window.setCatalogSort = function(sortType) {
   window.renderViewport();
 };
 
-/* STREAMING_CHUNK:Rendering customer catalog with search and filters... */
 window.renderCustomerCatalog = function(container) {
   const isOwner = (currentRole === 'owner');
 
@@ -125,7 +123,6 @@ window.renderCustomerCatalog = function(container) {
   container.innerHTML = html;
 };
 
-/* STREAMING_CHUNK:Handling cart management functions... */
 window.addToCart = function(productId) {
   const prod = appData.products.find(p => p.product_id === productId);
   if (!prod) return;
@@ -145,7 +142,6 @@ window.removeFromCart = function(idx) {
   window.renderViewport(); 
 };
 
-/* STREAMING_CHUNK:Rendering custom cake builder module... */
 window.renderCustomBuilder = function(container) {
   container.innerHTML = `
     <div class="max-w-3xl mx-auto space-y-6 bg-white/80 p-6 md:p-8 rounded-3xl border border-pinkglass-200 glass-card">
@@ -201,7 +197,6 @@ window.submitCustomCake = function() {
   window.changeTab('checkout');
 };
 
-/* STREAMING_CHUNK:Rendering web checkout page with COD and Online Payment Methods... */
 window.renderCheckout = function(container) {
   let subtotal = appData.cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
   let html = `
@@ -387,7 +382,6 @@ window.closeOrderConfirmationModal = function() {
   window.changeTab('catalog');
 };
 
-/* STREAMING_CHUNK:Rendering POS front-store module with payment modal trigger... */
 window.renderPOS = function(container) {
   let subtotal = appData.cart.reduce((a, b) => a + (b.price * b.qty), 0);
   let html = `
@@ -441,7 +435,6 @@ window.renderPOS = function(container) {
   container.innerHTML = html;
 };
 
-/* STREAMING_CHUNK:Handling POS offline payment method modal and calculation... */
 window.posPaymentMethod = 'Tunai';
 
 window.openPOSPaymentModal = function() {
@@ -561,8 +554,8 @@ window.renderPOSPaymentModalContent = function(modal) {
           <span class="text-emerald-700 font-bold">BCA / Mandiri</span>
         </div>
         <p class="text-[11px] font-mono bg-white p-2.5 rounded-xl border border-pinkglass-200 text-pinkglass-900 font-bold">
-          BCA: 8820-1234-99a/n Alessia Cake Luxury<br>
-          MANDIRI: 156-000-888-222a/n Alessia Cake
+          BCA: 8820-1234-99 a/n Alessia Cake Luxury<br>
+          MANDIRI: 156-000-888-222 a/n Alessia Cake
         </p>
         <p class="text-[10px] text-pinkglass-800 font-medium">Harap verifikasi bukti mutasi sebelum menekan tombol selesaikan pembayaran.</p>
       </div>
@@ -656,18 +649,21 @@ window.submitPOSOfflinePayment = function(totalAmount) {
   window.closePOSPaymentModal();
   window.renderViewport();
 
+  // AUTOMATIC THERMAL PRINTER RECEIPT TRIGGER
+  if (typeof window.printThermalReceipt === 'function') {
+    window.printThermalReceipt(newOrder);
+  }
+
   if (typeof window.showToast === 'function') {
-    window.showToast(`Pembayaran ${orderType} sebesar Rp ${totalAmount.toLocaleString('id-ID')} berhasil! Terhitung di Bank Alessia & Omset.`);
+    window.showToast(`Pembayaran ${orderType} sebesar Rp ${totalAmount.toLocaleString('id-ID')} berhasil! Struk dicetak.`);
   }
 };
 
-/* STREAMING_CHUNK:Filtering order hub tabs... */
 window.setOrderHubFilter = function(filter) {
   orderHubFilter = filter;
   window.renderViewport();
 };
 
-/* STREAMING_CHUNK:Rendering Central Order Hub for incoming web/offline orders with Cancel/Delete Order actions... */
 window.renderWebOrders = function(container) {
   const activeOrders = appData.orders.filter(o => o.order_status !== 'Cancelled');
   const onlineOrdersCount = activeOrders.filter(o => !String(o.order_type || '').includes('Offline')).length;
@@ -740,7 +736,7 @@ window.renderWebOrders = function(container) {
                     <i data-lucide="chef-hat" class="w-4 h-4"></i>
                     <span>Terima & Masak (Ke KDS)</span>
                   </button>
-                  <button onclick="window.cancelOrder('${o.order_id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95 flex items-center space-x-1.5" title="Hapus order fake & restore stok bahan">
+                  <button onclick="window.cancelOrder('${o.order_id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95 flex items-center space-x-1.5" title="Hapus order & restore stok bahan">
                     <i data-lucide="trash-2" class="w-4 h-4"></i>
                     <span>❌ Hapus Order</span>
                   </button>
@@ -762,7 +758,6 @@ window.renderWebOrders = function(container) {
   `;
 };
 
-/* STREAMING_CHUNK:Formatting order timestamps and KDS duration timers... */
 window.formatOrderTime = function(isoString) {
   if (!isoString) return '-';
   try {
@@ -792,7 +787,6 @@ window.getElapsedTimeFormatted = function(createdIso, readyIso = null, status = 
   return `${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
 };
 
-/* STREAMING_CHUNK:Rendering Kitchen Display System queue with cancel order action... */
 window.renderKDS = function(container) {
   if (window.kdsIntervalId) {
     clearInterval(window.kdsIntervalId);
@@ -909,7 +903,6 @@ window.renderKDS = function(container) {
   }, 1000);
 };
 
-/* STREAMING_CHUNK:Updating order status... */
 window.updateOrderStatus = function(orderId, status) {
   const ord = appData.orders.find(o => o.order_id === orderId);
   if (ord) { 
@@ -931,7 +924,6 @@ window.updateOrderStatus = function(orderId, status) {
   }
 };
 
-/* STREAMING_CHUNK:Cancelling / Deleting order with automatic stock restoration... */
 window.cancelOrder = function(orderId) {
   if (!confirm(`Apakah Anda yakin ingin membatalkan/menghapus pesanan ${orderId}? Stok bahan baku akan dikembalikan otomatis.`)) return;
 
@@ -940,7 +932,7 @@ window.cancelOrder = function(orderId) {
 
   const ord = appData.orders[ordIndex];
 
-  // Lock polling sync
+  // Lock polling sync to protect local restoration
   if (typeof window.lockSync === 'function') window.lockSync(10000);
 
   // Restore ingredient stocks from BOM recipes
@@ -964,7 +956,7 @@ window.cancelOrder = function(orderId) {
   window.renderViewport();
   if (typeof window.showToast === 'function') window.showToast(`Pesanan ${orderId} berhasil dibatalkan & stok bahan baku dikembalikan!`);
 
-  // Sync cancellation & restored ingredients to GAS
+  // Sync cancellation & restored ingredients to GAS backend
   const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
   if (savedUrl && !savedUrl.includes('PASTE_YOUR')) {
     fetch(savedUrl, {
