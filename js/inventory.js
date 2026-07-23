@@ -1,4 +1,8 @@
-/* STREAMING_CHUNK:Opening product modal... */
+/* ==========================================================
+ * ALESSIA CAKE - INVENTORY, BOM & ANALYTICS DASHBOARD MANAGER
+ * TRISULACODER v9.6 Enterprise Engine
+ * ========================================================== */
+
 window.openProductModal = function(productId = null) {
   const modal = document.getElementById('product-modal');
   const title = document.getElementById('product-modal-title');
@@ -181,7 +185,6 @@ window.deleteIngredient = function(ingId) {
   }
 };
 
-/* STREAMING_CHUNK:Rendering BOM Viewer... */
 window.renderBOMViewer = function(container) {
   if (!appData.products || appData.products.length === 0) return;
 
@@ -471,16 +474,7 @@ window.renderUpdateStock = function(container) {
   container.innerHTML = html;
 };
 
-window.updateBekasiClock = function() {
-  const clockEl = document.getElementById('bekasi-realtime-clock');
-  if (!clockEl) return;
-  const now = new Date();
-  const dateStr = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta' });
-  const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Asia/Jakarta' });
-  clockEl.innerText = `📍 Kab. Bekasi: ${dateStr} • ${timeStr} WIB`;
-};
-
-/* STREAMING_CHUNK:Rendering analytical dashboard excluding Pending/Cancelled orders from Omset... */
+/* STREAMING_CHUNK:Rendering analytical dashboard cleanly without double clock widget... */
 window.renderDashboard = function(container) {
   if (window.dashboardClockInterval) {
     clearInterval(window.dashboardClockInterval);
@@ -504,15 +498,6 @@ window.renderDashboard = function(container) {
             <span>👑 Dashboard Analitik Owner</span>
           </h2>
           <p class="text-xs md:text-sm text-pinkglass-800">Ringkasan performa finansial, tren penjualan, dan pemantauan ketersediaan stok dapur.</p>
-        </div>
-        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-          <!-- Widget Jam Realtime Kab. Bekasi (WIB) -->
-          <div class="flex items-center space-x-2 bg-pinkglass-100 px-4 py-2 rounded-2xl border border-pinkglass-300 shadow-2xs">
-            <i data-lucide="clock" class="w-4 h-4 text-pinkglass-700 animate-pulse"></i>
-            <span id="bekasi-realtime-clock" class="text-xs font-extrabold text-charcoal font-mono">
-              📍 Kab. Bekasi: Mengabaikan waktu...
-            </span>
-          </div>
         </div>
       </div>
 
@@ -650,9 +635,6 @@ window.renderDashboard = function(container) {
       </div>
     </div>
   `;
-
-  window.updateBekasiClock();
-  window.dashboardClockInterval = setInterval(window.updateBekasiClock, 1000);
 };
 
 window.renderAudit = function(container) { 
