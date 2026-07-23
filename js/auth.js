@@ -159,7 +159,6 @@ window.renderViewport = function() {
     if (currentTab === 'catalog') window.renderCustomerCatalog(vp);
     else if (currentTab === 'custom_builder') window.renderCustomBuilder(vp);
     else if (currentTab === 'checkout') window.renderCheckout(vp);
-    else if (currentTab === 'tracker') window.renderTracker(vp);
   } else {
     if (currentTab === 'dashboard') window.renderDashboard(vp);
     else if (currentTab === 'offline_orders') window.renderPOS(vp);
