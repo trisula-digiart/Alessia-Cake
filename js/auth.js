@@ -3,9 +3,19 @@
  * TRISULACODER v9.6 Enterprise Engine
  * ========================================================== */
 
+// Inactivity Timer State (10 Menit Khusus Customer)
+window.customerInactivityTimer = null;
+const CUSTOMER_TIMEOUT_MS = 10 * 60 * 1000; // 10 Menit = 600.000 ms
+
 window.openAuthModal = function() {
   const modal = document.getElementById('auth-gatekeeper-modal');
   if (modal) modal.classList.remove('hidden');
+
+  // Kosongkan kolom input login pelanggan untuk device baru / login ulang
+  const nameEl = document.getElementById('login-cust-name');
+  const phoneEl = document.getElementById('login-cust-phone');
+  if (nameEl && !currentUser.isLoggedIn) nameEl.value = '';
+  if (phoneEl && !currentUser.isLoggedIn) phoneEl.value = '';
 };
 
 window.closeAuthModal = function() {
@@ -101,6 +111,12 @@ window.updateUserProfileDisplay = function() {
 };
 
 window.logoutUser = function() {
+  // Hentikan timer inaktivitas jika ada
+  if (window.customerInactivityTimer) {
+    clearTimeout(window.customerInactivityTimer);
+    window.customerInactivityTimer = null;
+  }
+
   localStorage.removeItem('ALESSIA_USER');
   currentUser = {
     name: '',
@@ -122,13 +138,61 @@ window.switchRole = function(role) {
 
   window.renderNavigation();
   window.renderViewport();
+
+  // Reset/Start timer inaktivitas khusus role customer
+  window.resetCustomerInactivityTimer();
 };
 
 window.changeTab = function(tabId) {
   currentTab = tabId;
   window.renderNavigation();
   window.renderViewport();
+
+  // Reset timer aktivitas ketika berpindah tab
+  window.resetCustomerInactivityTimer();
 };
+
+/* ==========================================================
+ * AUTO-LOGOUT DETECTOR KHUSUS CUSTOMER (10 MENIT)
+ * ========================================================== */
+window.resetCustomerInactivityTimer = function() {
+  // Batalkan timer lama
+  if (window.customerInactivityTimer) {
+    clearTimeout(window.customerInactivityTimer);
+    window.customerInactivityTimer = null;
+  }
+
+  // Timer HANYA berjalan jika role adalah customer dan user sedang ter-login
+  if (currentRole !== 'customer' || !currentUser.isLoggedIn) {
+    return;
+  }
+
+  // Pasang timer baru untuk 10 menit
+  window.customerInactivityTimer = setTimeout(() => {
+    if (currentRole === 'customer' && currentUser.isLoggedIn) {
+      if (typeof window.showToast === 'function') {
+        window.showToast('Sesi kamu telah berakhir karena 10 menit tidak ada aktivitas.');
+      }
+      window.logoutUser();
+    }
+  }, CUSTOMER_TIMEOUT_MS);
+};
+
+// Event Listeners untuk mendeteksi segenap aktivitas pengguna
+window.initCustomerInactivityDetector = function() {
+  const activityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'];
+  
+  activityEvents.forEach(eventType => {
+    window.addEventListener(eventType, () => {
+      if (currentRole === 'customer' && currentUser.isLoggedIn) {
+        window.resetCustomerInactivityTimer();
+      }
+    }, { passive: true });
+  });
+};
+
+// Inisialisasi Detektor Aktivitas
+window.initCustomerInactivityDetector();
 
 window.renderNavigation = function() {
   const sidebar = document.getElementById('sidebar-nav');
