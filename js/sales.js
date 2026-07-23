@@ -1,3 +1,8 @@
+/* ==========================================================
+ * ALESSIA CAKE - SALES, CATALOG, POS & ORDERS HUB MANAGER (JS)
+ * TRISULACODER v9.6 Enterprise Engine
+ * ========================================================== */
+
 /* STREAMING_CHUNK:Setting catalog search and filter state handlers... */
 window.setCatalogSearch = function(query) {
   catalogFilter.search = query;
@@ -328,13 +333,15 @@ window.openOrderConfirmationModal = function(order, cartItems) {
   }
 
   const itemsList = cartItems.map(i => `• ${i.name} (${i.qty}x) = Rp ${(i.price * i.qty).toLocaleString('id-ID')}`).join('\n');
+  
+  // DYNAMIC WHATSAPP TARGET PHONE FROM STORE_CONFIG
   const storePhone = (typeof STORE_CONFIG !== 'undefined' && STORE_CONFIG.phone) ? STORE_CONFIG.phone : '6281298406844';
 
   const rawWaMessage = `Halo Admin Alessia Cake,%0A%0ASaya sudah melakukan pesanan via Web dengan rincian:%0A- *ID Pesanan:* ${order.order_id}%0A- *Nama:* ${order.customer_name}%0A- *No WA:* ${order.customer_phone}%0A- *Metode:* ${order.order_type}%0A- *Total Bayar:* Rp ${Number(order.total_amount).toLocaleString('id-ID')}%0A%0A*Rincian Pesanan:*%0A${encodeURIComponent(itemsList)}%0A%0AMohon konfirmasi dan proses pesanan saya. Terima kasih!`;
   const waUrl = `https://wa.me/${storePhone}?text=${rawWaMessage}`;
 
   modal.innerHTML = `
-    <div class="glass-modal w-full max-w-lg rounded-3xl p-6 md:p-8 space-y-5 shadow-2xl relative animate-fade-in border border-pinkglass-300 bg-white/95">
+    <div class="glass-modal w-full max-w-lg rounded-3xl p-6 md:p-8 space-y-5 shadow-2xl relative border border-pinkglass-300 bg-white/95">
       <div class="text-center space-y-2">
         <div class="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-2xl font-bold border border-emerald-300 shadow-sm">
           ✓
@@ -360,7 +367,7 @@ window.openOrderConfirmationModal = function(order, cartItems) {
       <div class="space-y-2 pt-2">
         <a href="${waUrl}" target="_blank" onclick="window.closeOrderConfirmationModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-2xl text-xs md:text-sm shadow-md transition-all active:scale-95 flex items-center justify-center space-x-2 text-center">
           <i data-lucide="message-square" class="w-4 h-4"></i>
-          <span>📲 Beritahu ke Toko via Chat WhatsApp</span>
+          <span>📲 Beritahu ke Toko via Chat WhatsApp (${storePhone})</span>
         </a>
 
         <button onclick="window.closeOrderConfirmationModal()" class="w-full bg-pinkglass-100 hover:bg-pinkglass-200 text-pinkglass-900 font-bold py-3 rounded-2xl text-xs transition-all border border-pinkglass-200">
