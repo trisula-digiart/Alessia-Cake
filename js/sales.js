@@ -1,0 +1,395 @@
+window.setCatalogSearch = function(query) {
+  catalogFilter.search = query;
+  window.renderViewport();
+};
+
+window.setCatalogCategory = function(category) {
+  catalogFilter.category = category;
+  window.renderViewport();
+};
+
+window.setCatalogSort = function(sortType) {
+  catalogFilter.sort = sortType;
+  window.renderViewport();
+};
+
+
+window.renderCustomerCatalog = function(container) {
+  const isOwner = (currentRole === 'owner');
+
+  let html = `
+    <div class="space-y-6 max-w-7xl mx-auto">
+      <div class="flex flex-col gap-4 bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h2 class="text-xl md:text-2xl font-bold text-charcoal">Koleksi Kue Pink Glass Alessia</h2>
+            <p class="text-xs md:text-sm text-pinkglass-800">Pilih kreasi kue artisan bertema merah muda termewah hari ini.</p>
+          </div>
+          ${isOwner ? `
+            <button onclick="window.openProductModal()" class="bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-bold px-4 py-2.5 rounded-2xl text-xs transition-all flex items-center space-x-2 shadow-md active:scale-95">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+              <span>+ Tambah Produk Baru</span>
+            </button>
+          ` : ''}
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-pinkglass-100">
+          <div>
+            <input type="text" value="${catalogFilter.search}" placeholder="Cari menu kue..." oninput="window.setCatalogSearch(this.value)" class="w-full bg-white/90 border border-pinkglass-300 rounded-2xl px-4 py-2.5 text-xs md:text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
+          </div>
+          <div>
+            <select onchange="window.setCatalogCategory(this.value)" class="w-full bg-white/90 border border-pinkglass-300 rounded-2xl px-3 py-2.5 text-xs md:text-sm text-charcoal font-medium focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
+              <option value="all" ${catalogFilter.category === 'all' ? 'selected' : ''}>Semua Kategori</option>
+              <option value="Whole Cake" ${catalogFilter.category === 'Whole Cake' ? 'selected' : ''}>Whole Cake</option>
+              <option value="Slice" ${catalogFilter.category === 'Slice' ? 'selected' : ''}>Slice Cake</option>
+              <option value="Pastry" ${catalogFilter.category === 'Pastry' ? 'selected' : ''}>Pastry</option>
+              <option value="Cookies" ${catalogFilter.category === 'Cookies' ? 'selected' : ''}>Cookies</option>
+              <option value="Drink" ${catalogFilter.category === 'Drink' ? 'selected' : ''}>Drink</option>
+            </select>
+          </div>
+          <div>
+            <select onchange="window.setCatalogSort(this.value)" class="w-full bg-white/90 border border-pinkglass-300 rounded-2xl px-3 py-2.5 text-xs md:text-sm text-charcoal font-medium focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
+              <option value="default" ${catalogFilter.sort === 'default' ? 'selected' : ''}>Urutkan: Default</option>
+              <option value="price_asc" ${catalogFilter.sort === 'price_asc' ? 'selected' : ''}>Harga: Termurah → Termahal</option>
+              <option value="price_desc" ${catalogFilter.sort === 'price_desc' ? 'selected' : ''}>Harga: Termahal → Termurah</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+  `;
+
+  let displayProducts = appData.products.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(catalogFilter.search.toLowerCase()) || 
+                          p.category.toLowerCase().includes(catalogFilter.search.toLowerCase());
+    const matchesCategory = catalogFilter.category === 'all' || p.category === catalogFilter.category;
+    return matchesSearch && matchesCategory;
+  });
+
+  if (catalogFilter.sort === 'price_asc') {
+    displayProducts.sort((a, b) => Number(a.base_price) - Number(b.base_price));
+  } else if (catalogFilter.sort === 'price_desc') {
+    displayProducts.sort((a, b) => Number(b.base_price) - Number(a.base_price));
+  }
+
+  if (displayProducts.length === 0) {
+    html += `
+      <div class="col-span-full bg-white/80 p-8 rounded-3xl border border-pinkglass-200 text-center text-pinkglass-800 text-sm glass-card">
+        Tidak ada produk yang sesuai dengan filter atau pencarian.
+      </div>
+    `;
+  } else {
+    displayProducts.forEach(p => {
+      html += `
+        <div class="bg-white/80 rounded-3xl border border-pinkglass-200 overflow-hidden flex flex-col justify-between glass-card hover:border-pinkglass-400 transition-all shadow-sm">
+          <div>
+            <div class="relative h-44 md:h-48 overflow-hidden bg-pinkglass-100">
+              <img src="${p.image_url}" alt="${p.name}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" onerror="this.src='https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=600'">
+              <span class="absolute top-3 left-3 text-[10px] bg-white/90 backdrop-blur-sm text-pinkglass-900 px-3 py-1 rounded-full font-bold shadow-sm">${p.category}</span>
+            </div>
+            <div class="p-4 md:p-5 space-y-1.5">
+              <h3 class="font-bold text-sm md:text-base text-charcoal truncate">${p.name}</h3>
+              <p class="text-[11px] md:text-xs text-pinkglass-800 line-clamp-2">${p.description}</p>
+            </div>
+          </div>
+          <div class="p-4 md:p-5 pt-0 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] text-pinkglass-700 uppercase tracking-wider font-semibold">Harga</span>
+              <p class="font-bold text-charcoal text-sm md:text-base">Rp ${Number(p.base_price).toLocaleString('id-ID')}</p>
+            </div>
+            ${isOwner ? `
+              <button onclick="window.openProductModal('${p.product_id}')" class="bg-charcoal hover:bg-black text-white font-semibold px-4 py-2.5 rounded-2xl text-xs transition-all flex items-center space-x-1.5 shadow-md active:scale-95">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                <span>Edit Produk</span>
+              </button>
+            ` : `
+              <button onclick="window.addToCart('${p.product_id}')" class="bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-semibold px-4 py-2.5 rounded-2xl text-xs transition-all flex items-center space-x-1.5 shadow-md active:scale-95">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                <span>Tambah</span>
+              </button>
+            `}
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  html += `</div></div>`;
+  container.innerHTML = html;
+};
+
+
+window.addToCart = function(productId) {
+  const prod = appData.products.find(p => p.product_id === productId);
+  if (!prod) return;
+  const exist = appData.cart.find(c => c.product_id === productId);
+  if (exist) { exist.qty++; }
+  else { appData.cart.push({ product_id: prod.product_id, name: prod.name, price: prod.base_price, qty: 1 }); }
+  window.showToast('Kue berhasil ditambahkan ke keranjang!');
+};
+
+window.addToCartPOS = function(productId) { window.addToCart(productId); };
+window.removeFromCart = function(idx) { appData.cart.splice(idx, 1); window.renderViewport(); };
+
+window.renderCustomBuilder = function(container) {
+  container.innerHTML = `
+    <div class="max-w-3xl mx-auto space-y-6 bg-white/80 p-6 md:p-8 rounded-3xl border border-pinkglass-200 glass-card">
+      <div>
+        <h2 class="text-xl md:text-2xl font-bold text-charcoal">Pink Glass Custom Cake Builder</h2>
+        <p class="text-xs md:text-sm text-pinkglass-800">Rancang kue impian bernuansa pink mewah dengan wizard konfigurasi presisi.</p>
+      </div>
+      <div class="space-y-4 md:space-y-6">
+        <div class="space-y-1.5">
+          <label class="text-xs md:text-sm font-semibold text-pinkglass-900">Step 1: Ukuran & Bentuk</label>
+          <select id="cb-size" class="w-full bg-white/90 border border-pinkglass-300 rounded-2xl p-3 text-xs md:text-sm text-charcoal">
+            <option value="16cm Round">Round Pink 16cm (4-6 Porsi) - Rp 320.000</option>
+            <option value="20cm Round">Round Pink 20cm (8-12 Porsi) - Rp 470.000</option>
+            <option value="20cm Square">Square Luxury 20cm (15 Porsi) - Rp 570.000</option>
+          </select>
+        </div>
+        <div class="space-y-1.5">
+          <label class="text-xs md:text-sm font-semibold text-pinkglass-900">Step 2: Sponge & Filling Layer</label>
+          <select id="cb-flavor" class="w-full bg-white/90 border border-pinkglass-300 rounded-2xl p-3 text-xs md:text-sm text-charcoal">
+            <option value="Pink Velvet Cream Cheese">Pink Velvet + Cream Cheese Frosting</option>
+            <option value="Ruby Chocolate Ganache">Ruby Chocolate + Raspberry Filling</option>
+            <option value="Vanilla Strawberry Chantilly">Vanilla Sponge + Strawberry Chantilly</option>
+          </select>
+        </div>
+        <div class="space-y-1.5">
+          <label class="text-xs md:text-sm font-semibold text-pinkglass-900">Step 3: Pesan Tulis & Foto Acuan</label>
+          <input type="text" id="cb-message" placeholder="Tulis ucapan di kue (misal: Happy Birthday Princess)" class="w-full bg-white/90 border border-pinkglass-300 rounded-2xl p-3 text-xs md:text-sm text-charcoal mb-2">
+          <input type="file" id="cb-photo" class="w-full text-xs text-pinkglass-800 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-pinkglass-200 file:text-pinkglass-900 hover:file:bg-pinkglass-300">
+        </div>
+        <div class="space-y-1.5">
+          <label class="text-xs md:text-sm font-semibold text-pinkglass-900">Step 4: Tanggal Pick-Up / Delivery</label>
+          <input type="date" id="cb-date" class="w-full bg-white/90 border border-pinkglass-300 rounded-2xl p-3 text-xs md:text-sm text-charcoal">
+        </div>
+        <button onclick="window.submitCustomCake()" class="w-full bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-bold py-3.5 rounded-2xl transition-all shadow-lg active:scale-95 text-sm">
+          Masukkan ke Keranjang Custom
+        </button>
+      </div>
+    </div>
+  `;
+};
+
+window.submitCustomCake = function() {
+  const sizeEl = document.getElementById('cb-size');
+  const flavorEl = document.getElementById('cb-flavor');
+  const msgEl = document.getElementById('cb-message');
+
+  const size = sizeEl ? sizeEl.value : '16cm Round';
+  const flavor = flavorEl ? flavorEl.value : 'Pink Velvet';
+  const msg = msgEl ? msgEl.value : '';
+
+  appData.cart.push({ product_id: 'CUSTOM-CAKE', name: `Custom Pink Cake (${size} - ${flavor})`, price: 420000, qty: 1, custom_message: msg });
+  window.showToast('Custom cake pink berhasil dimasukkan ke keranjang!');
+  window.changeTab('checkout');
+};
+
+
+window.renderCheckout = function(container) {
+  let subtotal = appData.cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+  let html = `
+    <div class="max-w-4xl mx-auto space-y-6">
+      <h2 class="text-xl md:text-2xl font-bold text-charcoal">Keranjang Belanja & Checkout</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-2 space-y-3">
+  `;
+
+  if (appData.cart.length === 0) {
+    html += `<div class="bg-white/80 p-8 rounded-3xl border border-pinkglass-200 text-center text-pinkglass-800 text-sm glass-card">Keranjang masih kosong, silakan pilih menu terlebih dahulu.</div>`;
+  } else {
+    appData.cart.forEach((item, idx) => {
+      html += `
+        <div class="bg-white/80 p-4 rounded-2xl border border-pinkglass-200 flex items-center justify-between shadow-sm glass-card">
+          <div>
+            <h4 class="font-bold text-sm text-charcoal">${item.name}</h4>
+            <p class="text-xs text-pinkglass-800">Rp ${item.price.toLocaleString('id-ID')} x ${item.qty}</p>
+          </div>
+          <div class="flex items-center space-x-3">
+            <span class="font-bold text-xs md:text-sm text-pinkglass-900">Rp ${(item.price * item.qty).toLocaleString('id-ID')}</span>
+            <button onclick="window.removeFromCart(${idx})" class="text-rose-500 hover:text-rose-700 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  html += `
+        </div>
+        <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 space-y-4 glass-card h-fit shadow-sm">
+          <h3 class="font-bold text-base text-charcoal border-b border-pinkglass-200 pb-3">Ringkasan Pembayaran</h3>
+          <div class="flex justify-between text-xs md:text-sm text-pinkglass-900 font-medium">
+            <span>Total Belanja</span>
+            <span>Rp ${subtotal.toLocaleString('id-ID')}</span>
+          </div>
+          <div class="space-y-2 pt-2 border-t border-pinkglass-200">
+            <label class="text-[11px] font-semibold text-pinkglass-900">Nama Pemesan</label>
+            <input type="text" id="cust-name" value="${currentUser.name || ''}" placeholder="Nama Lengkap" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal">
+            <label class="text-[11px] font-semibold text-pinkglass-900">Nomor WhatsApp</label>
+            <input type="text" id="cust-phone" value="${currentUser.phone || ''}" placeholder="08xxxxxxxxxx" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal">
+          </div>
+          <div class="bg-pinkglass-50 p-4 rounded-2xl border border-pinkglass-200 text-center space-y-2">
+            <p class="text-[11px] font-semibold text-pinkglass-800">Scan QRIS Pink Glass Alessia</p>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=ALESSIA-PINK-GLASS-QRIS" alt="QRIS" class="mx-auto w-28 h-28 rounded-xl shadow-sm bg-white p-1">
+            <input type="file" id="payment-proof" class="w-full text-[10px] text-pinkglass-700 pt-1">
+          </div>
+          <button onclick="window.processCheckout()" class="w-full bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-bold py-3 rounded-2xl shadow-lg transition-all text-xs md:text-sm active:scale-95">
+            Konfirmasi & Bayar Pesanan
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  container.innerHTML = html;
+};
+
+window.processCheckout = function() {
+  if (appData.cart.length === 0) { window.showToast('Keranjang belanja masih kosong!'); return; }
+  
+  const custNameEl = document.getElementById('cust-name');
+  const custPhoneEl = document.getElementById('cust-phone');
+
+  const newOrder = {
+    order_id: 'ORD-' + Math.floor(1000 + Math.random() * 9000),
+    order_type: 'Takeaway',
+    customer_name: (custNameEl && custNameEl.value) || currentUser.name || 'Tamu VIP Pink Glass',
+    customer_phone: (custPhoneEl && custPhoneEl.value) || currentUser.phone || '0811111111',
+    table_no: '-',
+    total_amount: appData.cart.reduce((a, b) => a + (b.price * b.qty), 0),
+    dp_amount: 0,
+    payment_status: 'PAID',
+    order_status: 'Pending',
+    reference_photo_url: '',
+    created_at: new Date().toISOString(),
+    pickup_delivery_date: new Date().toISOString().split('T')[0]
+  };
+  
+  if (typeof window.autoDeductIngredients === 'function') {
+    window.autoDeductIngredients([...appData.cart]);
+  }
+
+  appData.orders.unshift(newOrder);
+  window.sendOrderToGAS(newOrder, [...appData.cart]);
+  
+  appData.cart = [];
+  window.showToast('Pesanan berhasil dibuat & stok bahan terpotong otomatis!');
+  window.changeTab('tracker');
+};
+
+
+window.renderTracker = function(container) {
+  let html = `
+    <div class="max-w-3xl mx-auto space-y-6">
+      <h2 class="text-xl md:text-2xl font-bold text-charcoal">Lacak Status Pesanan</h2>
+      <div class="space-y-4">
+  `;
+  appData.orders.forEach(ord => {
+    html += `
+      <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card space-y-3 shadow-sm">
+        <div class="flex justify-between items-center">
+          <div>
+            <span class="text-[10px] bg-pinkglass-100 text-pinkglass-900 px-2.5 py-1 rounded-full font-bold">${ord.order_id}</span>
+            <h4 class="font-bold text-base text-charcoal mt-1.5">${ord.customer_name}</h4>
+          </div>
+          <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">${ord.order_status}</span>
+        </div>
+        <div class="flex justify-between text-xs text-pinkglass-800 pt-2 border-t border-pinkglass-200">
+          <span>Tipe: ${ord.order_type}</span>
+          <span class="font-bold text-charcoal">Total: Rp ${ord.total_amount.toLocaleString('id-ID')}</span>
+        </div>
+      </div>
+    `;
+  });
+  html += `</div></div>`;
+  container.innerHTML = html;
+};
+
+window.renderPOS = function(container) {
+  let html = `
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="md:col-span-2 space-y-4">
+        <h2 class="text-xl md:text-2xl font-bold text-charcoal">Kasir POS (Front-Store)</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+  `;
+  appData.products.forEach(p => {
+    html += `
+      <div onclick="window.addToCartPOS('${p.product_id}')" class="bg-white/80 p-4 rounded-2xl border border-pinkglass-200 cursor-pointer hover:border-pinkglass-500 transition-all glass-card shadow-sm active:scale-95">
+        <h4 class="font-bold text-xs md:text-sm text-charcoal truncate">${p.name}</h4>
+        <p class="text-xs font-bold text-pinkglass-700 mt-1">Rp ${p.base_price.toLocaleString('id-ID')}</p>
+      </div>
+    `;
+  });
+  html += `
+        </div>
+      </div>
+      <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 space-y-4 glass-card shadow-sm h-fit">
+        <h3 class="font-bold text-base text-charcoal">Transaksi Kasir</h3>
+        <div class="space-y-2 max-h-48 overflow-y-auto">
+          ${appData.cart.map(c => `<div class="flex justify-between text-xs text-pinkglass-900"><span>${c.name} (${c.qty})</span><span>Rp ${(c.price*c.qty).toLocaleString('id-ID')}</span></div>`).join('')}
+        </div>
+        <button onclick="window.processCheckout()" class="w-full bg-pinkglass-600 text-white font-bold py-3 rounded-2xl text-xs md:text-sm shadow-md">Proses Pembayaran</button>
+      </div>
+    </div>
+  `;
+  container.innerHTML = html;
+};
+
+window.renderWebOrders = function(container) {
+  container.innerHTML = `
+    <div class="space-y-6">
+      <h2 class="text-xl md:text-2xl font-bold text-charcoal">Realtime Order Web Masuk</h2>
+      <div class="space-y-3">
+        ${appData.orders.map(o => `
+          <div class="bg-white/80 p-5 rounded-3xl border border-pinkglass-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 glass-card shadow-sm">
+            <div>
+              <h4 class="font-bold text-sm text-charcoal">${o.customer_name} (${o.order_id})</h4>
+              <p class="text-xs text-pinkglass-800">Total: Rp ${o.total_amount.toLocaleString('id-ID')} | Status: ${o.order_status}</p>
+            </div>
+            <button onclick="window.updateOrderStatus('${o.order_id}', 'Baking')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm">Terima & Masak</button>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+};
+
+window.renderKDS = function(container) {
+  container.innerHTML = `
+    <div class="space-y-6">
+      <h2 class="text-xl md:text-2xl font-bold text-charcoal">Kitchen Display System (KDS Queue)</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        ${appData.orders.map(o => `
+          <div class="bg-white/80 p-5 rounded-3xl border border-pinkglass-300 space-y-3 glass-card shadow-sm">
+            <div class="flex justify-between items-center">
+              <span class="text-[10px] font-bold bg-pinkglass-100 text-pinkglass-900 px-2.5 py-1 rounded-full">${o.order_id}</span>
+              <span class="text-[11px] text-pinkglass-700 font-semibold">Timer: 12:45</span>
+            </div>
+            <h4 class="font-bold text-charcoal text-base">${o.customer_name}</h4>
+            <p class="text-xs text-pinkglass-800">Tipe: ${o.order_type}</p>
+            <button onclick="window.updateOrderStatus('${o.order_id}', 'Ready')" class="w-full bg-pinkglass-600 text-white font-bold py-2.5 rounded-2xl text-xs shadow-md">Tandai Siap (Ready)</button>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+};
+
+window.updateOrderStatus = function(orderId, status) {
+  const ord = appData.orders.find(o => o.order_id === orderId);
+  if (ord) { 
+    ord.order_status = status; 
+    window.renderViewport(); 
+    window.showToast('Status pesanan diperbarui!');
+    
+    const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
+    if (savedUrl && !savedUrl.includes('PASTE_YOUR')) {
+      fetch(savedUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'updateOrderStatus', order_id: orderId, new_status: status, user_role: currentRole })
+      }).catch(e => console.error(e));
+    }
+  }
+};
