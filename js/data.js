@@ -89,13 +89,13 @@ let appData = {
 
 const roleTabs = {
   owner: [
-    { id: 'dashboard', name: 'Dashboard', icon: 'bar-chart-3' },
-    { id: 'web_orders', name: 'Pesanan Masuk', icon: 'bell' },
+    { id: 'dashboard', name: 'Halaman Utama', icon: 'bar-chart-3' },
+    { id: 'web_orders', name: 'Pesanan Online Masuk', icon: 'bell' },
     { id: 'offline_orders', name: 'Pesanan Offline', icon: 'calculator' },
-    { id: 'kds', name: 'KDS Dapur', icon: 'chef-hat' },
+    { id: 'kds', name: 'Selesaikan Pesanan', icon: 'chef-hat' },
     { id: 'catalog', name: 'Katalog Produk', icon: 'package' },
-    { id: 'bom', name: 'Resep BOM', icon: 'book-open' },
-    { id: 'update_stock', name: 'Stok Bahan', icon: 'database' },
+    { id: 'bom', name: 'Resep KUE', icon: 'book-open' },
+    { id: 'update_stock', name: 'Stok Bahan-Bahan', icon: 'database' },
     { id: 'finance', name: 'Bank Alessia', icon: 'wallet' }
   ],
   customer: [
