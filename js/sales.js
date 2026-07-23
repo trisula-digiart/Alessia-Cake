@@ -1,3 +1,28 @@
+const roleTabs = {
+  owner: [
+    { id: 'dashboard', name: 'Dashboard', icon: 'bar-chart-3' },
+    { id: 'web_orders', name: 'Pesanan Masuk', icon: 'bell' },
+    { id: 'offline_orders', name: 'Pesanan Offline', icon: 'calculator' },
+    { id: 'kds', name: 'KDS Dapur', icon: 'chef-hat' },
+    { id: 'catalog', name: 'Katalog Produk', icon: 'package' },
+    { id: 'bom', name: 'Resep BOM', icon: 'book-open' },
+    { id: 'update_stock', name: 'Stok Bahan', icon: 'database' },
+    { id: 'audit', name: 'Audit Log', icon: 'file-text' }
+  ],
+  customer: [
+    { id: 'catalog', name: 'Menu Utama', icon: 'shopping-bag' },
+    { id: 'custom_builder', name: 'Custom Cake', icon: 'sliders' },
+    { id: 'checkout', name: 'Keranjang', icon: 'shopping-cart' }
+  ]
+};
+
+// Selected product state in BOM Manager
+let activeBomProductId = 'PRD-01';
+```eof
+
+js/sales.js
+```javascript:js/sales.js
+/* STREAMING_CHUNK:Setting catalog filter handlers... */
 window.setCatalogSearch = function(query) {
   catalogFilter.search = query;
   window.renderViewport();
@@ -13,6 +38,7 @@ window.setCatalogSort = function(sortType) {
   window.renderViewport();
 };
 
+/* STREAMING_CHUNK:Rendering customer catalog view... */
 window.renderCustomerCatalog = function(container) {
   const isOwner = (currentRole === 'owner');
 
@@ -118,6 +144,7 @@ window.renderCustomerCatalog = function(container) {
   container.innerHTML = html;
 };
 
+/* STREAMING_CHUNK:Handling shopping cart actions... */
 window.addToCart = function(productId) {
   const prod = appData.products.find(p => p.product_id === productId);
   if (!prod) return;
@@ -130,6 +157,7 @@ window.addToCart = function(productId) {
 window.addToCartPOS = function(productId) { window.addToCart(productId); };
 window.removeFromCart = function(idx) { appData.cart.splice(idx, 1); window.renderViewport(); };
 
+/* STREAMING_CHUNK:Rendering custom cake builder... */
 window.renderCustomBuilder = function(container) {
   container.innerHTML = `
     <div class="max-w-3xl mx-auto space-y-6 bg-white/80 p-6 md:p-8 rounded-3xl border border-pinkglass-200 glass-card">
@@ -185,6 +213,7 @@ window.submitCustomCake = function() {
   window.changeTab('checkout');
 };
 
+/* STREAMING_CHUNK:Rendering checkout page with permanently locked QRIS... */
 window.renderCheckout = function(container) {
   let subtotal = appData.cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
   let html = `
@@ -227,13 +256,17 @@ window.renderCheckout = function(container) {
             <label class="text-[11px] font-semibold text-pinkglass-900">Nomor WhatsApp</label>
             <input type="text" id="cust-phone" value="${currentUser.phone || ''}" placeholder="08xxxxxxxxxx" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal">
           </div>
-          <div class="bg-pinkglass-50 p-4 rounded-2xl border border-pinkglass-200 text-center space-y-2">
-            <p class="text-[11px] font-semibold text-pinkglass-800">Scan QRIS Pink Glass Alessia</p>
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=ALESSIA-PINK-GLASS-QRIS" alt="QRIS" class="mx-auto w-28 h-28 rounded-xl shadow-sm bg-white p-1">
-            <input type="file" id="payment-proof" class="w-full text-[10px] text-pinkglass-700 pt-1">
+          
+          <!-- Locked QRIS Display without file input -->
+          <div class="bg-pinkglass-50 p-4 rounded-2xl border border-pinkglass-200 text-center space-y-2 relative overflow-hidden">
+            <p class="text-[11px] font-bold text-pinkglass-900">Scan QRIS Pink Glass Alessia</p>
+            <img src="${(typeof STORE_CONFIG !== 'undefined' && STORE_CONFIG.qris_image_url) ? STORE_CONFIG.qris_image_url : 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=ALESSIA-PINK-GLASS-QRIS'}" alt="QRIS Resmi Alessia Cake" class="mx-auto w-32 h-32 rounded-xl shadow-md bg-white p-1.5 border border-pinkglass-200">
+            <p class="text-[10px] text-pinkglass-800 font-medium pt-1">Silakan scan QRIS resmi di atas untuk melakukan transfer sesuai total belanja.</p>
           </div>
-          <button onclick="window.processCheckout('Online (Web)')" class="w-full bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-bold py-3 rounded-2xl shadow-lg transition-all text-xs md:text-sm active:scale-95">
-            Konfirmasi & Bayar Pesanan Web
+
+          <button onclick="window.processCheckout('Online (Web)')" class="w-full bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-bold py-3.5 rounded-2xl shadow-lg transition-all text-xs md:text-sm active:scale-95 flex items-center justify-center space-x-2">
+            <span>Konfirmasi & Bayar Pesanan Web</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
           </button>
         </div>
       </div>
@@ -242,6 +275,7 @@ window.renderCheckout = function(container) {
   container.innerHTML = html;
 };
 
+/* STREAMING_CHUNK:Processing checkout and opening WhatsApp & Proof Modal... */
 window.processCheckout = function(channel = 'Online (Web)') {
   if (appData.cart.length === 0) { window.showToast('Keranjang belanja masih kosong!'); return; }
   
@@ -249,6 +283,7 @@ window.processCheckout = function(channel = 'Online (Web)') {
   const custPhoneEl = document.getElementById('cust-phone');
 
   const orderType = (currentTab === 'offline_orders' || currentRole === 'owner') ? 'Offline (Kasir Toko)' : channel;
+  const cartItemsCopy = [...appData.cart];
 
   const newOrder = {
     order_id: 'ORD-' + Math.floor(1000 + Math.random() * 9000),
@@ -266,22 +301,86 @@ window.processCheckout = function(channel = 'Online (Web)') {
   };
   
   if (typeof window.autoDeductIngredients === 'function') {
-    window.autoDeductIngredients([...appData.cart]);
+    window.autoDeductIngredients([...cartItemsCopy]);
   }
 
   appData.orders.unshift(newOrder);
-  window.sendOrderToGAS(newOrder, [...appData.cart]);
-  
+  window.sendOrderToGAS(newOrder, [...cartItemsCopy]);
   appData.cart = [];
-  window.showToast(`Pesanan ${orderType} berhasil dibuat & stok bahan terpotong otomatis!`);
-  
-  if (currentRole === 'owner') {
+
+  if (orderType.includes('Offline')) {
+    window.showToast(`Pesanan Offline berhasil dibuat & stok bahan terpotong otomatis!`);
     window.changeTab('web_orders');
   } else {
-    window.changeTab('catalog');
+    // Show Modal for Online Web Order Proof & WhatsApp Notification
+    window.openOrderConfirmationModal(newOrder, cartItemsCopy);
   }
 };
 
+/* STREAMING_CHUNK:Rendering confirmation modal with proof upload & WhatsApp button... */
+window.openOrderConfirmationModal = function(order, cartItems) {
+  let modal = document.getElementById('online-order-success-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'online-order-success-modal';
+    modal.className = 'fixed inset-0 z-[250] flex items-center justify-center p-4 bg-charcoal/50 backdrop-blur-md transition-all duration-300';
+    document.body.appendChild(modal);
+  }
+
+  const itemsList = cartItems.map(i => `• ${i.name} (${i.qty}x) = Rp ${(i.price * i.qty).toLocaleString('id-ID')}`).join('\n');
+  const storePhone = (typeof STORE_CONFIG !== 'undefined' && STORE_CONFIG.phone) ? STORE_CONFIG.phone : '6281298406844';
+
+  const rawWaMessage = `Halo Admin Alessia Cake,%0A%0ASaya sudah melakukan pesanan & pembayaran via Web dengan rincian:%0A- *ID Pesanan:* ${order.order_id}%0A- *Nama:* ${order.customer_name}%0A- *No WA:* ${order.customer_phone}%0A- *Total Bayar:* Rp ${Number(order.total_amount).toLocaleString('id-ID')}%0A%0A*Rincian Pesanan:*%0A${encodeURIComponent(itemsList)}%0A%0AMohon konfirmasi dan proses pesanan saya. Terima kasih!`;
+  const waUrl = `https://wa.me/${storePhone}?text=${rawWaMessage}`;
+
+  modal.innerHTML = `
+    <div class="glass-modal w-full max-w-lg rounded-3xl p-6 md:p-8 space-y-5 shadow-2xl relative animate-fade-in border border-pinkglass-300 bg-white/95">
+      <div class="text-center space-y-2">
+        <div class="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-2xl font-bold border border-emerald-300 shadow-sm">
+          ✓
+        </div>
+        <h3 class="text-xl font-extrabold text-charcoal">Pesanan Berhasil Terkirim!</h3>
+        <p class="text-xs text-pinkglass-800 font-medium">Nomor Order: <span class="font-mono font-bold text-pinkglass-900 bg-pinkglass-100 px-2.5 py-0.5 rounded-full">${order.order_id}</span></p>
+      </div>
+
+      <div class="bg-pinkglass-50/80 p-4 rounded-2xl border border-pinkglass-200 text-xs space-y-2 text-charcoal">
+        <div class="flex justify-between border-b border-pinkglass-200 pb-2">
+          <span>Total Pembayaran:</span>
+          <strong class="text-pinkglass-900 font-bold text-sm">Rp ${Number(order.total_amount).toLocaleString('id-ID')}</strong>
+        </div>
+        <p class="text-[11px] text-pinkglass-800 font-medium">Unggah bukti transfer / pembayaran kamu di bawah ini (opsional) lalu klik tombol WhatsApp untuk konfirmasi instan ke toko.</p>
+      </div>
+
+      <!-- Upload Bukti Transfer Form -->
+      <div class="space-y-1.5">
+        <label class="text-xs font-bold text-pinkglass-900 block">Upload Bukti Transfer / Bayar</label>
+        <input type="file" id="modal-payment-proof-file" accept="image/*" class="w-full text-xs text-pinkglass-800 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-pinkglass-200 file:text-pinkglass-900 hover:file:bg-pinkglass-300 cursor-pointer">
+      </div>
+
+      <div class="space-y-2 pt-2">
+        <a href="${waUrl}" target="_blank" onclick="window.closeOrderConfirmationModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-2xl text-xs md:text-sm shadow-md transition-all active:scale-95 flex items-center justify-center space-x-2 text-center">
+          <i data-lucide="message-square" class="w-4 h-4"></i>
+          <span>📲 Beritahu ke Toko via Chat WhatsApp</span>
+        </a>
+
+        <button onclick="window.closeOrderConfirmationModal()" class="w-full bg-pinkglass-100 hover:bg-pinkglass-200 text-pinkglass-900 font-bold py-3 rounded-2xl text-xs transition-all border border-pinkglass-200">
+          Selesai & Kembali ke Menu Utama
+        </button>
+      </div>
+    </div>
+  `;
+
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  window.showToast("Pesanan anda sudah terkirim, admin segera akan membalasnya.");
+};
+
+window.closeOrderConfirmationModal = function() {
+  const modal = document.getElementById('online-order-success-modal');
+  if (modal) modal.remove();
+  window.changeTab('catalog');
+};
+
+/* STREAMING_CHUNK:Rendering POS kasir offline... */
 window.renderPOS = function(container) {
   let html = `
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
@@ -319,11 +418,13 @@ window.renderPOS = function(container) {
   container.innerHTML = html;
 };
 
+/* STREAMING_CHUNK:Filtering incoming order hub... */
 window.setOrderHubFilter = function(filter) {
   orderHubFilter = filter;
   window.renderViewport();
 };
 
+/* STREAMING_CHUNK:Rendering Central Order Hub for incoming web/store orders... */
 window.renderWebOrders = function(container) {
   const onlineOrdersCount = appData.orders.filter(o => !String(o.order_type || '').includes('Offline')).length;
   const offlineOrdersCount = appData.orders.filter(o => String(o.order_type || '').includes('Offline')).length;
@@ -409,6 +510,7 @@ window.renderWebOrders = function(container) {
   `;
 };
 
+/* STREAMING_CHUNK:Rendering Kitchen Display System... */
 window.renderKDS = function(container) {
   container.innerHTML = `
     <div class="space-y-6 max-w-7xl mx-auto">
@@ -434,6 +536,7 @@ window.renderKDS = function(container) {
   `;
 };
 
+/* STREAMING_CHUNK:Updating order status... */
 window.updateOrderStatus = function(orderId, status) {
   const ord = appData.orders.find(o => o.order_id === orderId);
   if (ord) { 
