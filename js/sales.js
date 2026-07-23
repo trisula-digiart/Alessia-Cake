@@ -325,9 +325,13 @@ window.setOrderHubFilter = function(filter) {
 };
 
 window.renderWebOrders = function(container) {
+  const onlineOrdersCount = appData.orders.filter(o => !String(o.order_type || '').includes('Offline')).length;
+  const offlineOrdersCount = appData.orders.filter(o => String(o.order_type || '').includes('Offline')).length;
+
   let filteredOrders = appData.orders.filter(o => {
-    if (orderHubFilter === 'online') return o.order_type.includes('Online');
-    if (orderHubFilter === 'offline') return o.order_type.includes('Offline');
+    const isOffline = String(o.order_type || '').includes('Offline');
+    if (orderHubFilter === 'online') return !isOffline;
+    if (orderHubFilter === 'offline') return isOffline;
     return true;
   });
 
@@ -342,17 +346,24 @@ window.renderWebOrders = function(container) {
           <p class="text-xs md:text-sm text-pinkglass-800">Pantau dan teruskan pesanan dari channel Online (Web) maupun Offline (Kasir Toko) ke KDS Dapur.</p>
         </div>
 
-        <!-- Filter Channel Buttons -->
-        <div class="flex bg-pinkglass-100 p-1.5 rounded-2xl border border-pinkglass-200 space-x-1">
-          <button onclick="window.setOrderHubFilter('all')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all ${orderHubFilter === 'all' ? 'bg-pinkglass-600 text-white shadow-sm' : 'text-pinkglass-800 hover:text-charcoal'}">
-            Semua (${appData.orders.length})
+        <!-- Filter Channel Buttons & Refresh Button -->
+        <div class="flex items-center space-x-2">
+          <button onclick="window.fetchInitialDataFromGAS(); window.showToast('Memperbarui data pesanan...');" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-white/90 text-charcoal border border-pinkglass-300 hover:bg-pinkglass-100 transition-all flex items-center space-x-1 shadow-xs active:scale-95">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-pinkglass-700"></i>
+            <span>Refresh</span>
           </button>
-          <button onclick="window.setOrderHubFilter('online')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all ${orderHubFilter === 'online' ? 'bg-pinkglass-600 text-white shadow-sm' : 'text-pinkglass-800 hover:text-charcoal'}">
-            🌐 Online (${appData.orders.filter(o => o.order_type.includes('Online')).length})
-          </button>
-          <button onclick="window.setOrderHubFilter('offline')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all ${orderHubFilter === 'offline' ? 'bg-pinkglass-600 text-white shadow-sm' : 'text-pinkglass-800 hover:text-charcoal'}">
-            🏪 Offline (${appData.orders.filter(o => o.order_type.includes('Offline')).length})
-          </button>
+          
+          <div class="flex bg-pinkglass-100 p-1.5 rounded-2xl border border-pinkglass-200 space-x-1">
+            <button onclick="window.setOrderHubFilter('all')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all ${orderHubFilter === 'all' ? 'bg-pinkglass-600 text-white shadow-sm' : 'text-pinkglass-800 hover:text-charcoal'}">
+              Semua (${appData.orders.length})
+            </button>
+            <button onclick="window.setOrderHubFilter('online')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all ${orderHubFilter === 'online' ? 'bg-pinkglass-600 text-white shadow-sm' : 'text-pinkglass-800 hover:text-charcoal'}">
+              🌐 Online (${onlineOrdersCount})
+            </button>
+            <button onclick="window.setOrderHubFilter('offline')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all ${orderHubFilter === 'offline' ? 'bg-pinkglass-600 text-white shadow-sm' : 'text-pinkglass-800 hover:text-charcoal'}">
+              🏪 Offline (${offlineOrdersCount})
+            </button>
+          </div>
         </div>
       </div>
 
@@ -362,7 +373,7 @@ window.renderWebOrders = function(container) {
             Belum ada data pesanan masuk pada filter ini.
           </div>
         ` : filteredOrders.map(o => {
-          const isOffline = o.order_type.includes('Offline');
+          const isOffline = String(o.order_type || '').includes('Offline');
           return `
             <div class="bg-white/80 p-5 rounded-3xl border border-pinkglass-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 glass-card shadow-sm">
               <div class="space-y-1">
@@ -411,7 +422,7 @@ window.renderKDS = function(container) {
           <div class="bg-white/80 p-5 rounded-3xl border border-pinkglass-300 space-y-3 glass-card shadow-sm">
             <div class="flex justify-between items-center">
               <span class="text-[10px] font-bold bg-pinkglass-100 text-pinkglass-900 px-2.5 py-1 rounded-full font-mono">${o.order_id}</span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${o.order_type.includes('Offline') ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800'}">${o.order_type}</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${String(o.order_type || '').includes('Offline') ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800'}">${o.order_type}</span>
             </div>
             <h4 class="font-bold text-charcoal text-base">${o.customer_name}</h4>
             <p class="text-xs text-pinkglass-800 font-medium">Status Saat Ini: <strong class="text-charcoal">${o.order_status}</strong></p>
