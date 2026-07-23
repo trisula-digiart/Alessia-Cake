@@ -426,18 +426,15 @@ window.renderUpdateStock = function(container) {
 };
 
 window.renderDashboard = function(container) {
-  // Calculate total omset and metrics
   const totalOmset = appData.orders.reduce((acc, o) => acc + (Number(o.total_amount) || 0), 0);
   const lowStockCount = appData.ingredients.filter(i => i.current_stock <= i.min_stock_alert).length;
   const activeOrdersCount = appData.orders.filter(o => o.order_status !== 'Ready' && o.order_status !== 'Completed').length;
 
-  // Calculate estimated net profit margin (omset - HPP estimated ~35%)
   const estimatedHpp = totalOmset * 0.35;
   const estimatedNetProfit = Math.max(0, totalOmset - estimatedHpp);
 
   container.innerHTML = `
     <div class="space-y-6 max-w-7xl mx-auto">
-      <!-- Top Title Header -->
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card">
         <div>
           <h2 class="text-xl md:text-2xl font-extrabold text-charcoal flex items-center gap-2">
@@ -451,7 +448,6 @@ window.renderDashboard = function(container) {
         </div>
       </div>
 
-      <!-- KPI Summary Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-white/80 p-5 rounded-3xl border border-pinkglass-200 glass-card shadow-sm space-y-1">
           <div class="flex justify-between items-center text-pinkglass-700">
@@ -494,9 +490,7 @@ window.renderDashboard = function(container) {
         </div>
       </div>
 
-      <!-- Mid Section: Best Selling Cakes Analytics & Visual Breakdown -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Best Sellers Ranking -->
         <div class="lg:col-span-2 bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card space-y-4 shadow-sm">
           <div class="flex justify-between items-center border-b border-pinkglass-100 pb-3">
             <h3 class="font-bold text-base text-charcoal flex items-center gap-2">
@@ -528,7 +522,6 @@ window.renderDashboard = function(container) {
           </div>
         </div>
 
-        <!-- Low Stock Ingredient Quick Alert -->
         <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card space-y-4 shadow-sm flex flex-col justify-between">
           <div>
             <div class="flex justify-between items-center border-b border-pinkglass-100 pb-3">
@@ -560,7 +553,6 @@ window.renderDashboard = function(container) {
         </div>
       </div>
 
-      <!-- Recent Incoming Orders -->
       <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card space-y-4 shadow-sm">
         <div class="flex justify-between items-center border-b border-pinkglass-100 pb-3">
           <h3 class="font-bold text-base text-charcoal flex items-center gap-2">
@@ -592,5 +584,4 @@ window.renderDashboard = function(container) {
   `;
 };
 
-window.renderBatchBaking = function(container) { container.innerHTML = `<div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 text-charcoal glass-card font-semibold">Consolidated Batch Baking Oven View (Ready)</div>`; };
 window.renderAudit = function(container) { container.innerHTML = `<div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 text-charcoal glass-card font-semibold">Audit Logs Sistem & Riwayat Keamanan (Ready)</div>`; };
