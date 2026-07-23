@@ -73,163 +73,99 @@
       <div class="absolute -top-12 -right-12 w-32 h-32 bg-pinkglass-300 rounded-full blur-2xl opacity-50 pointer-events-none"></div>
       <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-pinkglass-400 rounded-full blur-2xl opacity-40 pointer-events-none"></div>
 
-      <div class="text-center space-y-2 relative z-10">
-        <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-pinkglass-600 to-pinkglass-400 flex items-center justify-center text-white font-extrabold text-2xl shadow-lg mx-auto transform -rotate-3 hover:rotate-0 transition-transform duration-300">
-          AC
-        </div>
-        <h2 class="text-2xl font-extrabold text-charcoal tracking-tight">ALESSIA CAKE</h2>
-        <p class="text-xs text-pinkglass-800 font-medium">Soft Pink Luxury Artisan Bakery & POS Hub</p>
-      </div>
-
-      <!-- Auth Mode Tabs (Customer vs Staff) -->
-      <div class="flex bg-pinkglass-100/80 p-1.5 rounded-2xl border border-pinkglass-200 relative z-10">
-        <button id="tab-auth-customer" onclick="window.switchAuthTab('customer')" class="flex-1 py-2 text-xs font-bold rounded-xl bg-pinkglass-600 text-white shadow-md transition-all">
-          🛍️ Pelanggan
-        </button>
-        <button id="tab-auth-staff" onclick="window.switchAuthTab('staff')" class="flex-1 py-2 text-xs font-bold rounded-xl text-pinkglass-800 hover:text-charcoal transition-all">
-          🔐 Owner / Pemilik Toko
-        </button>
-      </div>
-
-      <!-- FORM 1: CUSTOMER QUICK LOGIN (NO PASSWORD) -->
-      <div id="auth-customer-form" class="space-y-4 relative z-10">
-        <div class="bg-pinkglass-50 p-3.5 rounded-2xl border border-pinkglass-200/80 text-[11px] text-pinkglass-900 leading-relaxed">
-          ✨ <span class="font-bold">Tanpa Password!</span> Cukup isi nama dan WhatsApp kamu untuk mulai memesan kue impian.
-        </div>
-        <div class="space-y-1.5">
-          <label class="text-xs font-bold text-pinkglass-900">Nama Lengkap</label>
-          <input type="text" id="login-cust-name" placeholder="misal: Amanda Putri" class="w-full bg-white/90 border border-pinkglass-300 rounded-2xl px-4 py-3 text-xs md:text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400 font-medium">
-        </div>
-        <div class="space-y-1.5">
-          <label class="text-xs font-bold text-pinkglass-900">Nomor WhatsApp / HP</label>
-          <input type="tel" id="login-cust-phone" placeholder="08xxxxxxxxxx" class="w-full bg-white/90 border border-pinkglass-300 rounded-2xl px-4 py-3 text-xs md:text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400 font-medium">
-        </div>
-        <button onclick="window.submitCustomerLogin()" class="w-full bg-gradient-to-r from-pinkglass-600 to-pinkglass-500 hover:from-pinkglass-700 hover:to-pinkglass-600 text-white font-bold py-3.5 rounded-2xl text-xs md:text-sm shadow-lg shadow-pinkglass-500/30 transition-all active:scale-95 flex items-center justify-center space-x-2">
-          <span>Mulai Pesan Sekarang</span>
-          <i data-lucide="arrow-right" class="w-4 h-4"></i>
-        </button>
-      </div>
-
-      <!-- FORM 2: STAFF/OWNER LOGIN -->
-      <div id="auth-staff-form" class="space-y-4 hidden relative z-10">
-        <div class="space-y-1.5">
-          <label class="text-xs font-bold text-pinkglass-900">Akses Pemilik Toko (Owner)</label>
-          <select id="login-staff-role" class="w-full bg-white/90 border border-pinkglass-300 rounded-2xl p-3 text-xs md:text-sm text-charcoal font-semibold focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
-            <option value="owner">👑 Owner / Pemilik Toko (Akses Penuh)</option>
-          </select>
-        </div>
-        <div class="space-y-1.5">
-          <label class="text-xs font-bold text-pinkglass-900">PIN Keamanan Staf</label>
-          <input type="password" id="login-staff-pin" placeholder="Masukkan PIN Staf" maxlength="6" class="w-full bg-white/90 border border-pinkglass-300 rounded-2xl px-4 py-3 text-xs md:text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400 text-center tracking-widest font-bold">
-        </div>
-        <button onclick="window.submitStaffLogin()" class="w-full bg-charcoal hover:bg-black text-white font-bold py-3.5 rounded-2xl text-xs md:text-sm shadow-lg transition-all active:scale-95 flex items-center justify-center space-x-2">
-          <i data-lucide="shield-check" class="w-4 h-4"></i>
-          <span>Masuk Sistem Owner</span>
-        </button>
-      </div>
+        <div class="text-center space-y-2 relative z-10">
+    <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-pinkglass-600 to-pinkglass-400 flex items-center justify-center text-white font-extrabold text-2xl shadow-lg mx-auto transform -rotate-3 hover:rotate-0 transition-transform duration-300">
+      AC
     </div>
+    <h2 class="text-2xl font-extrabold text-charcoal tracking-tight">ALESSIA CAKE</h2>
+    <p class="text-xs text-pinkglass-800 font-medium">Soft Pink Luxury Artisan Bakery & POS Hub</p>
   </div>
 
-  <!-- PRODUCT ADD / EDIT MODAL (FOR OWNER/ADMIN) -->
-  <div id="product-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-charcoal/40 backdrop-blur-md transition-all duration-300">
-    <div class="glass-modal w-full max-w-md rounded-3xl p-6 md:p-8 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center border-b border-pinkglass-200 pb-3">
-        <h3 id="product-modal-title" class="text-lg font-bold text-charcoal">Tambah / Edit Produk</h3>
-        <button onclick="window.closeProductModal()" class="text-pinkglass-700 hover:text-charcoal p-1">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      <input type="hidden" id="pm-product-id">
-      <div class="space-y-3">
-        <div>
-          <label class="text-xs font-bold text-pinkglass-900">Nama Produk</label>
-          <input type="text" id="pm-name" placeholder="misal: Pink Rose Opera" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
-        </div>
-        <div>
-          <label class="text-xs font-bold text-pinkglass-900">Kategori</label>
-          <select id="pm-category" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400 font-medium">
-            <option value="Whole Cake">Whole Cake</option>
-            <option value="Slice">Slice</option>
-            <option value="Pastry">Pastry</option>
-            <option value="Cookies">Cookies</option>
-            <option value="Drink">Drink</option>
-          </select>
-        </div>
-        <div>
-          <label class="text-xs font-bold text-pinkglass-900">Harga (Rp)</label>
-          <input type="number" id="pm-price" placeholder="misal: 150000" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
-        </div>
-        <div>
-          <label class="text-xs font-bold text-pinkglass-900">Stok Awal</label>
-          <input type="number" id="pm-stock" placeholder="misal: 10" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
-        </div>
-        <div>
-          <label class="text-xs font-bold text-pinkglass-900">URL Gambar Produk</label>
-          <input type="text" id="pm-image" placeholder="https://..." class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
-        </div>
-        <div>
-          <label class="text-xs font-bold text-pinkglass-900">Deskripsi Ringkasan</label>
-          <textarea id="pm-desc" rows="2" placeholder="Deskripsi kue..." class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400"></textarea>
-        </div>
-      </div>
-      <button onclick="window.saveProductFromModal()" class="w-full bg-gradient-to-r from-pinkglass-600 to-pinkglass-500 hover:from-pinkglass-700 hover:to-pinkglass-600 text-white font-bold py-3 rounded-2xl text-xs md:text-sm shadow-md transition-all active:scale-95">
-        Simpan Produk
-      </button>
-    </div>
+  <!-- Auth Mode Tabs (Customer vs Staff) -->
+  <div class="flex bg-pinkglass-100/80 p-1.5 rounded-2xl border border-pinkglass-200 relative z-10">
+    <button id="tab-auth-customer" onclick="window.switchAuthTab('customer')" class="flex-1 py-2 text-xs font-bold rounded-xl bg-pinkglass-600 text-white shadow-md transition-all">
+      🛍️ Pelanggan
+    </button>
+    <button id="tab-auth-staff" onclick="window.switchAuthTab('staff')" class="flex-1 py-2 text-xs font-bold rounded-xl text-pinkglass-800 hover:text-charcoal transition-all">
+      🔐 Owner / Pemilik Toko
+    </button>
   </div>
 
-  <!-- MAIN APP HEADER -->
-  <header class="glass-header px-4 md:px-8 py-3.5 flex items-center justify-between sticky top-0 z-50 shadow-sm">
-    <div class="flex items-center space-x-3">
-      <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pinkglass-600 to-pinkglass-400 flex items-center justify-center text-white font-extrabold shadow-md text-base">
-        AC
-      </div>
-      <div>
-        <h1 class="font-bold text-base md:text-lg tracking-wide text-charcoal flex items-center gap-2">
-          ALESSIA CAKE <span class="text-[10px] bg-pinkglass-100 text-pinkglass-800 px-2 py-0.5 rounded-full font-semibold hidden sm:inline-block">Pink Glass v9.6</span>
-        </h1>
-        <p class="text-[11px] text-pinkglass-700 font-medium">Soft Pink Luxury Omnichannel Hub</p>
-      </div>
+  <!-- FORM 1: CUSTOMER QUICK LOGIN (NO PASSWORD) -->
+  <div id="auth-customer-form" class="space-y-4 relative z-10">
+    <div class="bg-pinkglass-50 p-3.5 rounded-2xl border border-pinkglass-200/80 text-[11px] text-pinkglass-900 leading-relaxed">
+      ✨ <span class="font-bold">Tanpa Password!</span> Cukup isi nama dan WhatsApp kamu untuk mulai memesan kue impian.
     </div>
-
-    <!-- Active User Profile & Logout -->
-    <div class="flex items-center space-x-2 md:space-x-4">
-      <div class="hidden lg:flex items-center space-x-2 text-xs bg-white/80 px-3 py-1.5 rounded-full border border-pinkglass-200 shadow-sm">
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span id="sync-status" class="text-pinkglass-800 font-medium">Online Sync Active</span>
-      </div>
-
-      <!-- Active User Profile Badge -->
-      <div id="user-profile-badge" class="hidden sm:flex items-center space-x-2 bg-pinkglass-100/90 px-3 py-1.5 rounded-2xl border border-pinkglass-300">
-        <i data-lucide="user" class="w-3.5 h-3.5 text-pinkglass-700"></i>
-        <span id="display-user-name" class="text-xs font-bold text-charcoal max-w-[100px] truncate">Tamu</span>
-        <button onclick="window.openAuthModal()" class="text-[10px] bg-pinkglass-600 text-white px-2 py-0.5 rounded-lg hover:bg-pinkglass-700 font-semibold ml-1">Ganti</button>
-      </div>
-
-      <button onclick="window.logoutUser()" class="bg-pinkglass-600 hover:bg-pinkglass-700 text-white text-xs md:text-sm font-bold px-3.5 py-2 rounded-xl shadow-sm flex items-center space-x-1.5 transition-all active:scale-95">
-        <i data-lucide="log-out" class="w-4 h-4"></i>
-        <span>Keluar</span>
-      </button>
+    <div class="space-y-1.5">
+      <label class="text-xs font-bold text-pinkglass-900">Nama Lengkap</label>
+      <input type="text" id="login-cust-name" placeholder="misal: Amanda Putri" class="w-full bg-white/90 border border-pinkglass-300 rounded-2xl px-4 py-3 text-xs md:text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400 font-medium">
     </div>
-  </header>
+    <div class="space-y-1.5">
+      <label class="text-xs font-bold text-pinkglass-900">Nomor WhatsApp / HP</label>
+      <input type="tel" id="login-cust-phone" placeholder="08xxxxxxxxxx" class="w-full bg-white/90 border border-pinkglass-300 rounded-2xl px-4 py-3 text-xs md:text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400 font-medium">
+    </div>
+    <button onclick="window.submitCustomerLogin()" class="w-full bg-gradient-to-r from-pinkglass-600 to-pinkglass-500 hover:from-pinkglass-700 hover:to-pinkglass-600 text-white font-bold py-3.5 rounded-2xl text-xs md:text-sm shadow-lg shadow-pinkglass-500/30 transition-all active:scale-95 flex items-center justify-center space-x-2">
+      <span>Mulai Pesan Sekarang</span>
+      <i data-lucide="arrow-right" class="w-4 h-4"></i>
+    </button>
+  </div>
 
-  <!-- MAIN CONTAINER -->
-  <div class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
-    
-    <!-- Sidebar Desktop Navigation -->
-    <aside id="sidebar-nav" class="hidden md:flex w-64 bg-white/70 backdrop-blur-md border-r border-pinkglass-200 flex-col p-4 space-y-1.5 z-20 shadow-sm">
-      <!-- Injected dynamically via JS -->
-    </aside>
+  <!-- FORM 2: STAFF/OWNER LOGIN -->
+  <div id="auth-staff-form" class="space-y-4 hidden relative z-10">
+    <div class="space-y-1.5">
+      <label class="text-xs font-bold text-pinkglass-900">Akses Pemilik Toko (Owner)</label>
+      <select id="login-staff-role" class="w-full bg-white/90 border border-pinkglass-300 rounded-2xl p-3 text-xs md:text-sm text-charcoal font-semibold focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
+        <option value="owner">👑 Owner / Pemilik Toko (Akses Penuh)</option>
+      </select>
+    </div>
+    <div class="space-y-1.5">
+      <label class="text-xs font-bold text-pinkglass-900">PIN Keamanan Staf</label>
+      <input type="password" id="login-staff-pin" placeholder="Masukkan PIN Staf" maxlength="6" class="w-full bg-white/90 border border-pinkglass-300 rounded-2xl px-4 py-3 text-xs md:text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400 text-center tracking-widest font-bold">
+    </div>
+    <button onclick="window.submitStaffLogin()" class="w-full bg-charcoal hover:bg-black text-white font-bold py-3.5 rounded-2xl text-xs md:text-sm shadow-lg transition-all active:scale-95 flex items-center justify-center space-x-2">
+      <i data-lucide="shield-check" class="w-4 h-4"></i>
+      <span>Masuk Sistem Owner</span>
+    </button>
+  </div>
+</div>
 
-    <!-- Mobile Bottom Navigation Bar -->
-    <nav id="mobile-bottom-nav" class="md:hidden bg-white/95 backdrop-blur-md border-t border-pinkglass-200 flex items-center justify-around py-2.5 px-2 fixed bottom-0 left-0 right-0 z-50 shadow-lg">
-      <!-- Injected dynamically via JS -->
-    </nav>
 
-    <!-- Main Content Dynamic Viewport -->
-    <main id="main-viewport" class="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8">
-      <!-- Dynamic View Injected Here -->
-    </main>
+<!-- Active User Profile & Logout -->
+<div class="flex items-center space-x-2 md:space-x-4">
+  <div class="hidden lg:flex items-center space-x-2 text-xs bg-white/80 px-3 py-1.5 rounded-full border border-pinkglass-200 shadow-sm">
+    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+    <span id="sync-status" class="text-pinkglass-800 font-medium">Online Sync Active</span>
+  </div>
+
+  <!-- Active User Profile Badge -->
+  <div id="user-profile-badge" class="hidden sm:flex items-center space-x-2 bg-pinkglass-100/90 px-3 py-1.5 rounded-2xl border border-pinkglass-300">
+    <i data-lucide="user" class="w-3.5 h-3.5 text-pinkglass-700"></i>
+    <span id="display-user-name" class="text-xs font-bold text-charcoal max-w-[100px] truncate">Tamu</span>
+    <button onclick="window.openAuthModal()" class="text-[10px] bg-pinkglass-600 text-white px-2 py-0.5 rounded-lg hover:bg-pinkglass-700 font-semibold ml-1">Ganti</button>
+  </div>
+
+  <button onclick="window.logoutUser()" class="bg-pinkglass-600 hover:bg-pinkglass-700 text-white text-xs md:text-sm font-bold px-3.5 py-2 rounded-xl shadow-sm flex items-center space-x-1.5 transition-all active:scale-95">
+    <i data-lucide="log-out" class="w-4 h-4"></i>
+    <span>Keluar</span>
+  </button>
+</div>
+
+
+<!-- Sidebar Desktop Navigation -->
+<aside id="sidebar-nav" class="hidden md:flex w-64 bg-white/70 backdrop-blur-md border-r border-pinkglass-200 flex-col p-4 space-y-1.5 z-20 shadow-sm">
+  <!-- Injected dynamically via JS -->
+</aside>
+
+<!-- Mobile Bottom Navigation Bar -->
+<nav id="mobile-bottom-nav" class="md:hidden bg-white/95 backdrop-blur-md border-t border-pinkglass-200 flex items-center justify-around py-2.5 px-2 fixed bottom-0 left-0 right-0 z-50 shadow-lg">
+  <!-- Injected dynamically via JS -->
+</nav>
+
+<!-- Main Content Dynamic Viewport -->
+<main id="main-viewport" class="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8">
+  <!-- Dynamic View Injected Here -->
+</main>
+
   </div>
 
   <!-- EMBEDDED COMPLETE SPA ENGINE SCRIPT -->
