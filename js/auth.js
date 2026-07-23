@@ -162,7 +162,7 @@ window.renderViewport = function() {
     else if (currentTab === 'tracker') window.renderTracker(vp);
   } else {
     if (currentTab === 'dashboard') window.renderDashboard(vp);
-    else if (currentTab === 'pos') window.renderPOS(vp);
+    else if (currentTab === 'offline_orders') window.renderPOS(vp);
     else if (currentTab === 'web_orders') window.renderWebOrders(vp);
     else if (currentTab === 'kds') window.renderKDS(vp);
     else if (currentTab === 'batch_baking') window.renderBatchBaking(vp);
