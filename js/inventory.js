@@ -29,13 +29,11 @@ window.openProductModal = function(productId = null) {
   modal.classList.remove('hidden');
 };
 
-/* STREAMING_CHUNK:Closing product modal... */
 window.closeProductModal = function() {
   const modal = document.getElementById('product-modal');
   if (modal) modal.classList.add('hidden');
 };
 
-/* STREAMING_CHUNK:Saving product modal form data... */
 window.saveProductFromModal = function() {
   const pid = document.getElementById('pm-product-id').value;
   const name = document.getElementById('pm-name').value.trim();
@@ -83,7 +81,6 @@ window.saveProductFromModal = function() {
   }
 };
 
-/* STREAMING_CHUNK:Opening ingredient modal... */
 window.openIngredientModal = function(ingId = null) {
   const modal = document.getElementById('ingredient-modal');
   const title = document.getElementById('ingredient-modal-title');
@@ -113,13 +110,11 @@ window.openIngredientModal = function(ingId = null) {
   modal.classList.remove('hidden');
 };
 
-/* STREAMING_CHUNK:Closing ingredient modal... */
 window.closeIngredientModal = function() {
   const modal = document.getElementById('ingredient-modal');
   if (modal) modal.classList.add('hidden');
 };
 
-/* STREAMING_CHUNK:Saving ingredient modal form data... */
 window.saveIngredientFromModal = function() {
   const ingId = document.getElementById('im-ingredient-id').value;
   const name = document.getElementById('im-name').value.trim();
@@ -163,7 +158,6 @@ window.saveIngredientFromModal = function() {
   }
 };
 
-/* STREAMING_CHUNK:Deleting ingredient... */
 window.deleteIngredient = function(ingId) {
   if (confirm('Apakah kamu yakin ingin menghapus bahan baku ini?')) {
     appData.ingredients = appData.ingredients.filter(i => i.ingredient_id !== ingId);
@@ -172,7 +166,6 @@ window.deleteIngredient = function(ingId) {
   }
 };
 
-/* STREAMING_CHUNK:Rendering BOM recipe viewer and HPP calculator... */
 window.renderBOMViewer = function(container) {
   const selectedProduct = appData.products.find(p => p.product_id === activeBomProductId) || appData.products[0];
   if (!selectedProduct) return;
@@ -367,7 +360,6 @@ window.autoDeductIngredients = function(cartItems) {
   }
 };
 
-/* STREAMING_CHUNK:Rendering ingredient stock management view... */
 window.renderUpdateStock = function(container) {
   let html = `
     <div class="space-y-6 max-w-7xl mx-auto">
@@ -433,7 +425,6 @@ window.renderUpdateStock = function(container) {
   container.innerHTML = html;
 };
 
-/* STREAMING_CHUNK:Rendering analytical dashboard view... */
 window.renderDashboard = function(container) {
   const totalOmset = appData.orders.reduce((acc, o) => acc + (Number(o.total_amount) || 0), 0);
   const lowStockCount = appData.ingredients.filter(i => i.current_stock <= i.min_stock_alert).length;
@@ -593,7 +584,6 @@ window.renderDashboard = function(container) {
   `;
 };
 
-/* STREAMING_CHUNK:Rendering system audit logs view... */
 window.renderAudit = function(container) { 
   container.innerHTML = `<div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 text-charcoal glass-card font-semibold">Audit Logs Sistem & Riwayat Keamanan (Ready)</div>`; 
 };
