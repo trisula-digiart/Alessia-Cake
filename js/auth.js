@@ -177,6 +177,7 @@ window.renderViewport = function() {
     else if (currentTab === 'catalog' && typeof window.renderCustomerCatalog === 'function') window.renderCustomerCatalog(vp);
     else if (currentTab === 'bom' && typeof window.renderBOMViewer === 'function') window.renderBOMViewer(vp);
     else if (currentTab === 'update_stock' && typeof window.renderUpdateStock === 'function') window.renderUpdateStock(vp);
+    else if (currentTab === 'finance' && typeof window.renderFinanceManager === 'function') window.renderFinanceManager(vp);
     else if (currentTab === 'audit' && typeof window.renderAudit === 'function') window.renderAudit(vp);
   }
   if (typeof lucide !== 'undefined') lucide.createIcons();
