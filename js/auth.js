@@ -165,7 +165,6 @@ window.renderViewport = function() {
     else if (currentTab === 'offline_orders') window.renderPOS(vp);
     else if (currentTab === 'web_orders') window.renderWebOrders(vp);
     else if (currentTab === 'kds') window.renderKDS(vp);
-    else if (currentTab === 'batch_baking') window.renderBatchBaking(vp);
     else if (currentTab === 'catalog') window.renderCustomerCatalog(vp);
     else if (currentTab === 'bom') window.renderBOMViewer(vp);
     else if (currentTab === 'update_stock') window.renderUpdateStock(vp);
