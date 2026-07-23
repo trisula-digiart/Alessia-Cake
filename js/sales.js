@@ -278,35 +278,8 @@ window.processCheckout = function(channel = 'Online (Web)') {
   if (currentRole === 'owner') {
     window.changeTab('web_orders');
   } else {
-    window.changeTab('tracker');
+    window.changeTab('catalog');
   }
-};
-
-window.renderTracker = function(container) {
-  let html = `
-    <div class="max-w-3xl mx-auto space-y-6">
-      <h2 class="text-xl md:text-2xl font-bold text-charcoal">Lacak Status Pesanan</h2>
-      <div class="space-y-4">
-  `;
-  appData.orders.forEach(ord => {
-    html += `
-      <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card space-y-3 shadow-sm">
-        <div class="flex justify-between items-center">
-          <div>
-            <span class="text-[10px] bg-pinkglass-100 text-pinkglass-900 px-2.5 py-1 rounded-full font-bold">${ord.order_id}</span>
-            <h4 class="font-bold text-base text-charcoal mt-1.5">${ord.customer_name}</h4>
-          </div>
-          <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">${ord.order_status}</span>
-        </div>
-        <div class="flex justify-between text-xs text-pinkglass-800 pt-2 border-t border-pinkglass-200">
-          <span>Tipe Channel: <strong class="text-charcoal">${ord.order_type}</strong></span>
-          <span class="font-bold text-charcoal">Total: Rp ${ord.total_amount.toLocaleString('id-ID')}</span>
-        </div>
-      </div>
-    `;
-  });
-  html += `</div></div>`;
-  container.innerHTML = html;
 };
 
 window.renderPOS = function(container) {
