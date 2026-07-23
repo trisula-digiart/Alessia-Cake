@@ -1,4 +1,3 @@
-/* STREAMING_CHUNK:Opening product modal... */
 window.openProductModal = function(productId = null) {
   const modal = document.getElementById('product-modal');
   const title = document.getElementById('product-modal-title');
