@@ -10,6 +10,9 @@ let catalogFilter = {
   sort: 'default'
 };
 
+// Incoming Orders Hub Channel Filter State ('all', 'online', 'offline')
+let orderHubFilter = 'all';
+
 let currentUser = {
   name: '',
   phone: '',
@@ -68,7 +71,8 @@ let appData = {
     }
   ],
   orders: [
-    { order_id: 'ORD-9901', order_type: 'Takeaway', customer_name: 'Bina Santoso', customer_phone: '08123456789', table_no: '-', total_amount: 395000, dp_amount: 0, payment_status: 'PAID', order_status: 'Baking', reference_photo_url: '', created_at: new Date().toISOString(), pickup_delivery_date: '2026-06-07' }
+    { order_id: 'ORD-9901', order_type: 'Online (Web)', customer_name: 'Bina Santoso', customer_phone: '08123456789', table_no: '-', total_amount: 395000, dp_amount: 0, payment_status: 'PAID', order_status: 'Baking', reference_photo_url: '', created_at: new Date().toISOString(), pickup_delivery_date: '2026-06-07' },
+    { order_id: 'ORD-9902', order_type: 'Offline (Kasir Toko)', customer_name: 'Pelanggan Walk-In', customer_phone: '08110000111', table_no: 'Meja 04', total_amount: 150000, dp_amount: 0, payment_status: 'PAID', order_status: 'Pending', reference_photo_url: '', created_at: new Date().toISOString(), pickup_delivery_date: '2026-06-07' }
   ],
   cart: []
 };
@@ -76,7 +80,8 @@ let appData = {
 const roleTabs = {
   owner: [
     { id: 'dashboard', name: 'Dashboard', icon: 'bar-chart-3' },
-    { id: 'web_orders', name: 'Order Web', icon: 'bell' },
+    { id: 'web_orders', name: 'Pesanan Masuk', icon: 'bell' },
+    { id: 'offline_orders', name: 'Pesanan Offline', icon: 'calculator' },
     { id: 'kds', name: 'KDS Dapur', icon: 'chef-hat' },
     { id: 'batch_baking', name: 'Oven Produksi', icon: 'flame' },
     { id: 'catalog', name: 'Katalog Produk', icon: 'package' },
@@ -88,6 +93,7 @@ const roleTabs = {
     { id: 'catalog', name: 'Menu Utama', icon: 'shopping-bag' },
     { id: 'custom_builder', name: 'Custom Cake', icon: 'sliders' },
     { id: 'checkout', name: 'Keranjang', icon: 'shopping-cart' },
+    { id: 'tracker', name: 'Lacak Pesanan', icon: 'map-pin' }
   ]
 };
 
