@@ -1,4 +1,3 @@
-/* STREAMING_CHUNK:Configuring system variables and store config... */
 let GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzX4rjfDx1V31yJsgoxHsnyA78EghxGTCnS7llUalyGClZEQNzYfaQvq5Egl-TL6mjJ/exec'; 
 
 let currentRole = 'customer';
@@ -80,6 +79,11 @@ let appData = {
     { order_id: 'ORD-9901', order_type: 'Online (Web)', customer_name: 'Bina Santoso', customer_phone: '08123456789', table_no: '-', total_amount: 395000, dp_amount: 0, payment_status: 'PAID', order_status: 'Baking', reference_photo_url: '', created_at: new Date().toISOString(), pickup_delivery_date: '2026-06-07' },
     { order_id: 'ORD-9902', order_type: 'Offline (Kasir Toko)', customer_name: 'Pelanggan Walk-In', customer_phone: '08110000111', table_no: 'Meja 04', total_amount: 150000, dp_amount: 0, payment_status: 'PAID', order_status: 'Pending', reference_photo_url: '', created_at: new Date().toISOString(), pickup_delivery_date: '2026-06-07' }
   ],
+  expenses: [
+    { expense_id: 'EXP-1001', category: 'Bahan Baku', description: 'Beli Telur Ayam Fresh 15kg & Susu UHT', amount: 380000, date: new Date().toISOString() },
+    { expense_id: 'EXP-1002', category: 'Operasional', description: 'Listrik PLN & Wifi Toko Harian', amount: 150000, date: new Date(Date.now() - 2 * 86400000).toISOString() },
+    { expense_id: 'EXP-1003', category: 'Kemasan', description: 'Beli Box Premium Pink Glass 100 Pcs', amount: 250000, date: new Date(Date.now() - 5 * 86400000).toISOString() }
+  ],
   cart: []
 };
 
@@ -92,7 +96,7 @@ const roleTabs = {
     { id: 'catalog', name: 'Katalog Produk', icon: 'package' },
     { id: 'bom', name: 'Resep BOM', icon: 'book-open' },
     { id: 'update_stock', name: 'Stok Bahan', icon: 'database' },
-    { id: 'audit', name: 'Audit Log', icon: 'file-text' }
+    { id: 'finance', name: 'Bank Alessia', icon: 'wallet' }
   ],
   customer: [
     { id: 'catalog', name: 'Menu Utama', icon: 'shopping-bag' },
