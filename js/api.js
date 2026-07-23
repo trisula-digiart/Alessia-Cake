@@ -8,7 +8,7 @@ window.showToast = function(msg) {
 
 window.setGasApiUrl = function(url) {
   GAS_API_URL = url;
-  localStorage.setItem('ALESSIA_GAS_URL', url);
+  localStorage.setItem('ALESSIA_GAS_URL', url); 
   window.showToast('URL Backend GAS berhasil disimpan!');
   window.fetchInitialDataFromGAS();
 };
