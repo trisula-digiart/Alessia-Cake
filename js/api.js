@@ -29,6 +29,16 @@ window.unlockSync = function() {
   if (window.syncLockTimer) clearTimeout(window.syncLockTimer);
 };
 
+window.isUserInteracting = function() {
+  const active = document.activeElement;
+  if (!active) return false;
+  const tag = active.tagName;
+  if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || active.isContentEditable) {
+    return true;
+  }
+  return false;
+};
+
 window.fetchInitialDataFromGAS = async function() {
   const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
   if (!savedUrl || savedUrl.includes('PASTE_YOUR')) return;
@@ -52,7 +62,7 @@ window.fetchInitialDataFromGAS = async function() {
         shouldRender = true;
       }
       
-      // Protect recipes from being overwritten by stale polling data if a write is locked
+      // Protect recipes from being overwritten by stale polling data if write is locked
       if (!window.isSyncLocked && result.data.recipes) {
         appData.recipes = result.data.recipes;
         shouldRender = true;
@@ -63,7 +73,8 @@ window.fetchInitialDataFromGAS = async function() {
         shouldRender = true;
       }
 
-      if (shouldRender) {
+      // Only re-render if user is NOT currently typing or opening a select dropdown
+      if (shouldRender && !window.isSyncLocked && !window.isUserInteracting()) {
         window.renderViewport();
       }
     }
