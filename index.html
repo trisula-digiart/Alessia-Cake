@@ -27,6 +27,7 @@
               700: '#AE204E',
               800: '#901D42',
               900: '#791B39',
+              950: '#520B23'
             },
             rosegold: {
               light: '#F8D7DA',
@@ -41,7 +42,7 @@
     }
   </script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@600;800&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@600;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap');
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: linear-gradient(135deg, #FFF0F5 0%, #FFE4EE 50%, #F9E2EC 100%); color: #2D2227; min-height: 100vh; }
     .glass-card {
       background: rgba(255, 255, 255, 0.85);
@@ -79,10 +80,36 @@
       <div class="absolute -top-12 -right-12 w-32 h-32 bg-pinkglass-300 rounded-full blur-2xl opacity-50 pointer-events-none"></div>
       <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-pinkglass-400 rounded-full blur-2xl opacity-40 pointer-events-none"></div>
 
-      <!-- PROMINENT LARGE LOGO DISPLAY WITH MULTIPLY BLEND -->
-      <div class="text-center relative z-10 pt-2 pb-1">
-        <div class="relative flex items-center justify-center min-h-[140px] sm:min-h-[170px]">
-          <img src="images/alessia.png" alt="Alessia Cake Logo" class="h-36 sm:h-44 md:h-48 w-auto object-contain mx-auto transform hover:scale-105 transition-transform duration-300 filter drop-shadow-md mix-blend-multiply" onerror="this.onerror=null; this.src='https://placehold.co/300x180/E64D7E/ffffff?text=Alessia+Cake';">
+      <!-- PURE VECTOR LUXURY LOGO EMBLEM FOR LOGIN -->
+      <div class="text-center relative z-10 pt-2 pb-1 flex flex-col items-center justify-center select-none">
+        <div class="relative flex items-center justify-center group mb-2.5">
+          <!-- Outer Radiant Ring -->
+          <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-tr from-pinkglass-600 via-pinkglass-500 to-pinkglass-400 p-0.5 shadow-xl shadow-pinkglass-500/25 transform group-hover:rotate-3 transition-transform duration-300">
+            <div class="w-full h-full bg-white rounded-[22px] flex items-center justify-center border border-pinkglass-200">
+              <svg class="w-9 h-9 sm:w-11 sm:h-11 text-pinkglass-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L15 7L20 4L18 13H6L4 4L9 7L12 2Z" fill="url(#modalBrandGrad)" stroke="none"/>
+                <path d="M6 13C6 13 4 15 4 17C4 18.6569 5.34315 20 7 20H17C18.6569 20 20 18.6569 20 17C20 15 18 13 18 13" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M9 16H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <defs>
+                  <linearGradient id="modalBrandGrad" x1="4" y1="2" x2="20" y2="13" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#E64D7E"/>
+                    <stop offset="1" stop-color="#AE204E"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-pinkglass-950 font-luxury tracking-[0.18em] leading-none uppercase">
+          ALESSIA CAKE
+        </h2>
+        <div class="flex items-center space-x-1.5 text-[11px] font-semibold text-pinkglass-800 mt-2">
+          <span class="w-5 h-[1px] bg-pinkglass-300"></span>
+          <span class="text-pinkglass-600">♥</span>
+          <span class="tracking-wider">Manis di Semua Moment</span>
+          <span class="text-pinkglass-600">♥</span>
+          <span class="w-5 h-[1px] bg-pinkglass-300"></span>
         </div>
       </div>
 
@@ -231,10 +258,10 @@
     </div>
   </div>
 
-  <!-- LUXURY HERO HEADER BANNER (3-COLUMN PERFECT GRID WITH 4X ENLARGED LOGO) -->
+  <!-- LUXURY HERO HEADER BANNER (3-COLUMN PERFECT GRID WITH PURE VECTOR LOGO & SLEEK COMPACT HEIGHT) -->
   <header class="glass-header relative overflow-hidden px-4 md:px-8 py-2.5 shadow-sm border-b border-pinkglass-300/80 w-full">
     <!-- Background Glow Accents -->
-    <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-[800px] h-[140px] bg-gradient-to-r from-pinkglass-200/50 via-pinkglass-300/40 to-pinkglass-200/50 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-[700px] h-[120px] bg-gradient-to-r from-pinkglass-200/50 via-pinkglass-300/40 to-pinkglass-200/50 rounded-full blur-3xl pointer-events-none"></div>
 
     <div class="w-full grid grid-cols-1 md:grid-cols-3 items-center gap-3 relative z-10">
       
@@ -262,10 +289,37 @@
         </div>
       </div>
 
-      <!-- SISI TENGAH MATI (COLUMN 2): GIANT BRAND LOGO 4X ENLARGED WITH MIX-BLEND-MULTIPLY -->
-      <div class="flex flex-col items-center justify-center text-center justify-self-center">
-        <div class="relative flex items-center justify-center">
-          <img src="images/alessia.png" alt="Alessia Cake Logo" class="h-36 sm:h-44 md:h-52 lg:h-60 w-auto object-contain transform hover:scale-105 transition-transform duration-300 filter drop-shadow-md mix-blend-multiply" onerror="this.onerror=null; this.src='https://placehold.co/300x180/E64D7E/ffffff?text=Alessia+Cake';">
+      <!-- SISI TENGAH PRESISI (COLUMN 2): PURE VECTOR LOGO & TYPOGRAPHY -->
+      <div class="flex flex-col items-center justify-center text-center justify-self-center py-0.5 select-none">
+        <div class="flex items-center space-x-2.5">
+          <!-- Scalable Royal Crown SVG Badge -->
+          <div class="w-9 h-9 md:w-10 md:h-10 rounded-2xl bg-gradient-to-tr from-pinkglass-600 via-pinkglass-500 to-pinkglass-400 p-0.5 shadow-md flex items-center justify-center transform hover:scale-105 transition-transform duration-300">
+            <div class="w-full h-full bg-white rounded-[13px] flex items-center justify-center border border-pinkglass-200">
+              <svg class="w-5 h-5 md:w-6 md:h-6 text-pinkglass-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L15 7L20 4L18 13H6L4 4L9 7L12 2Z" fill="url(#headerBrandGrad)" stroke="none"/>
+                <path d="M6 13C6 13 4 15 4 17C4 18.6569 5.34315 20 7 20H17C18.6569 20 20 18.6569 20 17C20 15 18 13 18 13" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M9 16H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <defs>
+                  <linearGradient id="headerBrandGrad" x1="4" y1="2" x2="20" y2="13" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#E64D7E"/>
+                    <stop offset="1" stop-color="#AE204E"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Luxury Typography Brand Name -->
+          <div class="text-left">
+            <h1 class="text-lg md:text-2xl font-extrabold text-pinkglass-950 font-luxury tracking-[0.16em] leading-none uppercase">
+              ALESSIA CAKE
+            </h1>
+            <div class="flex items-center space-x-1 text-[9px] md:text-[10px] font-semibold text-pinkglass-800 mt-1">
+              <span class="text-pinkglass-600">♥</span>
+              <span class="tracking-wider">Manis di Semua Moment</span>
+              <span class="text-pinkglass-600">♥</span>
+            </div>
+          </div>
         </div>
       </div>
 
