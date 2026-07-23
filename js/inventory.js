@@ -1,3 +1,4 @@
+/* STREAMING_CHUNK:Opening product modal... */
 window.openProductModal = function(productId = null) {
   const modal = document.getElementById('product-modal');
   const title = document.getElementById('product-modal-title');
@@ -130,7 +131,6 @@ window.saveIngredientFromModal = function() {
     return;
   }
 
-  // Lock polling sync to prevent overwriting local state while saving to Google Sheets
   if (typeof window.lockSync === 'function') window.lockSync(10000);
 
   const ingObj = {
@@ -181,10 +181,10 @@ window.deleteIngredient = function(ingId) {
   }
 };
 
+/* STREAMING_CHUNK:Rendering BOM Viewer... */
 window.renderBOMViewer = function(container) {
   if (!appData.products || appData.products.length === 0) return;
 
-  // Preserve selected product ID safely without resetting to default product
   if (!window.activeBomProductId) {
     window.activeBomProductId = appData.products[0].product_id;
   }
@@ -337,7 +337,6 @@ window.addIngredientToRecipe = function() {
     return;
   }
 
-  // Lock polling from overwriting local memory while saving to sheet
   if (typeof window.lockSync === 'function') window.lockSync(10000);
 
   let recipe = appData.recipes.find(r => String(r.product_id).trim() === String(window.activeBomProductId).trim());
@@ -356,7 +355,6 @@ window.addIngredientToRecipe = function() {
   window.renderViewport();
   if (typeof window.showToast === 'function') window.showToast('Komposisi resep berhasil diperbarui!');
 
-  // Save changes to GAS backend
   const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
   if (savedUrl && !savedUrl.includes('PASTE_YOUR')) {
     fetch(savedUrl, {
@@ -370,14 +368,12 @@ window.addIngredientToRecipe = function() {
 window.removeRecipeItem = function(productId, index) {
   const recipe = appData.recipes.find(r => String(r.product_id).trim() === String(productId).trim());
   if (recipe && recipe.items[index]) {
-    // Lock polling from overwriting local memory while saving removal to sheet
     if (typeof window.lockSync === 'function') window.lockSync(10000);
 
     recipe.items.splice(index, 1);
     window.renderViewport();
     if (typeof window.showToast === 'function') window.showToast('Bahan berhasil dihapus dari resep!');
 
-    // Sync removal to GAS backend
     const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
     if (savedUrl && !savedUrl.includes('PASTE_YOUR')) {
       fetch(savedUrl, {
@@ -484,15 +480,18 @@ window.updateBekasiClock = function() {
   clockEl.innerText = `📍 Kab. Bekasi: ${dateStr} • ${timeStr} WIB`;
 };
 
+/* STREAMING_CHUNK:Rendering analytical dashboard excluding Pending/Cancelled orders from Omset... */
 window.renderDashboard = function(container) {
   if (window.dashboardClockInterval) {
     clearInterval(window.dashboardClockInterval);
     window.dashboardClockInterval = null;
   }
 
-  const totalOmset = appData.orders.reduce((acc, o) => acc + (Number(o.total_amount) || 0), 0);
+  // EXCLUDE 'Pending' and 'Cancelled' orders from Omset calculations until 'Terima & Masak' is clicked
+  const validOrders = appData.orders.filter(o => o.order_status !== 'Pending' && o.order_status !== 'Cancelled');
+  const totalOmset = validOrders.reduce((acc, o) => acc + (Number(o.total_amount) || 0), 0);
   const lowStockCount = appData.ingredients.filter(i => i.current_stock <= i.min_stock_alert).length;
-  const activeOrdersCount = appData.orders.filter(o => o.order_status !== 'Ready' && o.order_status !== 'Completed').length;
+  const activeOrdersCount = appData.orders.filter(o => o.order_status === 'Baking').length;
 
   const estimatedHpp = totalOmset * 0.35;
   const estimatedNetProfit = Math.max(0, totalOmset - estimatedHpp);
@@ -632,7 +631,7 @@ window.renderDashboard = function(container) {
         </div>
 
         <div class="divide-y border-pinkglass-50 text-xs">
-          ${appData.orders.slice(0, 3).map(ord => `
+          ${validOrders.slice(0, 3).map(ord => `
             <div class="py-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
               <div>
                 <div class="flex items-center space-x-2">
@@ -652,7 +651,6 @@ window.renderDashboard = function(container) {
     </div>
   `;
 
-  // Start live clock interval for Kab. Bekasi WIB
   window.updateBekasiClock();
   window.dashboardClockInterval = setInterval(window.updateBekasiClock, 1000);
 };
