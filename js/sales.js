@@ -196,7 +196,7 @@ window.submitCustomCake = function() {
   window.changeTab('checkout');
 };
 
-/* STREAMING_CHUNK:Rendering web checkout page... */
+/* STREAMING_CHUNK:Rendering web checkout page with COD and Online Payment Methods... */
 window.renderCheckout = function(container) {
   let subtotal = appData.cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
   let html = `
@@ -238,16 +238,22 @@ window.renderCheckout = function(container) {
             <input type="text" id="cust-name" value="${currentUser.name || ''}" placeholder="Nama Lengkap" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal">
             <label class="text-[11px] font-semibold text-pinkglass-900">Nomor WhatsApp</label>
             <input type="text" id="cust-phone" value="${currentUser.phone || ''}" placeholder="08xxxxxxxxxx" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal">
+            
+            <label class="text-[11px] font-semibold text-pinkglass-900 block pt-1">Metode Pembayaran</label>
+            <select id="cust-payment-method" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal font-bold">
+              <option value="Online (QRIS/Transfer)">📱 Transfer QRIS / Bank Transfer</option>
+              <option value="Online (Bayar di Tempat / COD)">💵 Bayar di Tempat (COD Saat Pick-Up)</option>
+            </select>
           </div>
           
-          <!-- Locked QRIS Display without file input -->
+          <!-- Locked QRIS Display -->
           <div class="bg-pinkglass-50 p-4 rounded-2xl border border-pinkglass-200 text-center space-y-2 relative overflow-hidden">
             <p class="text-[11px] font-bold text-pinkglass-900">Scan QRIS Pink Glass Alessia</p>
             <img src="${(typeof STORE_CONFIG !== 'undefined' && STORE_CONFIG.qris_image_url) ? STORE_CONFIG.qris_image_url : 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=ALESSIA-PINK-GLASS-QRIS'}" alt="QRIS Resmi Alessia Cake" class="mx-auto w-32 h-32 rounded-xl shadow-md bg-white p-1.5 border border-pinkglass-200">
-            <p class="text-[10px] text-pinkglass-800 font-medium pt-1">Silakan scan QRIS resmi di atas untuk melakukan transfer sesuai total belanja.</p>
+            <p class="text-[10px] text-pinkglass-800 font-medium pt-1">Transfer via QRIS atau pilih Bayar di Tempat (COD) saat pengambilan.</p>
           </div>
 
-          <button onclick="window.processCheckout('Online (Web)')" class="w-full bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-bold py-3.5 rounded-2xl shadow-lg transition-all text-xs md:text-sm active:scale-95 flex items-center justify-center space-x-2">
+          <button onclick="window.processCheckout()" class="w-full bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-bold py-3.5 rounded-2xl shadow-lg transition-all text-xs md:text-sm active:scale-95 flex items-center justify-center space-x-2">
             <span>Konfirmasi & Bayar Pesanan Web</span>
             <i data-lucide="arrow-right" class="w-4 h-4"></i>
           </button>
@@ -258,7 +264,7 @@ window.renderCheckout = function(container) {
   container.innerHTML = html;
 };
 
-window.processCheckout = function(channel = 'Online (Web)') {
+window.processCheckout = function() {
   if (appData.cart.length === 0) { 
     if (typeof window.showToast === 'function') window.showToast('Keranjang belanja masih kosong!'); 
     return; 
@@ -266,8 +272,10 @@ window.processCheckout = function(channel = 'Online (Web)') {
   
   const custNameEl = document.getElementById('cust-name');
   const custPhoneEl = document.getElementById('cust-phone');
+  const payMethodEl = document.getElementById('cust-payment-method');
 
-  const orderType = (currentTab === 'offline_orders' || currentRole === 'owner') ? 'Offline (Kasir Toko)' : channel;
+  const selectedMethod = payMethodEl ? payMethodEl.value : 'Online (QRIS/Transfer)';
+  const orderType = (currentTab === 'offline_orders' || currentRole === 'owner') ? 'Offline (Kasir Toko)' : selectedMethod;
   const cartItemsCopy = [...appData.cart];
 
   const newOrder = {
@@ -278,18 +286,24 @@ window.processCheckout = function(channel = 'Online (Web)') {
     table_no: '-',
     total_amount: appData.cart.reduce((a, b) => a + (b.price * b.qty), 0),
     dp_amount: 0,
-    payment_status: 'PAID',
+    payment_status: orderType.includes('COD') ? 'UNPAID' : 'PAID',
     order_status: 'Pending',
     reference_photo_url: '',
     created_at: new Date().toISOString(),
-    pickup_delivery_date: new Date().toISOString().split('T')[0]
+    pickup_delivery_date: new Date().toISOString().split('T')[0],
+    items: cartItemsCopy
   };
-  
+
+  // Lock polling sync to preserve local state write
+  if (typeof window.lockSync === 'function') window.lockSync(10000);
+
+  // Auto deduct ingredients according to BOM recipes
   if (typeof window.autoDeductIngredients === 'function') {
     window.autoDeductIngredients([...cartItemsCopy]);
   }
 
   appData.orders.unshift(newOrder);
+
   if (typeof window.sendOrderToGAS === 'function') {
     window.sendOrderToGAS(newOrder, [...cartItemsCopy]);
   }
@@ -299,7 +313,7 @@ window.processCheckout = function(channel = 'Online (Web)') {
     if (typeof window.showToast === 'function') window.showToast(`Pesanan Offline berhasil dibuat & stok bahan terpotong otomatis!`);
     window.changeTab('web_orders');
   } else {
-    // Show Modal for Online Web Order Proof & WhatsApp Notification
+    // Show Confirmation Modal for Online Web Order
     window.openOrderConfirmationModal(newOrder, cartItemsCopy);
   }
 };
@@ -316,7 +330,7 @@ window.openOrderConfirmationModal = function(order, cartItems) {
   const itemsList = cartItems.map(i => `• ${i.name} (${i.qty}x) = Rp ${(i.price * i.qty).toLocaleString('id-ID')}`).join('\n');
   const storePhone = (typeof STORE_CONFIG !== 'undefined' && STORE_CONFIG.phone) ? STORE_CONFIG.phone : '6281298406844';
 
-  const rawWaMessage = `Halo Admin Alessia Cake,%0A%0ASaya sudah melakukan pesanan & pembayaran via Web dengan rincian:%0A- *ID Pesanan:* ${order.order_id}%0A- *Nama:* ${order.customer_name}%0A- *No WA:* ${order.customer_phone}%0A- *Total Bayar:* Rp ${Number(order.total_amount).toLocaleString('id-ID')}%0A%0A*Rincian Pesanan:*%0A${encodeURIComponent(itemsList)}%0A%0AMohon konfirmasi dan proses pesanan saya. Terima kasih!`;
+  const rawWaMessage = `Halo Admin Alessia Cake,%0A%0ASaya sudah melakukan pesanan via Web dengan rincian:%0A- *ID Pesanan:* ${order.order_id}%0A- *Nama:* ${order.customer_name}%0A- *No WA:* ${order.customer_phone}%0A- *Metode:* ${order.order_type}%0A- *Total Bayar:* Rp ${Number(order.total_amount).toLocaleString('id-ID')}%0A%0A*Rincian Pesanan:*%0A${encodeURIComponent(itemsList)}%0A%0AMohon konfirmasi dan proses pesanan saya. Terima kasih!`;
   const waUrl = `https://wa.me/${storePhone}?text=${rawWaMessage}`;
 
   modal.innerHTML = `
@@ -331,7 +345,7 @@ window.openOrderConfirmationModal = function(order, cartItems) {
 
       <div class="bg-pinkglass-50/80 p-4 rounded-2xl border border-pinkglass-200 text-xs space-y-2 text-charcoal">
         <div class="flex justify-between border-b border-pinkglass-200 pb-2">
-          <span>Total Pembayaran:</span>
+          <span>Total Pembayaran (${order.order_type}):</span>
           <strong class="text-pinkglass-900 font-bold text-sm">Rp ${Number(order.total_amount).toLocaleString('id-ID')}</strong>
         </div>
         <p class="text-[11px] text-pinkglass-800 font-medium">Unggah bukti transfer / pembayaran kamu di bawah ini (opsional) lalu klik tombol WhatsApp untuk konfirmasi instan ke toko.</p>
@@ -612,23 +626,21 @@ window.submitPOSOfflinePayment = function(totalAmount) {
     total_amount: totalAmount,
     dp_amount: 0,
     payment_status: 'PAID',
-    order_status: 'Pending',
+    order_status: 'Baking', // Instantly Baking for offline cashier order
     reference_photo_url: '',
     created_at: new Date().toISOString(),
-    pickup_delivery_date: new Date().toISOString().split('T')[0]
+    pickup_delivery_date: new Date().toISOString().split('T')[0],
+    items: cartItemsCopy
   };
 
-  // Lock polling sync to ensure local write completes safely
   if (typeof window.lockSync === 'function') window.lockSync(10000);
 
-  // Auto deduct raw ingredients according to BOM recipes
   if (typeof window.autoDeductIngredients === 'function') {
     window.autoDeductIngredients([...cartItemsCopy]);
   }
 
   appData.orders.unshift(newOrder);
 
-  // Sync to GAS backend
   if (typeof window.sendOrderToGAS === 'function') {
     window.sendOrderToGAS(newOrder, [...cartItemsCopy]);
   }
@@ -648,12 +660,13 @@ window.setOrderHubFilter = function(filter) {
   window.renderViewport();
 };
 
-/* STREAMING_CHUNK:Rendering Central Order Hub for incoming web/offline orders... */
+/* STREAMING_CHUNK:Rendering Central Order Hub for incoming web/offline orders with Cancel/Delete Order actions... */
 window.renderWebOrders = function(container) {
-  const onlineOrdersCount = appData.orders.filter(o => !String(o.order_type || '').includes('Offline')).length;
-  const offlineOrdersCount = appData.orders.filter(o => String(o.order_type || '').includes('Offline')).length;
+  const activeOrders = appData.orders.filter(o => o.order_status !== 'Cancelled');
+  const onlineOrdersCount = activeOrders.filter(o => !String(o.order_type || '').includes('Offline')).length;
+  const offlineOrdersCount = activeOrders.filter(o => String(o.order_type || '').includes('Offline')).length;
 
-  let filteredOrders = appData.orders.filter(o => {
+  let filteredOrders = activeOrders.filter(o => {
     const isOffline = String(o.order_type || '').includes('Offline');
     if (orderHubFilter === 'online') return !isOffline;
     if (orderHubFilter === 'offline') return isOffline;
@@ -680,7 +693,7 @@ window.renderWebOrders = function(container) {
           
           <div class="flex bg-pinkglass-100 p-1.5 rounded-2xl border border-pinkglass-200 space-x-1">
             <button onclick="window.setOrderHubFilter('all')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all ${orderHubFilter === 'all' ? 'bg-pinkglass-600 text-white shadow-sm' : 'text-pinkglass-800 hover:text-charcoal'}">
-              Semua (${appData.orders.length})
+              Semua (${activeOrders.length})
             </button>
             <button onclick="window.setOrderHubFilter('online')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all ${orderHubFilter === 'online' ? 'bg-pinkglass-600 text-white shadow-sm' : 'text-pinkglass-800 hover:text-charcoal'}">
               🌐 Online (${onlineOrdersCount})
@@ -720,10 +733,18 @@ window.renderWebOrders = function(container) {
                     <i data-lucide="chef-hat" class="w-4 h-4"></i>
                     <span>Terima & Masak (Ke KDS)</span>
                   </button>
+                  <button onclick="window.cancelOrder('${o.order_id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95 flex items-center space-x-1.5" title="Hapus order fake & restore stok bahan">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    <span>❌ Hapus Order</span>
+                  </button>
                 ` : `
                   <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-pinkglass-100 text-pinkglass-900 border border-pinkglass-200">
                     Sedang Diproses: ${o.order_status}
                   </span>
+                  <button onclick="window.cancelOrder('${o.order_id}')" class="bg-rose-100 text-rose-700 hover:bg-rose-200 px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1 border border-rose-300">
+                    <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
+                    <span>Batalkan</span>
+                  </button>
                 `}
               </div>
             </div>
@@ -764,12 +785,14 @@ window.getElapsedTimeFormatted = function(createdIso, readyIso = null, status = 
   return `${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
 };
 
-/* STREAMING_CHUNK:Rendering Kitchen Display System queue... */
+/* STREAMING_CHUNK:Rendering Kitchen Display System queue with cancel order action... */
 window.renderKDS = function(container) {
   if (window.kdsIntervalId) {
     clearInterval(window.kdsIntervalId);
     window.kdsIntervalId = null;
   }
+
+  const kdsOrders = appData.orders.filter(o => o.order_status !== 'Cancelled');
 
   let html = `
     <div class="space-y-6 max-w-7xl mx-auto">
@@ -790,14 +813,14 @@ window.renderKDS = function(container) {
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
   `;
 
-  if (appData.orders.length === 0) {
+  if (kdsOrders.length === 0) {
     html += `
       <div class="col-span-full bg-white/80 p-8 rounded-3xl border border-pinkglass-200 text-center text-pinkglass-800 text-sm glass-card">
         Belum ada antrean pesanan di dapur.
       </div>
     `;
   } else {
-    appData.orders.forEach(o => {
+    kdsOrders.forEach(o => {
       const isOffline = String(o.order_type || '').includes('Offline');
       const formattedTime = window.formatOrderTime(o.created_at);
       const initialElapsed = window.getElapsedTimeFormatted(o.created_at, o.ready_at, o.order_status);
@@ -840,7 +863,7 @@ window.renderKDS = function(container) {
             </div>
           </div>
 
-          <div class="pt-2">
+          <div class="pt-2 space-y-2">
             ${o.order_status === 'Ready' ? `
               <div class="w-full bg-emerald-100 text-emerald-800 font-bold py-2.5 rounded-2xl text-xs text-center border border-emerald-300 flex items-center justify-center space-x-1.5 shadow-2xs">
                 <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
@@ -849,9 +872,14 @@ window.renderKDS = function(container) {
             ` : `
               <button onclick="window.updateOrderStatus('${o.order_id}', 'Ready')" class="w-full bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-bold py-2.5 rounded-2xl text-xs shadow-md transition-all active:scale-95 flex items-center justify-center space-x-1.5">
                 <i data-lucide="check" class="w-4 h-4"></i>
-                <span>Tandai Siap (Ready)</span>
+                <span>Tandai Jika Kue Siap (Ready)</span>
               </button>
             `}
+
+            <button onclick="window.cancelOrder('${o.order_id}')" class="w-full bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold py-2 rounded-2xl text-xs transition-all active:scale-95 flex items-center justify-center space-x-1 border border-rose-300">
+              <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
+              <span>🚫 Batalkan Pesanan (Restore Stok)</span>
+            </button>
           </div>
         </div>
       `;
@@ -863,7 +891,7 @@ window.renderKDS = function(container) {
 
   window.kdsIntervalId = setInterval(() => {
     appData.orders.forEach(o => {
-      if (o.order_status !== 'Ready') {
+      if (o.order_status !== 'Ready' && o.order_status !== 'Cancelled') {
         const el = document.getElementById(`kds-timer-${o.order_id}`);
         if (el) {
           const createdIso = el.getAttribute('data-created');
@@ -883,7 +911,7 @@ window.updateOrderStatus = function(orderId, status) {
       ord.ready_at = new Date().toISOString();
     }
     window.renderViewport(); 
-    if (typeof window.showToast === 'function') window.showToast('Status pesanan diperbarui!');
+    if (typeof window.showToast === 'function') window.showToast(`Status pesanan ${orderId} diperbarui menjadi ${status}!`);
     
     const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
     if (savedUrl && !savedUrl.includes('PASTE_YOUR')) {
@@ -893,5 +921,55 @@ window.updateOrderStatus = function(orderId, status) {
         body: JSON.stringify({ action: 'updateOrderStatus', order_id: orderId, new_status: status, ready_at: ord.ready_at, user_role: currentRole })
       }).catch(e => console.error(e));
     }
+  }
+};
+
+/* STREAMING_CHUNK:Cancelling / Deleting order with automatic stock restoration... */
+window.cancelOrder = function(orderId) {
+  if (!confirm(`Apakah Anda yakin ingin membatalkan/menghapus pesanan ${orderId}? Stok bahan baku akan dikembalikan otomatis.`)) return;
+
+  const ordIndex = appData.orders.findIndex(o => o.order_id === orderId);
+  if (ordIndex < 0) return;
+
+  const ord = appData.orders[ordIndex];
+
+  // Lock polling sync
+  if (typeof window.lockSync === 'function') window.lockSync(10000);
+
+  // Restore ingredient stocks from BOM recipes
+  if (ord.items && ord.items.length > 0) {
+    ord.items.forEach(cartItem => {
+      const recipe = appData.recipes.find(r => String(r.product_id).trim() === String(cartItem.product_id).trim());
+      if (recipe && recipe.items) {
+        recipe.items.forEach(rItem => {
+          const ing = appData.ingredients.find(i => String(i.ingredient_id).trim() === String(rItem.ingredient_id).trim());
+          if (ing) {
+            const totalToRestore = rItem.qty * cartItem.qty;
+            ing.current_stock = Number(ing.current_stock || 0) + totalToRestore;
+          }
+        });
+      }
+    });
+  }
+
+  ord.order_status = 'Cancelled';
+
+  window.renderViewport();
+  if (typeof window.showToast === 'function') window.showToast(`Pesanan ${orderId} berhasil dibatalkan & stok bahan baku dikembalikan!`);
+
+  // Sync cancellation & restored ingredients to GAS
+  const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
+  if (savedUrl && !savedUrl.includes('PASTE_YOUR')) {
+    fetch(savedUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ 
+        action: 'updateOrderStatus', 
+        order_id: orderId, 
+        new_status: 'Cancelled', 
+        ingredients: appData.ingredients,
+        user_role: currentRole 
+      })
+    }).catch(e => console.error(e));
   }
 };
