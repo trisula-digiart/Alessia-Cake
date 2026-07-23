@@ -1,3 +1,4 @@
+/* STREAMING_CHUNK:Opening product modal... */
 window.openProductModal = function(productId = null) {
   const modal = document.getElementById('product-modal');
   const title = document.getElementById('product-modal-title');
@@ -29,11 +30,13 @@ window.openProductModal = function(productId = null) {
   modal.classList.remove('hidden');
 };
 
+/* STREAMING_CHUNK:Closing product modal... */
 window.closeProductModal = function() {
   const modal = document.getElementById('product-modal');
   if (modal) modal.classList.add('hidden');
 };
 
+/* STREAMING_CHUNK:Saving product modal form data... */
 window.saveProductFromModal = function() {
   const pid = document.getElementById('pm-product-id').value;
   const name = document.getElementById('pm-name').value.trim();
@@ -44,7 +47,7 @@ window.saveProductFromModal = function() {
   const desc = document.getElementById('pm-desc').value.trim();
 
   if (!name || price <= 0) {
-    window.showToast('Mohon isi nama produk dan harga yang valid!');
+    if (typeof window.showToast === 'function') window.showToast('Mohon isi nama produk dan harga yang valid!');
     return;
   }
 
@@ -69,7 +72,7 @@ window.saveProductFromModal = function() {
 
   window.closeProductModal();
   window.renderViewport();
-  window.showToast('Produk berhasil disimpan!');
+  if (typeof window.showToast === 'function') window.showToast('Produk berhasil disimpan!');
 
   const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
   if (savedUrl && !savedUrl.includes('PASTE_YOUR')) {
@@ -81,6 +84,7 @@ window.saveProductFromModal = function() {
   }
 };
 
+/* STREAMING_CHUNK:Opening ingredient modal... */
 window.openIngredientModal = function(ingId = null) {
   const modal = document.getElementById('ingredient-modal');
   const title = document.getElementById('ingredient-modal-title');
@@ -110,11 +114,13 @@ window.openIngredientModal = function(ingId = null) {
   modal.classList.remove('hidden');
 };
 
+/* STREAMING_CHUNK:Closing ingredient modal... */
 window.closeIngredientModal = function() {
   const modal = document.getElementById('ingredient-modal');
   if (modal) modal.classList.add('hidden');
 };
 
+/* STREAMING_CHUNK:Saving ingredient modal form data... */
 window.saveIngredientFromModal = function() {
   const ingId = document.getElementById('im-ingredient-id').value;
   const name = document.getElementById('im-name').value.trim();
@@ -124,7 +130,7 @@ window.saveIngredientFromModal = function() {
   const minStock = Number(document.getElementById('im-min-stock').value) || 0;
 
   if (!name || cost <= 0) {
-    window.showToast('Mohon isi nama bahan baku dan harga unit yang valid!');
+    if (typeof window.showToast === 'function') window.showToast('Mohon isi nama bahan baku dan harga unit yang valid!');
     return;
   }
 
@@ -146,7 +152,7 @@ window.saveIngredientFromModal = function() {
 
   window.closeIngredientModal();
   window.renderViewport();
-  window.showToast('Bahan baku berhasil disimpan!');
+  if (typeof window.showToast === 'function') window.showToast('Bahan baku berhasil disimpan!');
 
   const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
   if (savedUrl && !savedUrl.includes('PASTE_YOUR')) {
@@ -158,14 +164,16 @@ window.saveIngredientFromModal = function() {
   }
 };
 
+/* STREAMING_CHUNK:Deleting ingredient... */
 window.deleteIngredient = function(ingId) {
   if (confirm('Apakah kamu yakin ingin menghapus bahan baku ini?')) {
     appData.ingredients = appData.ingredients.filter(i => i.ingredient_id !== ingId);
     window.renderViewport();
-    window.showToast('Bahan baku berhasil dihapus!');
+    if (typeof window.showToast === 'function') window.showToast('Bahan baku berhasil dihapus!');
   }
 };
 
+/* STREAMING_CHUNK:Rendering BOM recipe viewer and HPP calculator... */
 window.renderBOMViewer = function(container) {
   const selectedProduct = appData.products.find(p => p.product_id === activeBomProductId) || appData.products[0];
   if (!selectedProduct) return;
@@ -309,7 +317,7 @@ window.addIngredientToRecipe = function() {
   const qty = Number(qtyInput ? qtyInput.value : 0);
 
   if (!ingId || qty <= 0) {
-    window.showToast('Mohon pilih bahan dan masukkan jumlah takaran yang valid!');
+    if (typeof window.showToast === 'function') window.showToast('Mohon pilih bahan dan masukkan jumlah takaran yang valid!');
     return;
   }
 
@@ -327,7 +335,7 @@ window.addIngredientToRecipe = function() {
   }
 
   window.renderViewport();
-  window.showToast('Komposisi resep berhasil diperbarui!');
+  if (typeof window.showToast === 'function') window.showToast('Komposisi resep berhasil diperbarui!');
 };
 
 window.removeRecipeItem = function(productId, index) {
@@ -335,7 +343,7 @@ window.removeRecipeItem = function(productId, index) {
   if (recipe && recipe.items[index]) {
     recipe.items.splice(index, 1);
     window.renderViewport();
-    window.showToast('Bahan berhasil dihapus dari resep!');
+    if (typeof window.showToast === 'function') window.showToast('Bahan berhasil dihapus dari resep!');
   }
 };
 
@@ -360,6 +368,7 @@ window.autoDeductIngredients = function(cartItems) {
   }
 };
 
+/* STREAMING_CHUNK:Rendering ingredient stock management view... */
 window.renderUpdateStock = function(container) {
   let html = `
     <div class="space-y-6 max-w-7xl mx-auto">
@@ -425,6 +434,7 @@ window.renderUpdateStock = function(container) {
   container.innerHTML = html;
 };
 
+/* STREAMING_CHUNK:Rendering analytical dashboard view... */
 window.renderDashboard = function(container) {
   const totalOmset = appData.orders.reduce((acc, o) => acc + (Number(o.total_amount) || 0), 0);
   const lowStockCount = appData.ingredients.filter(i => i.current_stock <= i.min_stock_alert).length;
@@ -584,4 +594,10 @@ window.renderDashboard = function(container) {
   `;
 };
 
-window.renderAudit = function(container) { container.innerHTML = `<div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 text-charcoal glass-card font-semibold">Audit Logs Sistem & Riwayat Keamanan (Ready)</div>`; };
+/* STREAMING_CHUNK:Rendering system audit logs view... */
+window.renderAudit = function(container) { 
+  container.innerHTML = `<div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 text-charcoal glass-card font-semibold">Audit Logs Sistem & Riwayat Keamanan (Ready)</div>`; 
+};
+```eof
+
+Silakan salin dan timpa isi file **`js/inventory.js`** di repositori lu, bro! Sekarang semua file modular (`auth.js`, `sales.js`, `inventory.js`) sudah terpisah bersih, rapi, dan tidak ada yang saling tumpang tindih.
