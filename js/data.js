@@ -1,3 +1,8 @@
+/* ==========================================================
+ * ALESSIA CAKE - DATA STATE & CONFIGURATION (JS)
+ * TRISULACODER v9.6 Enterprise Engine
+ * ========================================================== */
+
 let GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzX4rjfDx1V31yJsgoxHsnyA78EghxGTCnS7llUalyGClZEQNzYfaQvq5Egl-TL6mjJ/exec'; 
 
 let currentRole = 'customer';
@@ -12,11 +17,26 @@ let catalogFilter = {
 // Incoming Orders Hub Channel Filter State ('all', 'online', 'offline') 
 let orderHubFilter = 'all';
 
-// Toko Config for WhatsApp & Permanently Locked QRIS
+// Toko Config for WhatsApp, Owner Profile, PIN & QRIS (Dynamic Settings)
 const STORE_CONFIG = {
-  phone: '6281298406844', // Nomor WhatsApp Toko
+  owner_name: 'Pemilik Toko Alessia',
+  phone: '6281298406844', // Nomor WhatsApp Toko Penerima Pesanan Online
+  staff_pin: '123456',    // PIN Keamanan Login Staff/Owner
+  location_name: 'Kab. Bekasi',
   qris_image_url: 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=ALESSIA-PINK-GLASS-QRIS'
 };
+
+// Load saved STORE_CONFIG if available in localStorage
+try {
+  const savedConfig = localStorage.getItem('ALESSIA_STORE_CONFIG');
+  if (savedConfig) {
+    const parsed = JSON.parse(savedConfig);
+    if (parsed.owner_name) STORE_CONFIG.owner_name = parsed.owner_name;
+    if (parsed.phone) STORE_CONFIG.phone = parsed.phone;
+    if (parsed.staff_pin) STORE_CONFIG.staff_pin = parsed.staff_pin;
+    if (parsed.location_name) STORE_CONFIG.location_name = parsed.location_name;
+  }
+} catch(e) { console.error(e); }
 
 let currentUser = {
   name: '',
@@ -96,7 +116,8 @@ const roleTabs = {
     { id: 'catalog', name: 'Katalog Produk', icon: 'package' },
     { id: 'bom', name: 'Resep KUE', icon: 'book-open' },
     { id: 'update_stock', name: 'Stok Bahan-Bahan', icon: 'database' },
-    { id: 'finance', name: 'Bank Alessia', icon: 'wallet' }
+    { id: 'finance', name: 'Bank Alessia', icon: 'wallet' },
+    { id: 'settings', name: 'Pengaturan Owner', icon: 'settings' }
   ],
   customer: [
     { id: 'catalog', name: 'Menu Utama', icon: 'shopping-bag' },
@@ -107,3 +128,125 @@ const roleTabs = {
 
 // Selected product state in BOM Manager
 let activeBomProductId = 'PRD-01';
+
+// Global Realtime Clock Timer Helper
+window.initLuxuryClock = function() {
+  if (window.clockTimerId) clearInterval(window.clockTimerId);
+  
+  function updateClock() {
+    const timeEl = document.getElementById('luxury-clock-time');
+    const dateEl = document.getElementById('luxury-clock-date');
+    if (!timeEl || !dateEl) return;
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+    const dateStr = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+    timeEl.innerText = timeStr;
+    dateEl.innerText = `${STORE_CONFIG.location_name || 'Kab. Bekasi'} • ${dateStr}`;
+  }
+
+  updateClock();
+  window.clockTimerId = setInterval(updateClock, 1000);
+};
+
+// Render Tab Pengaturan Owner (Settings View)
+window.renderOwnerSettings = function(container) {
+  let html = `
+    <div class="max-w-4xl mx-auto space-y-6">
+      <div class="bg-white/80 p-6 md:p-8 rounded-3xl border border-pinkglass-200 glass-card shadow-sm flex items-center justify-between">
+        <div>
+          <h2 class="text-xl md:text-2xl font-extrabold text-charcoal flex items-center gap-2">
+            <i data-lucide="settings" class="w-6 h-6 text-pinkglass-600"></i>
+            <span>Pengaturan & Konfigurasi Toko</span>
+          </h2>
+          <p class="text-xs md:text-sm text-pinkglass-800">Atur profil Pemilik, nomor WhatsApp tujuan pesanan online, dan PIN keamanan staf.</p>
+        </div>
+        <span class="text-xs font-bold px-3 py-1.5 rounded-full bg-pinkglass-600 text-white shadow-xs">Akses Owner</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Card 1: Profil Owner & WhatsApp Order -->
+        <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card space-y-4 shadow-sm">
+          <h3 class="font-bold text-base text-charcoal border-b border-pinkglass-200 pb-3 flex items-center gap-2">
+            <i data-lucide="user-check" class="w-5 h-5 text-pinkglass-600"></i>
+            <span>Profil Toko & WhatsApp Tujuan</span>
+          </h3>
+
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs font-bold text-pinkglass-900 block mb-1">Nama Owner / Pemilik Toko</label>
+              <input type="text" id="setting-owner-name" value="${STORE_CONFIG.owner_name}" class="w-full bg-white border border-pinkglass-300 rounded-xl p-3 text-xs md:text-sm text-charcoal font-bold focus:ring-2 focus:ring-pinkglass-400">
+            </div>
+
+            <div>
+              <label class="text-xs font-bold text-pinkglass-900 block mb-1">Nomor WhatsApp Tujuan Order (Gunakan 62)</label>
+              <input type="text" id="setting-store-phone" value="${STORE_CONFIG.phone}" placeholder="misal: 6281298406844" class="w-full bg-white border border-pinkglass-300 rounded-xl p-3 text-xs md:text-sm text-charcoal font-bold font-mono focus:ring-2 focus:ring-pinkglass-400">
+              <p class="text-[10px] text-pinkglass-800 mt-1 font-medium">*Nomor ini akan menerima seluruh notifikasi order WhatsApp dari web checkout.</p>
+            </div>
+
+            <div>
+              <label class="text-xs font-bold text-pinkglass-900 block mb-1">Nama Lokasi / Kota Toko</label>
+              <input type="text" id="setting-store-location" value="${STORE_CONFIG.location_name || 'Kab. Bekasi'}" class="w-full bg-white border border-pinkglass-300 rounded-xl p-3 text-xs md:text-sm text-charcoal font-bold focus:ring-2 focus:ring-pinkglass-400">
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: PIN Keamanan Staff -->
+        <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card space-y-4 shadow-sm flex flex-col justify-between">
+          <div class="space-y-4">
+            <h3 class="font-bold text-base text-charcoal border-b border-pinkglass-200 pb-3 flex items-center gap-2">
+              <i data-lucide="shield-lock" class="w-5 h-5 text-pinkglass-600"></i>
+              <span>Keamanan PIN Staf & Owner</span>
+            </h3>
+
+            <div class="space-y-3">
+              <div>
+                <label class="text-xs font-bold text-pinkglass-900 block mb-1">PIN Keamanan Login Staf/Owner</label>
+                <input type="password" id="setting-staff-pin" value="${STORE_CONFIG.staff_pin}" maxlength="6" class="w-full bg-white border border-pinkglass-300 rounded-xl p-3 text-xs md:text-sm text-charcoal font-bold text-center tracking-widest focus:ring-2 focus:ring-pinkglass-400">
+                <p class="text-[10px] text-pinkglass-800 mt-1 font-medium">*PIN digunakan untuk verifikasi login gerbang Owner/Staf Toko.</p>
+              </div>
+
+              <div class="bg-pinkglass-50/80 p-3.5 rounded-2xl border border-pinkglass-200/80 text-[11px] text-pinkglass-900 leading-relaxed space-y-1">
+                <span class="font-bold block text-pinkglass-950">💡 Tips Keamanan:</span>
+                <p>Pastikan PIN hanya diketahui oleh Owner dan Staf yang berwenang untuk mengakses laporan Bank Alessia & KDS Dapur.</p>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="window.saveOwnerSettings()" class="w-full bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-bold py-3.5 rounded-2xl text-xs md:text-sm shadow-md transition-all active:scale-95 flex items-center justify-center space-x-2 mt-4">
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+            <span>Simpan Perubahan Pengaturan</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+};
+
+// Save Owner Settings Handler
+window.saveOwnerSettings = function() {
+  const nameEl = document.getElementById('setting-owner-name');
+  const phoneEl = document.getElementById('setting-store-phone');
+  const pinEl = document.getElementById('setting-staff-pin');
+  const locEl = document.getElementById('setting-store-location');
+
+  if (nameEl && nameEl.value.trim()) STORE_CONFIG.owner_name = nameEl.value.trim();
+  if (phoneEl && phoneEl.value.trim()) STORE_CONFIG.phone = phoneEl.value.trim().replace(/[^0-9]/g, '');
+  if (pinEl && pinEl.value.trim()) STORE_CONFIG.staff_pin = pinEl.value.trim();
+  if (locEl && locEl.value.trim()) STORE_CONFIG.location_name = locEl.value.trim();
+
+  // Save permanently to localStorage
+  try {
+    localStorage.setItem('ALESSIA_STORE_CONFIG', JSON.stringify(STORE_CONFIG));
+  } catch(e) { console.error(e); }
+
+  if (typeof window.showToast === 'function') {
+    window.showToast('Pengaturan toko berhasil diperbarui!');
+  }
+
+  window.renderViewport();
+};
