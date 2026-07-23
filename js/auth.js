@@ -8,7 +8,7 @@ window.closeAuthModal = function() {
   if (modal) modal.classList.add('hidden');
 };
 
-window.switchAuthTab = function(type) { 
+window.switchAuthTab = function(type) {
   const custBtn = document.getElementById('tab-auth-customer');
   const staffBtn = document.getElementById('tab-auth-staff');
   const custForm = document.getElementById('auth-customer-form');
@@ -158,6 +158,11 @@ window.renderViewport = function() {
   if (window.kdsIntervalId) {
     clearInterval(window.kdsIntervalId);
     window.kdsIntervalId = null;
+  }
+
+  if (window.dashboardClockInterval) {
+    clearInterval(window.dashboardClockInterval);
+    window.dashboardClockInterval = null;
   }
 
   if (currentRole === 'customer') {
