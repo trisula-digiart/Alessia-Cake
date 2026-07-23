@@ -132,6 +132,54 @@
     </div>
   </div>
 
+  <!-- PRODUCT ADD / EDIT MODAL (FOR OWNER/ADMIN) -->
+  <div id="product-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-charcoal/40 backdrop-blur-md transition-all duration-300">
+    <div class="glass-modal w-full max-w-md rounded-3xl p-6 md:p-8 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-pinkglass-200 pb-3">
+        <h3 id="product-modal-title" class="text-lg font-bold text-charcoal">Tambah / Edit Produk</h3>
+        <button onclick="window.closeProductModal()" class="text-pinkglass-700 hover:text-charcoal p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <input type="hidden" id="pm-product-id">
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs font-bold text-pinkglass-900">Nama Produk</label>
+          <input type="text" id="pm-name" placeholder="misal: Pink Rose Opera" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-pinkglass-900">Kategori</label>
+          <select id="pm-category" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400 font-medium">
+            <option value="Whole Cake">Whole Cake</option>
+            <option value="Slice">Slice</option>
+            <option value="Pastry">Pastry</option>
+            <option value="Cookies">Cookies</option>
+            <option value="Drink">Drink</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-pinkglass-900">Harga (Rp)</label>
+          <input type="number" id="pm-price" placeholder="misal: 150000" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-pinkglass-900">Stok Awal</label>
+          <input type="number" id="pm-stock" placeholder="misal: 10" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-pinkglass-900">URL Gambar Produk</label>
+          <input type="text" id="pm-image" placeholder="https://..." class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-pinkglass-900">Deskripsi Ringkasan</label>
+          <textarea id="pm-desc" rows="2" placeholder="Deskripsi kue..." class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400"></textarea>
+        </div>
+      </div>
+      <button onclick="window.saveProductFromModal()" class="w-full bg-gradient-to-r from-pinkglass-600 to-pinkglass-500 hover:from-pinkglass-700 hover:to-pinkglass-600 text-white font-bold py-3 rounded-2xl text-xs md:text-sm shadow-md transition-all active:scale-95">
+        Simpan Produk
+      </button>
+    </div>
+  </div>
+
   <!-- MAIN APP HEADER -->
   <header class="glass-header px-4 md:px-8 py-3.5 flex items-center justify-between sticky top-0 z-50 shadow-sm">
     <div class="flex items-center space-x-3">
@@ -192,6 +240,13 @@
 
     let currentRole = 'customer';
     let currentTab = 'catalog';
+
+    // Catalog Filter & Sort State
+    let catalogFilter = {
+      search: '',
+      category: 'all',
+      sort: 'default'
+    };
 
     let currentUser = {
       name: '',
@@ -441,49 +496,211 @@
 
     // --- VIEW RENDERERS ---
     window.renderCustomerCatalog = function(container) {
+      const isOwner = (currentRole === 'owner');
+
       let html = `
         <div class="space-y-6 max-w-7xl mx-auto">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card">
-            <div>
-              <h2 class="text-xl md:text-2xl font-bold text-charcoal">Koleksi Kue Pink Glass Alessia</h2>
-              <p class="text-xs md:text-sm text-pinkglass-800">Pilih kreasi kue artisan bertema merah muda termewah hari ini.</p>
+          <div class="flex flex-col gap-4 bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <h2 class="text-xl md:text-2xl font-bold text-charcoal">Koleksi Kue Pink Glass Alessia</h2>
+                <p class="text-xs md:text-sm text-pinkglass-800">Pilih kreasi kue artisan bertema merah muda termewah hari ini.</p>
+              </div>
+              ${isOwner ? `
+                <button onclick="window.openProductModal()" class="bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-bold px-4 py-2.5 rounded-2xl text-xs transition-all flex items-center space-x-2 shadow-md active:scale-95">
+                  <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                  <span>+ Tambah Produk Baru</span>
+                </button>
+              ` : ''}
             </div>
-            <div class="w-full md:w-auto">
-              <input type="text" placeholder="Cari menu kue..." oninput="window.filterCatalog(this.value)" class="w-full md:w-64 bg-white/90 border border-pinkglass-300 rounded-2xl px-4 py-2.5 text-xs md:text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
+
+            <!-- SEARCH, CATEGORY FILTER & PRICE SORTING TOOLBAR -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-pinkglass-100">
+              <div>
+                <input type="text" value="${catalogFilter.search}" placeholder="Cari menu kue..." oninput="window.setCatalogSearch(this.value)" class="w-full bg-white/90 border border-pinkglass-300 rounded-2xl px-4 py-2.5 text-xs md:text-sm text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
+              </div>
+              <div>
+                <select onchange="window.setCatalogCategory(this.value)" class="w-full bg-white/90 border border-pinkglass-300 rounded-2xl px-3 py-2.5 text-xs md:text-sm text-charcoal font-medium focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
+                  <option value="all" ${catalogFilter.category === 'all' ? 'selected' : ''}>Semua Kategori</option>
+                  <option value="Whole Cake" ${catalogFilter.category === 'Whole Cake' ? 'selected' : ''}>Whole Cake</option>
+                  <option value="Slice" ${catalogFilter.category === 'Slice' ? 'selected' : ''}>Slice Cake</option>
+                  <option value="Pastry" ${catalogFilter.category === 'Pastry' ? 'selected' : ''}>Pastry</option>
+                  <option value="Cookies" ${catalogFilter.category === 'Cookies' ? 'selected' : ''}>Cookies</option>
+                  <option value="Drink" ${catalogFilter.category === 'Drink' ? 'selected' : ''}>Drink</option>
+                </select>
+              </div>
+              <div>
+                <select onchange="window.setCatalogSort(this.value)" class="w-full bg-white/90 border border-pinkglass-300 rounded-2xl px-3 py-2.5 text-xs md:text-sm text-charcoal font-medium focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
+                  <option value="default" ${catalogFilter.sort === 'default' ? 'selected' : ''}>Urutkan: Default</option>
+                  <option value="price_asc" ${catalogFilter.sort === 'price_asc' ? 'selected' : ''}>Harga: Termurah → Termahal</option>
+                  <option value="price_desc" ${catalogFilter.sort === 'price_desc' ? 'selected' : ''}>Harga: Termahal → Termurah</option>
+                </select>
+              </div>
             </div>
           </div>
+
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
       `;
 
-      appData.products.forEach(p => {
+      // Filter and Sort Products
+      let displayProducts = appData.products.filter(p => {
+        const matchesSearch = p.name.toLowerCase().includes(catalogFilter.search.toLowerCase()) || 
+                              p.category.toLowerCase().includes(catalogFilter.search.toLowerCase());
+        const matchesCategory = catalogFilter.category === 'all' || p.category === catalogFilter.category;
+        return matchesSearch && matchesCategory;
+      });
+
+      if (catalogFilter.sort === 'price_asc') {
+        displayProducts.sort((a, b) => Number(a.base_price) - Number(b.base_price));
+      } else if (catalogFilter.sort === 'price_desc') {
+        displayProducts.sort((a, b) => Number(b.base_price) - Number(a.base_price));
+      }
+
+      if (displayProducts.length === 0) {
         html += `
-          <div class="bg-white/80 rounded-3xl border border-pinkglass-200 overflow-hidden flex flex-col justify-between glass-card hover:border-pinkglass-400 transition-all shadow-sm">
-            <div>
-              <div class="relative h-44 md:h-48 overflow-hidden bg-pinkglass-100">
-                <img src="${p.image_url}" alt="${p.name}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
-                <span class="absolute top-3 left-3 text-[10px] bg-white/90 backdrop-blur-sm text-pinkglass-900 px-3 py-1 rounded-full font-bold shadow-sm">${p.category}</span>
-              </div>
-              <div class="p-4 md:p-5 space-y-1.5">
-                <h3 class="font-bold text-sm md:text-base text-charcoal truncate">${p.name}</h3>
-                <p class="text-[11px] md:text-xs text-pinkglass-800 line-clamp-2">${p.description}</p>
-              </div>
-            </div>
-            <div class="p-4 md:p-5 pt-0 flex items-center justify-between">
-              <div>
-                <span class="text-[10px] text-pinkglass-700 uppercase tracking-wider font-semibold">Harga</span>
-                <p class="font-bold text-charcoal text-sm md:text-base">Rp ${p.base_price.toLocaleString('id-ID')}</p>
-              </div>
-              <button onclick="window.addToCart('${p.product_id}')" class="bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-semibold px-4 py-2.5 rounded-2xl text-xs transition-all flex items-center space-x-1.5 shadow-md active:scale-95">
-                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                <span>Tambah</span>
-              </button>
-            </div>
+          <div class="col-span-full bg-white/80 p-8 rounded-3xl border border-pinkglass-200 text-center text-pinkglass-800 text-sm glass-card">
+            Tidak ada produk yang sesuai dengan filter atau pencarian.
           </div>
         `;
-      });
+      } else {
+        displayProducts.forEach(p => {
+          html += `
+            <div class="bg-white/80 rounded-3xl border border-pinkglass-200 overflow-hidden flex flex-col justify-between glass-card hover:border-pinkglass-400 transition-all shadow-sm">
+              <div>
+                <div class="relative h-44 md:h-48 overflow-hidden bg-pinkglass-100">
+                  <img src="${p.image_url}" alt="${p.name}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" onerror="this.src='https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=600'">
+                  <span class="absolute top-3 left-3 text-[10px] bg-white/90 backdrop-blur-sm text-pinkglass-900 px-3 py-1 rounded-full font-bold shadow-sm">${p.category}</span>
+                </div>
+                <div class="p-4 md:p-5 space-y-1.5">
+                  <h3 class="font-bold text-sm md:text-base text-charcoal truncate">${p.name}</h3>
+                  <p class="text-[11px] md:text-xs text-pinkglass-800 line-clamp-2">${p.description}</p>
+                </div>
+              </div>
+              <div class="p-4 md:p-5 pt-0 flex items-center justify-between">
+                <div>
+                  <span class="text-[10px] text-pinkglass-700 uppercase tracking-wider font-semibold">Harga</span>
+                  <p class="font-bold text-charcoal text-sm md:text-base">Rp ${Number(p.base_price).toLocaleString('id-ID')}</p>
+                </div>
+                ${isOwner ? `
+                  <button onclick="window.openProductModal('${p.product_id}')" class="bg-charcoal hover:bg-black text-white font-semibold px-4 py-2.5 rounded-2xl text-xs transition-all flex items-center space-x-1.5 shadow-md active:scale-95">
+                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                    <span>Edit Produk</span>
+                  </button>
+                ` : `
+                  <button onclick="window.addToCart('${p.product_id}')" class="bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-semibold px-4 py-2.5 rounded-2xl text-xs transition-all flex items-center space-x-1.5 shadow-md active:scale-95">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                    <span>Tambah</span>
+                  </button>
+                `}
+              </div>
+            </div>
+          `;
+        });
+      }
 
       html += `</div></div>`;
       container.innerHTML = html;
+    };
+
+    // --- CATALOG FILTER HANDLERS ---
+    window.setCatalogSearch = function(query) {
+      catalogFilter.search = query;
+      window.renderViewport();
+    };
+
+    window.setCatalogCategory = function(category) {
+      catalogFilter.category = category;
+      window.renderViewport();
+    };
+
+    window.setCatalogSort = function(sortType) {
+      catalogFilter.sort = sortType;
+      window.renderViewport();
+    };
+
+    // --- PRODUCT MODAL HANDLERS FOR OWNER ---
+    window.openProductModal = function(productId = null) {
+      const modal = document.getElementById('product-modal');
+      const title = document.getElementById('product-modal-title');
+      if (!modal) return;
+
+      if (productId) {
+        const prod = appData.products.find(p => p.product_id === productId);
+        if (prod) {
+          title.innerText = 'Edit Produk';
+          document.getElementById('pm-product-id').value = prod.product_id;
+          document.getElementById('pm-name').value = prod.name;
+          document.getElementById('pm-category').value = prod.category;
+          document.getElementById('pm-price').value = prod.base_price;
+          document.getElementById('pm-stock').value = prod.stock_qty || 10;
+          document.getElementById('pm-image').value = prod.image_url;
+          document.getElementById('pm-desc').value = prod.description;
+        }
+      } else {
+        title.innerText = 'Tambah Produk Baru';
+        document.getElementById('pm-product-id').value = 'PRD-' + Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('pm-name').value = '';
+        document.getElementById('pm-category').value = 'Whole Cake';
+        document.getElementById('pm-price').value = '';
+        document.getElementById('pm-stock').value = '10';
+        document.getElementById('pm-image').value = '';
+        document.getElementById('pm-desc').value = '';
+      }
+
+      modal.classList.remove('hidden');
+    };
+
+    window.closeProductModal = function() {
+      const modal = document.getElementById('product-modal');
+      if (modal) modal.classList.add('hidden');
+    };
+
+    window.saveProductFromModal = function() {
+      const pid = document.getElementById('pm-product-id').value;
+      const name = document.getElementById('pm-name').value.trim();
+      const category = document.getElementById('pm-category').value;
+      const price = Number(document.getElementById('pm-price').value) || 0;
+      const stock = Number(document.getElementById('pm-stock').value) || 0;
+      const image = document.getElementById('pm-image').value.trim() || 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=600';
+      const desc = document.getElementById('pm-desc').value.trim();
+
+      if (!name || price <= 0) {
+        window.showToast('Mohon isi nama produk dan harga yang valid!');
+        return;
+      }
+
+      const productObj = {
+        product_id: pid,
+        category: category,
+        name: name,
+        description: desc,
+        base_price: price,
+        image_url: image,
+        is_active: true,
+        is_happy_hour_eligible: false,
+        stock_qty: stock
+      };
+
+      const existingIndex = appData.products.findIndex(p => p.product_id === pid);
+      if (existingIndex >= 0) {
+        appData.products[existingIndex] = productObj;
+      } else {
+        appData.products.push(productObj);
+      }
+
+      window.closeProductModal();
+      window.renderViewport();
+      window.showToast('Produk berhasil disimpan!');
+
+      // Sync product to GAS Backend
+      const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
+      if (savedUrl && !savedUrl.includes('PASTE_YOUR')) {
+        fetch(savedUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ action: 'saveProduct', product: productObj, user_role: currentRole })
+        }).catch(e => console.error(e));
+      }
     };
 
     window.renderCustomBuilder = function(container) {
