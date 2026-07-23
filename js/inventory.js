@@ -4,7 +4,7 @@ window.openProductModal = function(productId = null) {
   if (!modal) return;
 
   if (productId) {
-    const prod = appData.products.find(p => p.product_id === productId);
+    const prod = appData.products.find(p => String(p.product_id) === String(productId));
     if (prod) {
       title.innerText = 'Edit Produk';
       document.getElementById('pm-product-id').value = prod.product_id;
@@ -48,6 +48,8 @@ window.saveProductFromModal = function() {
     return;
   }
 
+  if (typeof window.lockSync === 'function') window.lockSync(10000);
+
   const productObj = {
     product_id: pid,
     category: category,
@@ -60,7 +62,7 @@ window.saveProductFromModal = function() {
     stock_qty: stock
   };
 
-  const existingIndex = appData.products.findIndex(p => p.product_id === pid);
+  const existingIndex = appData.products.findIndex(p => String(p.product_id) === String(pid));
   if (existingIndex >= 0) {
     appData.products[existingIndex] = productObj;
   } else {
@@ -87,7 +89,7 @@ window.openIngredientModal = function(ingId = null) {
   if (!modal) return;
 
   if (ingId) {
-    const ing = appData.ingredients.find(i => i.ingredient_id === ingId);
+    const ing = appData.ingredients.find(i => String(i.ingredient_id) === String(ingId));
     if (ing) {
       title.innerText = 'Edit Bahan Baku';
       document.getElementById('im-ingredient-id').value = ing.ingredient_id;
@@ -128,6 +130,9 @@ window.saveIngredientFromModal = function() {
     return;
   }
 
+  // Lock polling sync to prevent overwriting local state while saving to Google Sheets
+  if (typeof window.lockSync === 'function') window.lockSync(10000);
+
   const ingObj = {
     ingredient_id: ingId,
     name: name,
@@ -137,7 +142,7 @@ window.saveIngredientFromModal = function() {
     cost_per_unit: cost
   };
 
-  const existingIndex = appData.ingredients.findIndex(i => i.ingredient_id === ingId);
+  const existingIndex = appData.ingredients.findIndex(i => String(i.ingredient_id) === String(ingId));
   if (existingIndex >= 0) {
     appData.ingredients[existingIndex] = ingObj;
   } else {
@@ -161,7 +166,7 @@ window.saveIngredientFromModal = function() {
 window.deleteIngredient = function(ingId) {
   if (confirm('Apakah kamu yakin ingin menghapus bahan baku ini?')) {
     if (typeof window.lockSync === 'function') window.lockSync(10000);
-    appData.ingredients = appData.ingredients.filter(i => i.ingredient_id !== ingId);
+    appData.ingredients = appData.ingredients.filter(i => String(i.ingredient_id) !== String(ingId));
     window.renderViewport();
     if (typeof window.showToast === 'function') window.showToast('Bahan baku berhasil dihapus!');
 
