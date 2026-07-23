@@ -1,4 +1,3 @@
-/* STREAMING_CHUNK:Setting catalog filter handlers... */
 window.setCatalogSearch = function(query) {
   catalogFilter.search = query;
   window.renderViewport();
@@ -14,7 +13,6 @@ window.setCatalogSort = function(sortType) {
   window.renderViewport();
 };
 
-/* STREAMING_CHUNK:Rendering customer catalog view... */
 window.renderCustomerCatalog = function(container) {
   const isOwner = (currentRole === 'owner');
 
@@ -120,20 +118,18 @@ window.renderCustomerCatalog = function(container) {
   container.innerHTML = html;
 };
 
-/* STREAMING_CHUNK:Handling shopping cart actions... */
 window.addToCart = function(productId) {
   const prod = appData.products.find(p => p.product_id === productId);
   if (!prod) return;
   const exist = appData.cart.find(c => c.product_id === productId);
   if (exist) { exist.qty++; }
   else { appData.cart.push({ product_id: prod.product_id, name: prod.name, price: prod.base_price, qty: 1 }); }
-  window.showToast('Kue berhasil ditambahkan ke keranjang!');
+  if (typeof window.showToast === 'function') window.showToast('Kue berhasil ditambahkan ke keranjang!');
 };
 
 window.addToCartPOS = function(productId) { window.addToCart(productId); };
 window.removeFromCart = function(idx) { appData.cart.splice(idx, 1); window.renderViewport(); };
 
-/* STREAMING_CHUNK:Rendering custom cake builder... */
 window.renderCustomBuilder = function(container) {
   container.innerHTML = `
     <div class="max-w-3xl mx-auto space-y-6 bg-white/80 p-6 md:p-8 rounded-3xl border border-pinkglass-200 glass-card">
@@ -185,11 +181,10 @@ window.submitCustomCake = function() {
   const msg = msgEl ? msgEl.value : '';
 
   appData.cart.push({ product_id: 'CUSTOM-CAKE', name: `Custom Pink Cake (${size} - ${flavor})`, price: 420000, qty: 1, custom_message: msg });
-  window.showToast('Custom cake pink berhasil dimasukkan ke keranjang!');
+  if (typeof window.showToast === 'function') window.showToast('Custom cake pink berhasil dimasukkan ke keranjang!');
   window.changeTab('checkout');
 };
 
-/* STREAMING_CHUNK:Rendering checkout page with permanently locked QRIS... */
 window.renderCheckout = function(container) {
   let subtotal = appData.cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
   let html = `
@@ -251,9 +246,11 @@ window.renderCheckout = function(container) {
   container.innerHTML = html;
 };
 
-/* STREAMING_CHUNK:Processing checkout and opening WhatsApp & Proof Modal... */
 window.processCheckout = function(channel = 'Online (Web)') {
-  if (appData.cart.length === 0) { window.showToast('Keranjang belanja masih kosong!'); return; }
+  if (appData.cart.length === 0) { 
+    if (typeof window.showToast === 'function') window.showToast('Keranjang belanja masih kosong!'); 
+    return; 
+  }
   
   const custNameEl = document.getElementById('cust-name');
   const custPhoneEl = document.getElementById('cust-phone');
@@ -281,11 +278,13 @@ window.processCheckout = function(channel = 'Online (Web)') {
   }
 
   appData.orders.unshift(newOrder);
-  window.sendOrderToGAS(newOrder, [...cartItemsCopy]);
+  if (typeof window.sendOrderToGAS === 'function') {
+    window.sendOrderToGAS(newOrder, [...cartItemsCopy]);
+  }
   appData.cart = [];
 
   if (orderType.includes('Offline')) {
-    window.showToast(`Pesanan Offline berhasil dibuat & stok bahan terpotong otomatis!`);
+    if (typeof window.showToast === 'function') window.showToast(`Pesanan Offline berhasil dibuat & stok bahan terpotong otomatis!`);
     window.changeTab('web_orders');
   } else {
     // Show Modal for Online Web Order Proof & WhatsApp Notification
@@ -293,7 +292,6 @@ window.processCheckout = function(channel = 'Online (Web)') {
   }
 };
 
-/* STREAMING_CHUNK:Rendering confirmation modal with proof upload & WhatsApp button... */
 window.openOrderConfirmationModal = function(order, cartItems) {
   let modal = document.getElementById('online-order-success-modal');
   if (!modal) {
@@ -347,7 +345,7 @@ window.openOrderConfirmationModal = function(order, cartItems) {
   `;
 
   if (typeof lucide !== 'undefined') lucide.createIcons();
-  window.showToast("Pesanan anda sudah terkirim, admin segera akan membalasnya.");
+  if (typeof window.showToast === 'function') window.showToast("Pesanan anda sudah terkirim, admin segera akan membalasnya.");
 };
 
 window.closeOrderConfirmationModal = function() {
@@ -356,7 +354,6 @@ window.closeOrderConfirmationModal = function() {
   window.changeTab('catalog');
 };
 
-/* STREAMING_CHUNK:Rendering POS kasir offline... */
 window.renderPOS = function(container) {
   let html = `
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
@@ -394,13 +391,11 @@ window.renderPOS = function(container) {
   container.innerHTML = html;
 };
 
-/* STREAMING_CHUNK:Filtering incoming order hub... */
 window.setOrderHubFilter = function(filter) {
   orderHubFilter = filter;
   window.renderViewport();
 };
 
-/* STREAMING_CHUNK:Rendering Central Order Hub for incoming web/store orders... */
 window.renderWebOrders = function(container) {
   const onlineOrdersCount = appData.orders.filter(o => !String(o.order_type || '').includes('Offline')).length;
   const offlineOrdersCount = appData.orders.filter(o => String(o.order_type || '').includes('Offline')).length;
@@ -425,7 +420,7 @@ window.renderWebOrders = function(container) {
 
         <!-- Filter Channel Buttons & Refresh Button -->
         <div class="flex items-center space-x-2">
-          <button onclick="window.fetchInitialDataFromGAS(); window.showToast('Memperbarui data pesanan...');" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-white/90 text-charcoal border border-pinkglass-300 hover:bg-pinkglass-100 transition-all flex items-center space-x-1 shadow-xs active:scale-95">
+          <button onclick="if(typeof window.fetchInitialDataFromGAS === 'function') window.fetchInitialDataFromGAS(); if(typeof window.showToast === 'function') window.showToast('Memperbarui data pesanan...');" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-white/90 text-charcoal border border-pinkglass-300 hover:bg-pinkglass-100 transition-all flex items-center space-x-1 shadow-xs active:scale-95">
             <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-pinkglass-700"></i>
             <span>Refresh</span>
           </button>
@@ -486,7 +481,6 @@ window.renderWebOrders = function(container) {
   `;
 };
 
-/* STREAMING_CHUNK:KDS Time and Elapsed formatting helpers... */
 window.formatOrderTime = function(isoString) {
   if (!isoString) return '-';
   try {
@@ -510,7 +504,6 @@ window.getElapsedTimeFormatted = function(isoString) {
   return `${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
 };
 
-/* STREAMING_CHUNK:Rendering Kitchen Display System with live timer & status colors... */
 window.renderKDS = function(container) {
   // Clear any existing live timer interval to prevent duplicates
   if (window.kdsIntervalId) {
@@ -621,13 +614,12 @@ window.renderKDS = function(container) {
   }, 1000);
 };
 
-/* STREAMING_CHUNK:Updating order status... */
 window.updateOrderStatus = function(orderId, status) {
   const ord = appData.orders.find(o => o.order_id === orderId);
   if (ord) { 
     ord.order_status = status; 
     window.renderViewport(); 
-    window.showToast('Status pesanan diperbarui!');
+    if (typeof window.showToast === 'function') window.showToast('Status pesanan diperbarui!');
     
     const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
     if (savedUrl && !savedUrl.includes('PASTE_YOUR')) {
@@ -639,19 +631,3 @@ window.updateOrderStatus = function(orderId, status) {
     }
   }
 };
-```eof
-
----
-
-### 📋 Ringkasan Perubahan pada `js/sales.js`:
-
-1. **Perbedaan Warna Status Dapur:**
-   - **`Baking` (Sedang Dimasak):** Memakai badge warna **Oranye / Amber** berkedip halus (`bg-amber-100 text-amber-800 border-amber-300 animate-pulse`).
-   - **`Ready` (Siap Disajikan):** Memakai badge warna **Hijau Emerald** tebal & jelas (`bg-emerald-100 text-emerald-800 border-emerald-300`).
-   - **`Pending`:** Memakai badge warna **Biru Sky** (`bg-sky-100 text-sky-800 border-sky-300`).
-
-2. **Informasi Jam Pesan:**
-   - Menampilkan jam waktu spesifik kapan pesanan dibuat dalam format local time WIB (misal: `🕒 Jam Pesan: 20:49:16 WIB`).
-
-3. **Live Running Timer Detik Berjalan:**
-   - Setiap kartu pesanan memiliki elemen timer real-time `⏱️ 02m 15s` yang terus bergerak bertambah detik demi detik secara otomatis tanpa memicu flicker layar.
