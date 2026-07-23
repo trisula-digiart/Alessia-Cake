@@ -13,7 +13,6 @@ window.setCatalogSort = function(sortType) {
   window.renderViewport();
 };
 
-
 window.renderCustomerCatalog = function(container) {
   const isOwner = (currentRole === 'owner');
 
@@ -119,7 +118,6 @@ window.renderCustomerCatalog = function(container) {
   container.innerHTML = html;
 };
 
-
 window.addToCart = function(productId) {
   const prod = appData.products.find(p => p.product_id === productId);
   if (!prod) return;
@@ -187,7 +185,6 @@ window.submitCustomCake = function() {
   window.changeTab('checkout');
 };
 
-
 window.renderCheckout = function(container) {
   let subtotal = appData.cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
   let html = `
@@ -235,8 +232,8 @@ window.renderCheckout = function(container) {
             <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=ALESSIA-PINK-GLASS-QRIS" alt="QRIS" class="mx-auto w-28 h-28 rounded-xl shadow-sm bg-white p-1">
             <input type="file" id="payment-proof" class="w-full text-[10px] text-pinkglass-700 pt-1">
           </div>
-          <button onclick="window.processCheckout()" class="w-full bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-bold py-3 rounded-2xl shadow-lg transition-all text-xs md:text-sm active:scale-95">
-            Konfirmasi & Bayar Pesanan
+          <button onclick="window.processCheckout('Online (Web)')" class="w-full bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-bold py-3 rounded-2xl shadow-lg transition-all text-xs md:text-sm active:scale-95">
+            Konfirmasi & Bayar Pesanan Web
           </button>
         </div>
       </div>
@@ -245,16 +242,18 @@ window.renderCheckout = function(container) {
   container.innerHTML = html;
 };
 
-window.processCheckout = function() {
+window.processCheckout = function(channel = 'Online (Web)') {
   if (appData.cart.length === 0) { window.showToast('Keranjang belanja masih kosong!'); return; }
   
   const custNameEl = document.getElementById('cust-name');
   const custPhoneEl = document.getElementById('cust-phone');
 
+  const orderType = (currentTab === 'offline_orders' || currentRole === 'owner') ? 'Offline (Kasir Toko)' : channel;
+
   const newOrder = {
     order_id: 'ORD-' + Math.floor(1000 + Math.random() * 9000),
-    order_type: 'Takeaway',
-    customer_name: (custNameEl && custNameEl.value) || currentUser.name || 'Tamu VIP Pink Glass',
+    order_type: orderType,
+    customer_name: (custNameEl && custNameEl.value) || currentUser.name || (orderType.includes('Offline') ? 'Pelanggan Walk-In' : 'Tamu VIP Web'),
     customer_phone: (custPhoneEl && custPhoneEl.value) || currentUser.phone || '0811111111',
     table_no: '-',
     total_amount: appData.cart.reduce((a, b) => a + (b.price * b.qty), 0),
@@ -274,10 +273,14 @@ window.processCheckout = function() {
   window.sendOrderToGAS(newOrder, [...appData.cart]);
   
   appData.cart = [];
-  window.showToast('Pesanan berhasil dibuat & stok bahan terpotong otomatis!');
-  window.changeTab('tracker');
+  window.showToast(`Pesanan ${orderType} berhasil dibuat & stok bahan terpotong otomatis!`);
+  
+  if (currentRole === 'owner') {
+    window.changeTab('web_orders');
+  } else {
+    window.changeTab('tracker');
+  }
 };
-
 
 window.renderTracker = function(container) {
   let html = `
@@ -296,7 +299,7 @@ window.renderTracker = function(container) {
           <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">${ord.order_status}</span>
         </div>
         <div class="flex justify-between text-xs text-pinkglass-800 pt-2 border-t border-pinkglass-200">
-          <span>Tipe: ${ord.order_type}</span>
+          <span>Tipe Channel: <strong class="text-charcoal">${ord.order_type}</strong></span>
           <span class="font-bold text-charcoal">Total: Rp ${ord.total_amount.toLocaleString('id-ID')}</span>
         </div>
       </div>
@@ -308,9 +311,16 @@ window.renderTracker = function(container) {
 
 window.renderPOS = function(container) {
   let html = `
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
       <div class="md:col-span-2 space-y-4">
-        <h2 class="text-xl md:text-2xl font-bold text-charcoal">Kasir POS (Front-Store)</h2>
+        <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card flex justify-between items-center">
+          <div>
+            <h2 class="text-xl md:text-2xl font-bold text-charcoal">Input Pesanan Offline (Kasir Toko)</h2>
+            <p class="text-xs text-pinkglass-800">Pilih kue untuk transaksi tatap muka pelanggan di outlet Alessia Cake.</p>
+          </div>
+          <span class="text-xs font-bold px-3 py-1.5 rounded-full bg-pinkglass-600 text-white">Channel Offline</span>
+        </div>
+        
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
   `;
   appData.products.forEach(p => {
@@ -325,31 +335,91 @@ window.renderPOS = function(container) {
         </div>
       </div>
       <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 space-y-4 glass-card shadow-sm h-fit">
-        <h3 class="font-bold text-base text-charcoal">Transaksi Kasir</h3>
+        <h3 class="font-bold text-base text-charcoal border-b border-pinkglass-200 pb-3">Keranjang Kasir Offline</h3>
         <div class="space-y-2 max-h-48 overflow-y-auto">
-          ${appData.cart.map(c => `<div class="flex justify-between text-xs text-pinkglass-900"><span>${c.name} (${c.qty})</span><span>Rp ${(c.price*c.qty).toLocaleString('id-ID')}</span></div>`).join('')}
+          ${appData.cart.length === 0 ? '<p class="text-xs text-pinkglass-800 text-center py-4">Belum ada item dipilih</p>' : appData.cart.map(c => `<div class="flex justify-between text-xs text-pinkglass-900 font-medium"><span>${c.name} (${c.qty})</span><span>Rp ${(c.price*c.qty).toLocaleString('id-ID')}</span></div>`).join('')}
         </div>
-        <button onclick="window.processCheckout()" class="w-full bg-pinkglass-600 text-white font-bold py-3 rounded-2xl text-xs md:text-sm shadow-md">Proses Pembayaran</button>
+        <button onclick="window.processCheckout('Offline (Kasir Toko)')" class="w-full bg-pinkglass-600 text-white font-bold py-3 rounded-2xl text-xs md:text-sm shadow-md active:scale-95">Proses Pembayaran Offline</button>
       </div>
     </div>
   `;
   container.innerHTML = html;
 };
 
+window.setOrderHubFilter = function(filter) {
+  orderHubFilter = filter;
+  window.renderViewport();
+};
+
 window.renderWebOrders = function(container) {
+  let filteredOrders = appData.orders.filter(o => {
+    if (orderHubFilter === 'online') return o.order_type.includes('Online');
+    if (orderHubFilter === 'offline') return o.order_type.includes('Offline');
+    return true;
+  });
+
   container.innerHTML = `
-    <div class="space-y-6">
-      <h2 class="text-xl md:text-2xl font-bold text-charcoal">Realtime Order Web Masuk</h2>
+    <div class="space-y-6 max-w-7xl mx-auto">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card">
+        <div>
+          <h2 class="text-xl md:text-2xl font-bold text-charcoal flex items-center gap-2">
+            <i data-lucide="bell" class="w-6 h-6 text-pinkglass-600"></i>
+            <span>Central Order Hub - Pesanan Masuk</span>
+          </h2>
+          <p class="text-xs md:text-sm text-pinkglass-800">Pantau dan teruskan pesanan dari channel Online (Web) maupun Offline (Kasir Toko) ke KDS Dapur.</p>
+        </div>
+
+        <!-- Filter Channel Buttons -->
+        <div class="flex bg-pinkglass-100 p-1.5 rounded-2xl border border-pinkglass-200 space-x-1">
+          <button onclick="window.setOrderHubFilter('all')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all ${orderHubFilter === 'all' ? 'bg-pinkglass-600 text-white shadow-sm' : 'text-pinkglass-800 hover:text-charcoal'}">
+            Semua (${appData.orders.length})
+          </button>
+          <button onclick="window.setOrderHubFilter('online')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all ${orderHubFilter === 'online' ? 'bg-pinkglass-600 text-white shadow-sm' : 'text-pinkglass-800 hover:text-charcoal'}">
+            🌐 Online (${appData.orders.filter(o => o.order_type.includes('Online')).length})
+          </button>
+          <button onclick="window.setOrderHubFilter('offline')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all ${orderHubFilter === 'offline' ? 'bg-pinkglass-600 text-white shadow-sm' : 'text-pinkglass-800 hover:text-charcoal'}">
+            🏪 Offline (${appData.orders.filter(o => o.order_type.includes('Offline')).length})
+          </button>
+        </div>
+      </div>
+
       <div class="space-y-3">
-        ${appData.orders.map(o => `
-          <div class="bg-white/80 p-5 rounded-3xl border border-pinkglass-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 glass-card shadow-sm">
-            <div>
-              <h4 class="font-bold text-sm text-charcoal">${o.customer_name} (${o.order_id})</h4>
-              <p class="text-xs text-pinkglass-800">Total: Rp ${o.total_amount.toLocaleString('id-ID')} | Status: ${o.order_status}</p>
-            </div>
-            <button onclick="window.updateOrderStatus('${o.order_id}', 'Baking')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm">Terima & Masak</button>
+        ${filteredOrders.length === 0 ? `
+          <div class="bg-white/80 p-8 rounded-3xl border border-pinkglass-200 text-center text-pinkglass-800 text-sm glass-card">
+            Belum ada data pesanan masuk pada filter ini.
           </div>
-        `).join('')}
+        ` : filteredOrders.map(o => {
+          const isOffline = o.order_type.includes('Offline');
+          return `
+            <div class="bg-white/80 p-5 rounded-3xl border border-pinkglass-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 glass-card shadow-sm">
+              <div class="space-y-1">
+                <div class="flex items-center space-x-2">
+                  <h4 class="font-bold text-sm md:text-base text-charcoal">${o.customer_name}</h4>
+                  <span class="text-[10px] bg-pinkglass-100 text-pinkglass-900 px-2.5 py-0.5 rounded-full font-mono font-bold">${o.order_id}</span>
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${isOffline ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800'}">
+                    ${isOffline ? '🏪 Offline (Toko)' : '🌐 Online (Web)'}
+                  </span>
+                </div>
+                <p class="text-xs text-pinkglass-800 font-medium">
+                  Total Bayar: <strong class="text-charcoal">Rp ${Number(o.total_amount).toLocaleString('id-ID')}</strong> | Status Dapur: <span class="font-bold text-pinkglass-700">${o.order_status}</span> | Pembayaran: <span class="font-bold text-emerald-700">${o.payment_status}</span>
+                </p>
+              </div>
+
+              <div class="flex items-center space-x-2">
+                ${o.order_status === 'Pending' ? `
+                  <button onclick="window.updateOrderStatus('${o.order_id}', 'Baking')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95 flex items-center space-x-1.5">
+                    <i data-lucide="chef-hat" class="w-4 h-4"></i>
+                    <span>Terima & Masak (Ke KDS)</span>
+                  </button>
+                ` : `
+                  <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-pinkglass-100 text-pinkglass-900 border border-pinkglass-200">
+                    Sedang Diproses: ${o.order_status}
+                  </span>
+                `}
+              </div>
+            </div>
+          `;
+        }).join('')}
       </div>
     </div>
   `;
@@ -357,18 +427,22 @@ window.renderWebOrders = function(container) {
 
 window.renderKDS = function(container) {
   container.innerHTML = `
-    <div class="space-y-6">
-      <h2 class="text-xl md:text-2xl font-bold text-charcoal">Kitchen Display System (KDS Queue)</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="space-y-6 max-w-7xl mx-auto">
+      <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card">
+        <h2 class="text-xl md:text-2xl font-bold text-charcoal">Kitchen Display System (KDS Queue)</h2>
+        <p class="text-xs text-pinkglass-800">Antrean pembuatan kue dapur realtime dari seluruh channel pesanan masuk.</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         ${appData.orders.map(o => `
           <div class="bg-white/80 p-5 rounded-3xl border border-pinkglass-300 space-y-3 glass-card shadow-sm">
             <div class="flex justify-between items-center">
-              <span class="text-[10px] font-bold bg-pinkglass-100 text-pinkglass-900 px-2.5 py-1 rounded-full">${o.order_id}</span>
-              <span class="text-[11px] text-pinkglass-700 font-semibold">Timer: 12:45</span>
+              <span class="text-[10px] font-bold bg-pinkglass-100 text-pinkglass-900 px-2.5 py-1 rounded-full font-mono">${o.order_id}</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${o.order_type.includes('Offline') ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800'}">${o.order_type}</span>
             </div>
             <h4 class="font-bold text-charcoal text-base">${o.customer_name}</h4>
-            <p class="text-xs text-pinkglass-800">Tipe: ${o.order_type}</p>
-            <button onclick="window.updateOrderStatus('${o.order_id}', 'Ready')" class="w-full bg-pinkglass-600 text-white font-bold py-2.5 rounded-2xl text-xs shadow-md">Tandai Siap (Ready)</button>
+            <p class="text-xs text-pinkglass-800 font-medium">Status Saat Ini: <strong class="text-charcoal">${o.order_status}</strong></p>
+            <button onclick="window.updateOrderStatus('${o.order_id}', 'Ready')" class="w-full bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-bold py-2.5 rounded-2xl text-xs shadow-md transition-all active:scale-95">Tandai Siap (Ready)</button>
           </div>
         `).join('')}
       </div>
