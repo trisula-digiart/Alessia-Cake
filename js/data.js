@@ -76,11 +76,10 @@ let appData = {
 const roleTabs = {
   owner: [
     { id: 'dashboard', name: 'Dashboard', icon: 'bar-chart-3' },
-    { id: 'pos', name: 'Kasir POS', icon: 'calculator' },
     { id: 'web_orders', name: 'Order Web', icon: 'bell' },
     { id: 'kds', name: 'KDS Dapur', icon: 'chef-hat' },
-    { id: 'batch_baking', name: 'Batch Oven', icon: 'flame' },
-    { id: 'catalog', name: 'Katalog', icon: 'package' },
+    { id: 'batch_baking', name: 'Oven Produksi', icon: 'flame' },
+    { id: 'catalog', name: 'Katalog Produk', icon: 'package' },
     { id: 'bom', name: 'Resep BOM', icon: 'book-open' },
     { id: 'update_stock', name: 'Stok Bahan', icon: 'database' },
     { id: 'audit', name: 'Audit Log', icon: 'file-text' }
@@ -89,7 +88,6 @@ const roleTabs = {
     { id: 'catalog', name: 'Menu Utama', icon: 'shopping-bag' },
     { id: 'custom_builder', name: 'Custom Cake', icon: 'sliders' },
     { id: 'checkout', name: 'Keranjang', icon: 'shopping-cart' },
-    { id: 'tracker', name: 'Lacak Pesanan', icon: 'map-pin' }
   ]
 };
 
