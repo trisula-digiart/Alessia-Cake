@@ -3,7 +3,6 @@ let GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzX4rjfDx1V31yJsgoxHs
 let currentRole = 'customer';
 let currentTab = 'catalog';
 
-// Catalog Filter & Sort State
 let catalogFilter = {
   search: '',
   category: 'all',
@@ -83,7 +82,6 @@ const roleTabs = {
     { id: 'web_orders', name: 'Pesanan Masuk', icon: 'bell' },
     { id: 'offline_orders', name: 'Pesanan Offline', icon: 'calculator' },
     { id: 'kds', name: 'KDS Dapur', icon: 'chef-hat' },
-    { id: 'batch_baking', name: 'Oven Produksi', icon: 'flame' },
     { id: 'catalog', name: 'Katalog Produk', icon: 'package' },
     { id: 'bom', name: 'Resep BOM', icon: 'book-open' },
     { id: 'update_stock', name: 'Stok Bahan', icon: 'database' },
