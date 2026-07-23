@@ -6,7 +6,7 @@ window.openAuthModal = function() {
 window.closeAuthModal = function() {
   const modal = document.getElementById('auth-gatekeeper-modal');
   if (modal) modal.classList.add('hidden');
-};
+}; 
 
 window.switchAuthTab = function(type) {
   const custBtn = document.getElementById('tab-auth-customer');
