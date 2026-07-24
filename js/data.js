@@ -20,7 +20,7 @@ let orderHubFilter = 'all';
 // Toko Config for WhatsApp, Owner Profile, PIN, QRIS & Thermal Printer
 const STORE_CONFIG = {
   owner_name: 'Pemilik Toko Alessia',
-  phone: '6281298406844', // Nomor WhatsApp Toko Penerima Pesanan Online
+  phone: '6285692165709', // Nomor WhatsApp Toko Penerima Pesanan Online
   staff_pin: '123456',    // PIN Keamanan Login Staff/Owner
   location_name: 'Kab. Bekasi',
   printer_type: 'driver', // 'bluetooth', 'usb', 'driver'
