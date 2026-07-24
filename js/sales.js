@@ -6,7 +6,7 @@
 window.setCatalogSearch = function(query) {
   catalogFilter.search = query;
   window.renderViewport();
-}; 
+};
 
 window.setCatalogCategory = function(category) {
   catalogFilter.category = category;
@@ -225,6 +225,10 @@ window.renderCheckout = function(container) {
     });
   }
 
+  const qrisUrl = (typeof STORE_CONFIG !== 'undefined' && STORE_CONFIG.qris_image_url && !STORE_CONFIG.qris_image_url.includes('qrserver.com'))
+    ? STORE_CONFIG.qris_image_url
+    : 'images/qrcode.jpg';
+
   html += `
         </div>
         <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 space-y-4 glass-card h-fit shadow-sm">
@@ -249,7 +253,7 @@ window.renderCheckout = function(container) {
           <!-- Locked QRIS Display with local image qrcode.jpg -->
           <div class="bg-pinkglass-50 p-4 rounded-2xl border border-pinkglass-200 text-center space-y-2 relative overflow-hidden">
             <p class="text-[11px] font-bold text-pinkglass-900">Scan QRIS Pink Glass Alessia</p>
-            <img src="${(typeof STORE_CONFIG !== 'undefined' && STORE_CONFIG.qris_image_url) ? STORE_CONFIG.qris_image_url : 'images/qrcode.jpg'}" alt="QRIS Resmi Alessia Cake" class="mx-auto w-36 h-36 object-contain rounded-xl shadow-md bg-white p-1.5 border border-pinkglass-200" onerror="this.src='images/qrcode.jpg'">
+            <img src="${qrisUrl}" alt="QRIS Resmi Alessia Cake" class="mx-auto w-48 h-auto max-h-64 object-contain rounded-xl shadow-md bg-white p-2 border border-pinkglass-200" onerror="this.src='images/qrcode.jpg'">
             <p class="text-[10px] text-pinkglass-800 font-medium pt-1">Transfer via QRIS atau pilih Bayar di Tempat (COD) saat pengambilan.</p>
           </div>
 
@@ -467,6 +471,10 @@ window.switchPOSPaymentTab = function(method) {
 window.renderPOSPaymentModalContent = function(modal) {
   const totalAmount = appData.cart.reduce((a, b) => a + (b.price * b.qty), 0);
 
+  const qrisUrl = (typeof STORE_CONFIG !== 'undefined' && STORE_CONFIG.qris_image_url && !STORE_CONFIG.qris_image_url.includes('qrserver.com'))
+    ? STORE_CONFIG.qris_image_url
+    : 'images/qrcode.jpg';
+
   let html = `
     <div class="glass-modal w-full max-w-lg rounded-3xl p-6 md:p-8 space-y-5 shadow-2xl relative border border-pinkglass-300 bg-white/95 max-h-[92vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-pinkglass-200 pb-3">
@@ -545,7 +553,7 @@ window.renderPOSPaymentModalContent = function(modal) {
     html += `
       <div class="p-4 bg-pinkglass-50/80 rounded-2xl border border-pinkglass-200 text-center space-y-2">
         <p class="text-xs font-bold text-pinkglass-900">Tunjukkan QRIS Toko Kepada Pelanggan</p>
-        <img src="${(typeof STORE_CONFIG !== 'undefined' && STORE_CONFIG.qris_image_url) ? STORE_CONFIG.qris_image_url : 'images/qrcode.jpg'}" alt="QRIS Toko Alessia" class="mx-auto w-36 h-36 object-contain rounded-xl border border-pinkglass-300 bg-white p-2 shadow-sm" onerror="this.src='images/qrcode.jpg'">
+        <img src="${qrisUrl}" alt="QRIS Toko Alessia" class="mx-auto w-48 h-auto max-h-64 object-contain rounded-xl border border-pinkglass-300 bg-white p-2 shadow-sm" onerror="this.src='images/qrcode.jpg'">
         <p class="text-[11px] text-pinkglass-800 font-medium">Dana transfer QRIS akan masuk otomatis ke kategori <strong class="text-charcoal">Rekening Bank (Bank Alessia)</strong>.</p>
       </div>
     `;
