@@ -6,7 +6,7 @@
 window.setCatalogSearch = function(query) {
   catalogFilter.search = query;
   window.renderViewport();
-};
+}; 
 
 window.setCatalogCategory = function(category) {
   catalogFilter.category = category;
