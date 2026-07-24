@@ -10,7 +10,7 @@ let currentTab = 'catalog';
 
 let catalogFilter = {
   search: '',
-  category: 'all', 
+  category: 'all',
   sort: 'default'
 };
 
@@ -25,7 +25,7 @@ const STORE_CONFIG = {
   location_name: 'Kab. Bekasi',
   printer_type: 'driver', // 'bluetooth', 'usb', 'driver'
   printer_paper: '58mm',  // '58mm', '80mm'
-  qris_image_url: 'images/qrcode.jpg' // Local QR Code Gambar Toko
+  qris_image_url: 'images/qrcode.jpg' // Local QR Code Gambar Toko Asli
 };
 
 try {
@@ -38,7 +38,12 @@ try {
     if (parsed.location_name) STORE_CONFIG.location_name = parsed.location_name;
     if (parsed.printer_type) STORE_CONFIG.printer_type = parsed.printer_type;
     if (parsed.printer_paper) STORE_CONFIG.printer_paper = parsed.printer_paper;
-    if (parsed.qris_image_url) STORE_CONFIG.qris_image_url = parsed.qris_image_url;
+    // Auto purge any old dummy QRIS URL from cache and force local image
+    if (parsed.qris_image_url && !parsed.qris_image_url.includes('qrserver.com')) {
+      STORE_CONFIG.qris_image_url = parsed.qris_image_url;
+    } else {
+      STORE_CONFIG.qris_image_url = 'images/qrcode.jpg';
+    }
   }
 } catch(e) { console.error(e); }
 
