@@ -246,10 +246,10 @@ window.renderCheckout = function(container) {
             </select>
           </div>
           
-          <!-- Locked QRIS Display -->
+          <!-- Locked QRIS Display with local image qrcode.jpg -->
           <div class="bg-pinkglass-50 p-4 rounded-2xl border border-pinkglass-200 text-center space-y-2 relative overflow-hidden">
             <p class="text-[11px] font-bold text-pinkglass-900">Scan QRIS Pink Glass Alessia</p>
-            <img src="${(typeof STORE_CONFIG !== 'undefined' && STORE_CONFIG.qris_image_url) ? STORE_CONFIG.qris_image_url : 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=ALESSIA-PINK-GLASS-QRIS'}" alt="QRIS Resmi Alessia Cake" class="mx-auto w-32 h-32 rounded-xl shadow-md bg-white p-1.5 border border-pinkglass-200">
+            <img src="${(typeof STORE_CONFIG !== 'undefined' && STORE_CONFIG.qris_image_url) ? STORE_CONFIG.qris_image_url : 'images/qrcode.jpg'}" alt="QRIS Resmi Alessia Cake" class="mx-auto w-36 h-36 object-contain rounded-xl shadow-md bg-white p-1.5 border border-pinkglass-200" onerror="this.src='images/qrcode.jpg'">
             <p class="text-[10px] text-pinkglass-800 font-medium pt-1">Transfer via QRIS atau pilih Bayar di Tempat (COD) saat pengambilan.</p>
           </div>
 
@@ -333,7 +333,7 @@ window.openOrderConfirmationModal = function(order, cartItems) {
   const itemsList = cartItems.map(i => `• ${i.name} (${i.qty}x) = Rp ${(i.price * i.qty).toLocaleString('id-ID')}`).join('\n');
   
   // DYNAMIC WHATSAPP TARGET PHONE FROM STORE_CONFIG
-  const storePhone = (typeof STORE_CONFIG !== 'undefined' && STORE_CONFIG.phone) ? STORE_CONFIG.phone : '6281298406844';
+  const storePhone = (typeof STORE_CONFIG !== 'undefined' && STORE_CONFIG.phone) ? STORE_CONFIG.phone : '6285692165709';
 
   const rawWaMessage = `Halo Admin Alessia Cake,%0A%0ASaya sudah melakukan pesanan via Web dengan rincian:%0A- *ID Pesanan:* ${order.order_id}%0A- *Nama:* ${order.customer_name}%0A- *No WA:* ${order.customer_phone}%0A- *Metode:* ${order.order_type}%0A- *Total Bayar:* Rp ${Number(order.total_amount).toLocaleString('id-ID')}%0A%0A*Rincian Pesanan:*%0A${encodeURIComponent(itemsList)}%0A%0AMohon konfirmasi dan proses pesanan saya. Terima kasih!`;
   const waUrl = `https://wa.me/${storePhone}?text=${rawWaMessage}`;
@@ -545,7 +545,7 @@ window.renderPOSPaymentModalContent = function(modal) {
     html += `
       <div class="p-4 bg-pinkglass-50/80 rounded-2xl border border-pinkglass-200 text-center space-y-2">
         <p class="text-xs font-bold text-pinkglass-900">Tunjukkan QRIS Toko Kepada Pelanggan</p>
-        <img src="${(typeof STORE_CONFIG !== 'undefined' && STORE_CONFIG.qris_image_url) ? STORE_CONFIG.qris_image_url : 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=ALESSIA-PINK-GLASS-QRIS'}" alt="QRIS Toko Alessia" class="mx-auto w-36 h-32 rounded-xl border border-pinkglass-300 bg-white p-2 shadow-sm">
+        <img src="${(typeof STORE_CONFIG !== 'undefined' && STORE_CONFIG.qris_image_url) ? STORE_CONFIG.qris_image_url : 'images/qrcode.jpg'}" alt="QRIS Toko Alessia" class="mx-auto w-36 h-36 object-contain rounded-xl border border-pinkglass-300 bg-white p-2 shadow-sm" onerror="this.src='images/qrcode.jpg'">
         <p class="text-[11px] text-pinkglass-800 font-medium">Dana transfer QRIS akan masuk otomatis ke kategori <strong class="text-charcoal">Rekening Bank (Bank Alessia)</strong>.</p>
       </div>
     `;
