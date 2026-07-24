@@ -199,14 +199,33 @@ window.renderNavigation = function() {
   const mobileNav = document.getElementById('mobile-bottom-nav');
   const tabs = roleTabs[currentRole] || roleTabs['customer'];
   
+  // Hitung jumlah pesanan pending untuk tab "Pesanan Online Masuk"
+  const pendingOrdersCount = (typeof appData !== 'undefined' && appData.orders) 
+    ? appData.orders.filter(o => o.order_status === 'Pending' && !String(o.order_type || '').includes('Offline')).length 
+    : 0;
+
+  // Hitung jumlah pesanan baking/proses untuk tab "Selesaikan Pesanan" (KDS)
+  const bakingOrdersCount = (typeof appData !== 'undefined' && appData.orders) 
+    ? appData.orders.filter(o => o.order_status === 'Baking').length 
+    : 0;
+
   if (sidebar) {
     let sideHtml = `<div class="text-[11px] font-bold uppercase tracking-wider text-pinkglass-700 px-3 py-2">Menu ${currentRole.toUpperCase()}</div>`;
     tabs.forEach(tab => {
       const active = currentTab === tab.id;
+      
+      let badgeHtml = '';
+      if (tab.id === 'web_orders' && pendingOrdersCount > 0) {
+        badgeHtml = `<span class="ml-auto bg-rose-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full animate-pulse shadow-xs">${pendingOrdersCount}</span>`;
+      } else if (tab.id === 'kds' && bakingOrdersCount > 0) {
+        badgeHtml = `<span class="ml-auto bg-amber-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-xs">${bakingOrdersCount}</span>`;
+      }
+
       sideHtml += `
         <button onclick="window.changeTab('${tab.id}')" class="flex items-center space-x-3 px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all ${active ? 'bg-pinkglass-600 text-white shadow-md' : 'text-charcoal hover:bg-pinkglass-100/60'}">
-          <i data-lucide="${tab.icon}" class="w-4 h-4"></i>
-          <span>${tab.name}</span>
+          <i data-lucide="${tab.icon}" class="w-4 h-4 shrink-0"></i>
+          <span class="truncate">${tab.name}</span>
+          ${badgeHtml}
         </button>
       `;
     });
@@ -217,9 +236,20 @@ window.renderNavigation = function() {
     let mobHtml = '';
     tabs.forEach(tab => {
       const active = currentTab === tab.id;
+
+      let mobBadge = '';
+      if (tab.id === 'web_orders' && pendingOrdersCount > 0) {
+        mobBadge = `<span class="absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center border border-white animate-pulse">${pendingOrdersCount}</span>`;
+      } else if (tab.id === 'kds' && bakingOrdersCount > 0) {
+        mobBadge = `<span class="absolute -top-1 -right-1 bg-amber-500 text-white text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center border border-white">${bakingOrdersCount}</span>`;
+      }
+
       mobHtml += `
-        <button onclick="window.changeTab('${tab.id}')" class="flex flex-col items-center justify-center flex-1 py-1 px-1 transition-all ${active ? 'text-pinkglass-700 font-bold' : 'text-pinkglass-500 hover:text-charcoal'}">
-          <i data-lucide="${tab.icon}" class="w-5 h-5 mb-0.5"></i>
+        <button onclick="window.changeTab('${tab.id}')" class="flex flex-col items-center justify-center flex-1 py-1 px-1 transition-all relative ${active ? 'text-pinkglass-700 font-bold' : 'text-pinkglass-500 hover:text-charcoal'}">
+          <div class="relative inline-block">
+            <i data-lucide="${tab.icon}" class="w-5 h-5 mb-0.5"></i>
+            ${mobBadge}
+          </div>
           <span class="text-[10px] truncate max-w-[65px]">${tab.name}</span>
         </button>
       `;
