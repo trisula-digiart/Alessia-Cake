@@ -10,7 +10,7 @@ let currentTab = 'catalog';
 
 let catalogFilter = {
   search: '',
-  category: 'all',
+  category: 'all', 
   sort: 'default'
 };
 
