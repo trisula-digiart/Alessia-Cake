@@ -304,6 +304,9 @@ window.processCheckout = function() {
 
   appData.orders.unshift(newOrder);
 
+  // Perbarui indikator badge sidebar secara instan
+  if (typeof window.renderNavigation === 'function') window.renderNavigation();
+
   if (typeof window.sendOrderToGAS === 'function') {
     window.sendOrderToGAS(newOrder, [...cartItemsCopy]);
   }
@@ -641,6 +644,9 @@ window.submitPOSOfflinePayment = function(totalAmount) {
 
   appData.orders.unshift(newOrder);
 
+  // Perbarui indikator badge sidebar secara instan
+  if (typeof window.renderNavigation === 'function') window.renderNavigation();
+
   if (typeof window.sendOrderToGAS === 'function') {
     window.sendOrderToGAS(newOrder, [...cartItemsCopy]);
   }
@@ -910,7 +916,11 @@ window.updateOrderStatus = function(orderId, status) {
     if (status === 'Ready' && !ord.ready_at) {
       ord.ready_at = new Date().toISOString();
     }
+
+    // Update indikator badge sidebar secara seketika
+    if (typeof window.renderNavigation === 'function') window.renderNavigation();
     window.renderViewport(); 
+
     if (typeof window.showToast === 'function') window.showToast(`Status pesanan ${orderId} diperbarui menjadi ${status}!`);
     
     const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
@@ -953,7 +963,10 @@ window.cancelOrder = function(orderId) {
 
   ord.order_status = 'Cancelled';
 
+  // Update indikator badge sidebar secara seketika
+  if (typeof window.renderNavigation === 'function') window.renderNavigation();
   window.renderViewport();
+
   if (typeof window.showToast === 'function') window.showToast(`Pesanan ${orderId} berhasil dibatalkan & stok bahan baku dikembalikan!`);
 
   // Sync cancellation & restored ingredients to GAS backend
