@@ -25,7 +25,7 @@ const STORE_CONFIG = {
   location_name: 'Kab. Bekasi',
   printer_type: 'driver', // 'bluetooth', 'usb', 'driver'
   printer_paper: '58mm',  // '58mm', '80mm'
-  qris_image_url: 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=ALESSIA-PINK-GLASS-QRIS'
+  qris_image_url: 'images/qrcode.jpg' // Local QR Code Gambar Toko
 };
 
 try {
@@ -38,6 +38,7 @@ try {
     if (parsed.location_name) STORE_CONFIG.location_name = parsed.location_name;
     if (parsed.printer_type) STORE_CONFIG.printer_type = parsed.printer_type;
     if (parsed.printer_paper) STORE_CONFIG.printer_paper = parsed.printer_paper;
+    if (parsed.qris_image_url) STORE_CONFIG.qris_image_url = parsed.qris_image_url;
   }
 } catch(e) { console.error(e); }
 
