@@ -1,6 +1,6 @@
 /* ==========================================================
  * ALESSIA CAKE - SALES, CATALOG, POS & ORDERS HUB MANAGER (JS)
- * TRISULACODER v9.6 Enterprise Engine
+ * TRISULACODER v13.0 Production Edition
  * ========================================================== */
 
 window.setCatalogSearch = function(query) {
@@ -250,7 +250,6 @@ window.renderCheckout = function(container) {
             </select>
           </div>
           
-          <!-- Locked QRIS Display with local image qrcode.jpg -->
           <div class="bg-pinkglass-50 p-4 rounded-2xl border border-pinkglass-200 text-center space-y-2 relative overflow-hidden">
             <p class="text-[11px] font-bold text-pinkglass-900">Scan QRIS Pink Glass Alessia</p>
             <img src="${qrisUrl}" alt="QRIS Resmi Alessia Cake" class="mx-auto w-48 h-auto max-h-64 object-contain rounded-xl shadow-md bg-white p-2 border border-pinkglass-200" onerror="this.src='images/qrcode.jpg'">
@@ -298,17 +297,14 @@ window.processCheckout = function() {
     items: cartItemsCopy
   };
 
-  // Lock polling sync to preserve local state write
   if (typeof window.lockSync === 'function') window.lockSync(10000);
 
-  // Auto deduct ingredients according to BOM recipes
   if (typeof window.autoDeductIngredients === 'function') {
     window.autoDeductIngredients([...cartItemsCopy]);
   }
 
   appData.orders.unshift(newOrder);
 
-  // Perbarui indikator badge sidebar secara instan
   if (typeof window.renderNavigation === 'function') window.renderNavigation();
 
   if (typeof window.sendOrderToGAS === 'function') {
@@ -320,7 +316,6 @@ window.processCheckout = function() {
     if (typeof window.showToast === 'function') window.showToast(`Pesanan Offline berhasil dibuat & stok bahan terpotong otomatis!`);
     window.changeTab('web_orders');
   } else {
-    // Show Confirmation Modal for Online Web Order
     window.openOrderConfirmationModal(newOrder, cartItemsCopy);
   }
 };
@@ -335,8 +330,6 @@ window.openOrderConfirmationModal = function(order, cartItems) {
   }
 
   const itemsList = cartItems.map(i => `• ${i.name} (${i.qty}x) = Rp ${(i.price * i.qty).toLocaleString('id-ID')}`).join('\n');
-  
-  // DYNAMIC WHATSAPP TARGET PHONE FROM STORE_CONFIG
   const storePhone = (typeof STORE_CONFIG !== 'undefined' && STORE_CONFIG.phone) ? STORE_CONFIG.phone : '6285692165709';
 
   const rawWaMessage = `Halo Admin Alessia Cake,%0A%0ASaya sudah melakukan pesanan via Web dengan rincian:%0A- *ID Pesanan:* ${order.order_id}%0A- *Nama:* ${order.customer_name}%0A- *No WA:* ${order.customer_phone}%0A- *Metode:* ${order.order_type}%0A- *Total Bayar:* Rp ${Number(order.total_amount).toLocaleString('id-ID')}%0A%0A*Rincian Pesanan:*%0A${encodeURIComponent(itemsList)}%0A%0AMohon konfirmasi dan proses pesanan saya. Terima kasih!`;
@@ -360,7 +353,6 @@ window.openOrderConfirmationModal = function(order, cartItems) {
         <p class="text-[11px] text-pinkglass-800 font-medium">Unggah bukti transfer / pembayaran kamu di bawah ini (opsional) lalu klik tombol WhatsApp untuk konfirmasi instan ke toko.</p>
       </div>
 
-      <!-- Upload Bukti Transfer Form -->
       <div class="space-y-1.5">
         <label class="text-xs font-bold text-pinkglass-900 block">Upload Bukti Transfer / Bayar</label>
         <input type="file" id="modal-payment-proof-file" accept="image/*" class="w-full text-xs text-pinkglass-800 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-pinkglass-200 file:text-pinkglass-900 hover:file:bg-pinkglass-300 cursor-pointer">
@@ -489,7 +481,6 @@ window.renderPOSPaymentModalContent = function(modal) {
         </button>
       </div>
 
-      <!-- Ringkasan Order & Total -->
       <div class="bg-pinkglass-50/80 p-4 rounded-2xl border border-pinkglass-200 space-y-2">
         <div class="text-xs font-bold text-pinkglass-900 border-b border-pinkglass-200 pb-2 flex justify-between items-center">
           <span>Rincian Item (${appData.cart.reduce((a,b)=>a+b.qty, 0)} kue)</span>
@@ -501,7 +492,6 @@ window.renderPOSPaymentModalContent = function(modal) {
         </div>
       </div>
 
-      <!-- Tab Metode Pembayaran -->
       <div class="space-y-1.5">
         <label class="text-xs font-bold text-pinkglass-900 block">Pilih Metode Pembayaran Kasir:</label>
         <div class="grid grid-cols-3 gap-2">
@@ -522,7 +512,6 @@ window.renderPOSPaymentModalContent = function(modal) {
         </div>
       </div>
 
-      <!-- DYNAMIC PAYMENT METHOD BODY -->
       <div id="pos-payment-body" class="space-y-3 pt-2 border-t border-pinkglass-200">
   `;
 
@@ -534,7 +523,6 @@ window.renderPOSPaymentModalContent = function(modal) {
           <input type="number" id="pos-cash-given" value="${totalAmount}" oninput="window.calculatePOSChange(${totalAmount})" placeholder="misal: 100000" class="w-full bg-white border border-pinkglass-300 rounded-xl p-3 text-sm text-charcoal font-bold focus:ring-2 focus:ring-pinkglass-400">
         </div>
 
-        <!-- Quick Cash Buttons -->
         <div class="flex flex-wrap gap-1.5">
           <button type="button" onclick="document.getElementById('pos-cash-given').value=${totalAmount}; window.calculatePOSChange(${totalAmount});" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-white border border-pinkglass-300 text-pinkglass-800 hover:bg-pinkglass-100">Uang Pas</button>
           <button type="button" onclick="document.getElementById('pos-cash-given').value=50000; window.calculatePOSChange(${totalAmount});" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-white border border-pinkglass-300 text-pinkglass-800 hover:bg-pinkglass-100">Rp 50.000</button>
@@ -542,7 +530,6 @@ window.renderPOSPaymentModalContent = function(modal) {
           <button type="button" onclick="document.getElementById('pos-cash-given').value=200000; window.calculatePOSChange(${totalAmount});" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-white border border-pinkglass-300 text-pinkglass-800 hover:bg-pinkglass-100">Rp 200.000</button>
         </div>
 
-        <!-- Realtime Change Display -->
         <div class="p-3 bg-white rounded-xl border border-pinkglass-200 flex justify-between items-center">
           <span class="text-xs font-bold text-charcoal">Uang Kembalian:</span>
           <span id="pos-cash-change" class="text-base font-extrabold text-emerald-600 font-mono">Rp 0</span>
@@ -628,6 +615,7 @@ window.submitPOSOfflinePayment = function(totalAmount) {
   const orderType = `Offline (${method})`;
   const cartItemsCopy = [...appData.cart];
 
+  // Directly enters Kontainer 1 (Dibuat) upon order placement
   const newOrder = {
     order_id: 'ORD-' + Math.floor(1000 + Math.random() * 9000),
     order_type: orderType,
@@ -637,7 +625,7 @@ window.submitPOSOfflinePayment = function(totalAmount) {
     total_amount: totalAmount,
     dp_amount: 0,
     payment_status: 'PAID',
-    order_status: 'Baking', // Instantly Baking for offline cashier order
+    order_status: 'Dibuat', // Default Stage 1
     reference_photo_url: '',
     created_at: new Date().toISOString(),
     pickup_delivery_date: new Date().toISOString().split('T')[0],
@@ -652,7 +640,6 @@ window.submitPOSOfflinePayment = function(totalAmount) {
 
   appData.orders.unshift(newOrder);
 
-  // Perbarui indikator badge sidebar secara instan
   if (typeof window.renderNavigation === 'function') window.renderNavigation();
 
   if (typeof window.sendOrderToGAS === 'function') {
@@ -663,13 +650,12 @@ window.submitPOSOfflinePayment = function(totalAmount) {
   window.closePOSPaymentModal();
   window.renderViewport();
 
-  // AUTOMATIC THERMAL PRINTER RECEIPT TRIGGER
   if (typeof window.printThermalReceipt === 'function') {
     window.printThermalReceipt(newOrder);
   }
 
   if (typeof window.showToast === 'function') {
-    window.showToast(`Pembayaran ${orderType} sebesar Rp ${totalAmount.toLocaleString('id-ID')} berhasil! Struk dicetak.`);
+    window.showToast(`Pembayaran ${orderType} sebesar Rp ${totalAmount.toLocaleString('id-ID')} berhasil! Masuk ke 'Pesanan Sedang Dibuat'.`);
   }
 };
 
@@ -679,7 +665,7 @@ window.setOrderHubFilter = function(filter) {
 };
 
 window.renderWebOrders = function(container) {
-  const activeOrders = appData.orders.filter(o => o.order_status !== 'Cancelled');
+  const activeOrders = appData.orders.filter(o => o.order_status !== 'Cancelled' && o.order_status !== 'Selesai');
   const onlineOrdersCount = activeOrders.filter(o => !String(o.order_type || '').includes('Offline')).length;
   const offlineOrdersCount = activeOrders.filter(o => String(o.order_type || '').includes('Offline')).length;
 
@@ -701,7 +687,6 @@ window.renderWebOrders = function(container) {
           <p class="text-xs md:text-sm text-pinkglass-800">Pantau dan teruskan pesanan dari channel Online (Web) maupun Offline (Kasir Toko) ke KDS Dapur.</p>
         </div>
 
-        <!-- Filter Channel Buttons & Refresh Button -->
         <div class="flex items-center space-x-2">
           <button onclick="if(typeof window.fetchInitialDataFromGAS === 'function') window.fetchInitialDataFromGAS(); if(typeof window.showToast === 'function') window.showToast('Memperbarui data pesanan...');" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-white/90 text-charcoal border border-pinkglass-300 hover:bg-pinkglass-100 transition-all flex items-center space-x-1 shadow-xs active:scale-95">
             <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-pinkglass-700"></i>
@@ -746,7 +731,7 @@ window.renderWebOrders = function(container) {
 
               <div class="flex items-center space-x-2">
                 ${o.order_status === 'Pending' ? `
-                  <button onclick="window.updateOrderStatus('${o.order_id}', 'Baking')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95 flex items-center space-x-1.5">
+                  <button onclick="window.updateOrderStatus('${o.order_id}', 'Dibuat')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95 flex items-center space-x-1.5">
                     <i data-lucide="chef-hat" class="w-4 h-4"></i>
                     <span>Terima & Masak (Ke KDS)</span>
                   </button>
@@ -783,153 +768,217 @@ window.formatOrderTime = function(isoString) {
   }
 };
 
-window.getElapsedTimeFormatted = function(createdIso, readyIso = null, status = 'Pending') {
+window.getElapsedTimeFormatted = function(createdIso) {
   if (!createdIso) return '00m 00s';
   const created = new Date(createdIso).getTime();
   if (isNaN(created)) return '00m 00s';
   
-  let endTime = Date.now();
-  if (status === 'Ready' && readyIso) {
-    const readyTime = new Date(readyIso).getTime();
-    if (!isNaN(readyTime)) endTime = readyTime;
-  }
-  
-  const diffMs = Math.max(0, endTime - created);
+  const diffMs = Math.max(0, Date.now() - created);
   const totalSeconds = Math.floor(diffMs / 1000);
   const mins = Math.floor(totalSeconds / 60);
   const secs = totalSeconds % 60;
   return `${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
 };
 
+/* ==========================================================
+ * RENDER KDS - KANBAN BOARD 3 KONTAINER PROSES
+ * ========================================================== */
 window.renderKDS = function(container) {
   if (window.kdsIntervalId) {
     clearInterval(window.kdsIntervalId);
     window.kdsIntervalId = null;
   }
 
-  const kdsOrders = appData.orders.filter(o => o.order_status !== 'Cancelled');
+  const activeOrders = appData.orders.filter(o => o.order_status !== 'Cancelled' && o.order_status !== 'Selesai');
+
+  const containerDibuat = activeOrders.filter(o => o.order_status === 'Dibuat' || o.order_status === 'Baking' || o.order_status === 'Pending');
+  const containerDihias = activeOrders.filter(o => o.order_status === 'Dihias');
+  const containerSiap   = activeOrders.filter(o => o.order_status === 'Siap' || o.order_status === 'Ready');
 
   let html = `
     <div class="space-y-6 max-w-7xl mx-auto">
-      <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
         <div>
           <h2 class="text-xl md:text-2xl font-bold text-charcoal flex items-center gap-2">
             <i data-lucide="chef-hat" class="w-6 h-6 text-pinkglass-600"></i>
-            <span>Kitchen Display System (KDS Queue)</span>
+            <span>SEDANG DALAM PROSES (KDS Queue)</span>
           </h2>
-          <p class="text-xs text-pinkglass-800">Antrean pembuatan kue dapur realtime dari seluruh channel pesanan masuk.</p>
+          <p class="text-xs text-pinkglass-800">Klik kartu pesanan pembeli untuk memindahkan status ke tahapan berikutnya hingga Selesai.</p>
         </div>
         <div class="flex items-center space-x-2 bg-pinkglass-100 px-3.5 py-1.5 rounded-2xl border border-pinkglass-200 shadow-xs">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span class="text-xs font-bold text-pinkglass-900">Timer Live Running</span>
+          <span class="text-xs font-bold text-pinkglass-900">Live Stage Tracker Active</span>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- 3 KONTAINER KANBAN BOARD -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- KONTAINER 1: PESANAN SEDANG DIBUAT -->
+        <div class="bg-amber-50/50 p-4 md:p-5 rounded-3xl border border-amber-200/80 glass-card space-y-4 flex flex-col justify-between shadow-sm">
+          <div class="space-y-3">
+            <div class="flex justify-between items-center border-b border-amber-200/80 pb-3">
+              <h3 class="font-extrabold text-sm md:text-base text-amber-950 flex items-center gap-2">
+                <span>🥣 Pesanan Sedang Dibuat</span>
+              </h3>
+              <span class="bg-amber-200 text-amber-900 text-xs font-extrabold px-3 py-0.5 rounded-full shadow-2xs">${containerDibuat.length}</span>
+            </div>
+
+            <div class="space-y-3 max-h-[65vh] overflow-y-auto pr-1">
+              ${containerDibuat.length === 0 ? `
+                <div class="bg-white/80 p-6 rounded-2xl border border-amber-200 text-center text-amber-800 text-xs font-medium">
+                  Tidak ada pesanan sedang dibuat.
+                </div>
+              ` : containerDibuat.map(o => `
+                <div onclick="window.advanceOrderStatus('${o.order_id}', 'Dibuat')" class="bg-white p-4 rounded-2xl border border-amber-300 shadow-sm hover:shadow-md hover:border-amber-500 transition-all cursor-pointer active:scale-98 space-y-2.5">
+                  <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-md font-mono">${o.order_id}</span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${String(o.order_type||'').includes('Offline')?'bg-amber-100 text-amber-800':'bg-sky-100 text-sky-800'}">${o.order_type}</span>
+                  </div>
+
+                  <div>
+                    <h4 class="font-extrabold text-charcoal text-sm">${o.customer_name}</h4>
+                    <p class="text-[11px] text-pinkglass-800 font-medium">🕒 Masuk: ${window.formatOrderTime(o.created_at)}</p>
+                  </div>
+
+                  <div class="pt-2 border-t border-amber-100 flex justify-between items-center">
+                    <span class="text-[11px] font-mono text-amber-900 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200">
+                      ⏱️ ${window.getElapsedTimeFormatted(o.created_at)}
+                    </span>
+                    <span class="text-[11px] font-bold text-amber-700 flex items-center gap-1 hover:underline">
+                      <span>Proses ke Dihias</span>
+                      <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- KONTAINER 2: PESANAN SEDANG DIHIAS -->
+        <div class="bg-sky-50/50 p-4 md:p-5 rounded-3xl border border-sky-200/80 glass-card space-y-4 flex flex-col justify-between shadow-sm">
+          <div class="space-y-3">
+            <div class="flex justify-between items-center border-b border-sky-200/80 pb-3">
+              <h3 class="font-extrabold text-sm md:text-base text-sky-950 flex items-center gap-2">
+                <span>🎨 Pesanan Sedang Dihias</span>
+              </h3>
+              <span class="bg-sky-200 text-sky-900 text-xs font-extrabold px-3 py-0.5 rounded-full shadow-2xs">${containerDihias.length}</span>
+            </div>
+
+            <div class="space-y-3 max-h-[65vh] overflow-y-auto pr-1">
+              ${containerDihias.length === 0 ? `
+                <div class="bg-white/80 p-6 rounded-2xl border border-sky-200 text-center text-sky-800 text-xs font-medium">
+                  Tidak ada pesanan sedang dihias.
+                </div>
+              ` : containerDihias.map(o => `
+                <div onclick="window.advanceOrderStatus('${o.order_id}', 'Dihias')" class="bg-white p-4 rounded-2xl border border-sky-300 shadow-sm hover:shadow-md hover:border-sky-500 transition-all cursor-pointer active:scale-98 space-y-2.5">
+                  <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-bold bg-sky-100 text-sky-900 px-2 py-0.5 rounded-md font-mono">${o.order_id}</span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${String(o.order_type||'').includes('Offline')?'bg-amber-100 text-amber-800':'bg-sky-100 text-sky-800'}">${o.order_type}</span>
+                  </div>
+
+                  <div>
+                    <h4 class="font-extrabold text-charcoal text-sm">${o.customer_name}</h4>
+                    <p class="text-[11px] text-pinkglass-800 font-medium">🕒 Masuk: ${window.formatOrderTime(o.created_at)}</p>
+                  </div>
+
+                  <div class="pt-2 border-t border-sky-100 flex justify-between items-center">
+                    <span class="text-[11px] font-mono text-sky-900 bg-sky-50 px-2 py-0.5 rounded-lg border border-sky-200">
+                      ⏱️ ${window.getElapsedTimeFormatted(o.created_at)}
+                    </span>
+                    <span class="text-[11px] font-bold text-sky-700 flex items-center gap-1 hover:underline">
+                      <span>Proses ke Siap</span>
+                      <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- KONTAINER 3: PESANAN SUDAH SIAP -->
+        <div class="bg-emerald-50/50 p-4 md:p-5 rounded-3xl border border-emerald-200/80 glass-card space-y-4 flex flex-col justify-between shadow-sm">
+          <div class="space-y-3">
+            <div class="flex justify-between items-center border-b border-emerald-200/80 pb-3">
+              <h3 class="font-extrabold text-sm md:text-base text-emerald-950 flex items-center gap-2">
+                <span>✨ Pesanan Sudah Siap</span>
+              </h3>
+              <span class="bg-emerald-200 text-emerald-900 text-xs font-extrabold px-3 py-0.5 rounded-full shadow-2xs">${containerSiap.length}</span>
+            </div>
+
+            <div class="space-y-3 max-h-[65vh] overflow-y-auto pr-1">
+              ${containerSiap.length === 0 ? `
+                <div class="bg-white/80 p-6 rounded-2xl border border-emerald-200 text-center text-emerald-800 text-xs font-medium">
+                  Tidak ada pesanan sudah siap.
+                </div>
+              ` : containerSiap.map(o => `
+                <div onclick="window.advanceOrderStatus('${o.order_id}', 'Siap')" class="bg-white p-4 rounded-2xl border border-emerald-300 shadow-sm hover:shadow-md hover:border-emerald-500 transition-all cursor-pointer active:scale-98 space-y-2.5">
+                  <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-bold bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded-md font-mono">${o.order_id}</span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${String(o.order_type||'').includes('Offline')?'bg-amber-100 text-amber-800':'bg-sky-100 text-sky-800'}">${o.order_type}</span>
+                  </div>
+
+                  <div>
+                    <h4 class="font-extrabold text-charcoal text-sm">${o.customer_name}</h4>
+                    <p class="text-[11px] text-pinkglass-800 font-medium">🕒 Masuk: ${window.formatOrderTime(o.created_at)}</p>
+                  </div>
+
+                  <div class="pt-2 border-t border-emerald-100 flex justify-between items-center">
+                    <span class="text-[11px] font-mono text-emerald-900 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
+                      ⏱️ ${window.getElapsedTimeFormatted(o.created_at)}
+                    </span>
+                    <span class="text-[11px] font-extrabold text-emerald-700 flex items-center gap-1 hover:underline">
+                      <span>Selesaikan Pesanan</span>
+                      <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                    </span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
   `;
 
-  if (kdsOrders.length === 0) {
-    html += `
-      <div class="col-span-full bg-white/80 p-8 rounded-3xl border border-pinkglass-200 text-center text-pinkglass-800 text-sm glass-card">
-        Belum ada antrean pesanan di dapur.
-      </div>
-    `;
-  } else {
-    kdsOrders.forEach(o => {
-      const isOffline = String(o.order_type || '').includes('Offline');
-      const formattedTime = window.formatOrderTime(o.created_at);
-      const initialElapsed = window.getElapsedTimeFormatted(o.created_at, o.ready_at, o.order_status);
-
-      let statusBadgeClass = 'bg-sky-100 text-sky-800 border-sky-300';
-      let statusLabel = o.order_status || 'Pending';
-
-      if (o.order_status === 'Baking') {
-        statusBadgeClass = 'bg-amber-100 text-amber-800 border-amber-300 animate-pulse font-bold';
-      } else if (o.order_status === 'Ready') {
-        statusBadgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold';
-      }
-
-      html += `
-        <div class="bg-white/80 p-5 rounded-3xl border border-pinkglass-300 space-y-3 glass-card shadow-sm flex flex-col justify-between">
-          <div class="space-y-2">
-            <div class="flex justify-between items-center">
-              <span class="text-[10px] font-bold bg-pinkglass-100 text-pinkglass-900 px-2.5 py-1 rounded-full font-mono">${o.order_id}</span>
-              <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full ${isOffline ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800'}">${o.order_type}</span>
-            </div>
-
-            <div>
-              <h4 class="font-bold text-charcoal text-base">${o.customer_name}</h4>
-              <p class="text-[11px] text-pinkglass-800 font-medium mt-0.5">🕒 Jam Pesan: <strong class="text-charcoal font-semibold">${formattedTime}</strong></p>
-            </div>
-
-            <div class="p-3 bg-pinkglass-50/70 rounded-2xl border border-pinkglass-200 space-y-2 mt-2">
-              <div class="flex justify-between items-center text-xs">
-                <span class="text-pinkglass-800 font-semibold">Status Dapur:</span>
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] border ${statusBadgeClass}">
-                  ${statusLabel}
-                </span>
-              </div>
-              <div class="flex justify-between items-center text-xs pt-1.5 border-t border-pinkglass-200">
-                <span class="text-pinkglass-800 font-semibold">Durasi Pemprosesan:</span>
-                <span id="kds-timer-${o.order_id}" data-created="${o.created_at}" data-ready="${o.ready_at || ''}" data-status="${o.order_status}" class="font-mono font-bold text-pinkglass-900 text-xs bg-white px-2 py-0.5 rounded-lg border border-pinkglass-200 shadow-2xs">
-                  ⏱️ ${initialElapsed} ${o.order_status === 'Ready' ? '(Selesai)' : ''}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div class="pt-2 space-y-2">
-            ${o.order_status === 'Ready' ? `
-              <div class="w-full bg-emerald-100 text-emerald-800 font-bold py-2.5 rounded-2xl text-xs text-center border border-emerald-300 flex items-center justify-center space-x-1.5 shadow-2xs">
-                <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
-                <span>Pesanan Selesai (Ready)</span>
-              </div>
-            ` : `
-              <button onclick="window.updateOrderStatus('${o.order_id}', 'Ready')" class="w-full bg-pinkglass-600 hover:bg-pinkglass-700 text-white font-bold py-2.5 rounded-2xl text-xs shadow-md transition-all active:scale-95 flex items-center justify-center space-x-1.5">
-                <i data-lucide="check" class="w-4 h-4"></i>
-                <span>Tandai Jika Kue Siap (Ready)</span>
-              </button>
-            `}
-
-            <button onclick="window.cancelOrder('${o.order_id}')" class="w-full bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold py-2 rounded-2xl text-xs transition-all active:scale-95 flex items-center justify-center space-x-1 border border-rose-300">
-              <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
-              <span>🚫 Batalkan Pesanan (Restore Stok)</span>
-            </button>
-          </div>
-        </div>
-      `;
-    });
-  }
-
-  html += `</div></div>`;
   container.innerHTML = html;
+};
 
-  window.kdsIntervalId = setInterval(() => {
-    appData.orders.forEach(o => {
-      if (o.order_status !== 'Ready' && o.order_status !== 'Cancelled') {
-        const el = document.getElementById(`kds-timer-${o.order_id}`);
-        if (el) {
-          const createdIso = el.getAttribute('data-created');
-          el.innerText = `⏱️ ${window.getElapsedTimeFormatted(createdIso, o.ready_at, o.order_status)}`;
-        }
-      }
-    });
-  }, 1000);
+/* ==========================================================
+ * ADVANCE ORDER STATUS - BERPINDAH ANTAR KONTAINER
+ * ========================================================== */
+window.advanceOrderStatus = function(orderId, currentStage) {
+  let nextStatus = '';
+  if (currentStage === 'Dibuat') nextStatus = 'Dihias';
+  else if (currentStage === 'Dihias') nextStatus = 'Siap';
+  else if (currentStage === 'Siap') nextStatus = 'Selesai';
+
+  if (!nextStatus) return;
+
+  window.updateOrderStatus(orderId, nextStatus);
 };
 
 window.updateOrderStatus = function(orderId, status) {
   const ord = appData.orders.find(o => o.order_id === orderId);
   if (ord) { 
     ord.order_status = status; 
-    if (status === 'Ready' && !ord.ready_at) {
+    if (status === 'Siap' && !ord.ready_at) {
       ord.ready_at = new Date().toISOString();
     }
 
-    // Update indikator badge sidebar secara seketika
     if (typeof window.renderNavigation === 'function') window.renderNavigation();
     window.renderViewport(); 
 
-    if (typeof window.showToast === 'function') window.showToast(`Status pesanan ${orderId} diperbarui menjadi ${status}!`);
+    if (typeof window.showToast === 'function') {
+      if (status === 'Selesai') {
+        window.showToast(`Pesanan ${orderId} telah SELESAI dan dicatat ke Laporan Penjualan Bank Alessia!`);
+      } else {
+        window.showToast(`Status pesanan ${orderId} berpindah ke tahap '${status}'!`);
+      }
+    }
     
     const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
     if (savedUrl && !savedUrl.includes('PASTE_YOUR')) {
@@ -950,10 +999,8 @@ window.cancelOrder = function(orderId) {
 
   const ord = appData.orders[ordIndex];
 
-  // Lock polling sync to protect local restoration
   if (typeof window.lockSync === 'function') window.lockSync(10000);
 
-  // Restore ingredient stocks from BOM recipes
   if (ord.items && ord.items.length > 0) {
     ord.items.forEach(cartItem => {
       const recipe = appData.recipes.find(r => String(r.product_id).trim() === String(cartItem.product_id).trim());
@@ -971,13 +1018,11 @@ window.cancelOrder = function(orderId) {
 
   ord.order_status = 'Cancelled';
 
-  // Update indikator badge sidebar secara seketika
   if (typeof window.renderNavigation === 'function') window.renderNavigation();
   window.renderViewport();
 
   if (typeof window.showToast === 'function') window.showToast(`Pesanan ${orderId} berhasil dibatalkan & stok bahan baku dikembalikan!`);
 
-  // Sync cancellation & restored ingredients to GAS backend
   const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
   if (savedUrl && !savedUrl.includes('PASTE_YOUR')) {
     fetch(savedUrl, {
