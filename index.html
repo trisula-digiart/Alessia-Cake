@@ -66,7 +66,7 @@
     }
     .font-digital { font-family: 'JetBrains Mono', monospace; }
     .font-luxury { font-family: 'Playfair Display', serif; }
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #F7A8C4; border-radius: 4px; }
   </style>
@@ -76,14 +76,11 @@
   <!-- AUTH GATEKEEPER MODAL OVERLAY -->
   <div id="auth-gatekeeper-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-charcoal/40 backdrop-blur-md transition-all duration-300">
     <div class="glass-modal w-full max-w-md rounded-3xl p-5 sm:p-8 space-y-5 shadow-2xl relative overflow-hidden my-auto max-h-[95vh] overflow-y-auto">
-      <!-- Glow Accents -->
       <div class="absolute -top-12 -right-12 w-32 h-32 bg-pinkglass-300 rounded-full blur-2xl opacity-50 pointer-events-none"></div>
       <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-pinkglass-400 rounded-full blur-2xl opacity-40 pointer-events-none"></div>
 
-      <!-- PURE VECTOR LUXURY LOGO EMBLEM FOR LOGIN -->
       <div class="text-center relative z-10 pt-2 pb-1 flex flex-col items-center justify-center select-none">
         <div class="relative flex items-center justify-center group mb-2.5">
-          <!-- Outer Radiant Ring -->
           <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-tr from-pinkglass-600 via-pinkglass-500 to-pinkglass-400 p-0.5 shadow-xl shadow-pinkglass-500/25 transform group-hover:rotate-3 transition-transform duration-300">
             <div class="w-full h-full bg-white rounded-[22px] flex items-center justify-center border border-pinkglass-200">
               <svg class="w-9 h-9 sm:w-11 sm:h-11 text-pinkglass-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -113,7 +110,6 @@
         </div>
       </div>
 
-      <!-- Auth Mode Tabs (Customer vs Staff) -->
       <div class="flex bg-pinkglass-100/80 p-1.5 rounded-2xl border border-pinkglass-200 relative z-10">
         <button id="tab-auth-customer" onclick="window.switchAuthTab('customer')" class="flex-1 py-2.5 text-xs font-bold rounded-xl bg-pinkglass-600 text-white shadow-md transition-all">
           🛍️ Pelanggan
@@ -123,7 +119,6 @@
         </button>
       </div>
 
-      <!-- FORM 1: CUSTOMER QUICK LOGIN (NO PASSWORD) -->
       <div id="auth-customer-form" class="space-y-4 relative z-10">
         <div class="bg-pinkglass-50 p-3.5 rounded-2xl border border-pinkglass-200/80 text-[11px] text-pinkglass-900 leading-relaxed">
           ✨ <span class="font-bold">Tanpa Password!</span> Cukup isi nama dan WhatsApp kamu untuk mulai memesan kue impian.
@@ -142,7 +137,6 @@
         </button>
       </div>
 
-      <!-- FORM 2: STAFF/OWNER LOGIN -->
       <div id="auth-staff-form" class="space-y-4 hidden relative z-10">
         <div class="space-y-1.5">
           <label class="text-xs font-bold text-pinkglass-900">Akses Pemilik Toko (Owner)</label>
@@ -162,112 +156,12 @@
     </div>
   </div>
 
-  <!-- PRODUCT ADD / EDIT MODAL (FOR OWNER/ADMIN) -->
-  <div id="product-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-charcoal/40 backdrop-blur-md transition-all duration-300">
-    <div class="glass-modal w-full max-w-md rounded-3xl p-6 md:p-8 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center border-b border-pinkglass-200 pb-3">
-        <h3 id="product-modal-title" class="text-lg font-bold text-charcoal">Tambah / Edit Produk</h3>
-        <button onclick="window.closeProductModal()" class="text-pinkglass-700 hover:text-charcoal p-1">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      <input type="hidden" id="pm-product-id">
-      <div class="space-y-3">
-        <div>
-          <label class="text-xs font-bold text-pinkglass-900">Nama Produk</label>
-          <input type="text" id="pm-name" placeholder="misal: Pink Rose Opera" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
-        </div>
-        <div>
-          <label class="text-xs font-bold text-pinkglass-900">Kategori</label>
-          <select id="pm-category" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400 font-medium">
-            <option value="Whole Cake">Whole Cake</option>
-            <option value="Slice">Slice</option>
-            <option value="Pastry">Pastry</option>
-            <option value="Cookies">Cookies</option>
-            <option value="Drink">Drink</option>
-          </select>
-        </div>
-        <div>
-          <label class="text-xs font-bold text-pinkglass-900">Harga (Rp)</label>
-          <input type="number" id="pm-price" placeholder="misal: 150000" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
-        </div>
-        <div>
-          <label class="text-xs font-bold text-pinkglass-900">Stok Awal</label>
-          <input type="number" id="pm-stock" placeholder="misal: 10" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
-        </div>
-        <div>
-          <label class="text-xs font-bold text-pinkglass-900">URL Gambar Produk</label>
-          <input type="text" id="pm-image" placeholder="https://..." class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
-        </div>
-        <div>
-          <label class="text-xs font-bold text-pinkglass-900">Deskripsi Ringkasan</label>
-          <textarea id="pm-desc" rows="2" placeholder="Deskripsi kue..." class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400"></textarea>
-        </div>
-      </div>
-      <button onclick="window.saveProductFromModal()" class="w-full bg-gradient-to-r from-pinkglass-600 to-pinkglass-500 hover:from-pinkglass-700 hover:to-pinkglass-600 text-white font-bold py-3 rounded-2xl text-xs md:text-sm shadow-md transition-all active:scale-95">
-        Simpan Produk
-      </button>
-    </div>
-  </div>
-
-  <!-- INGREDIENT ADD / EDIT MODAL (FOR OWNER/ADMIN) -->
-  <div id="ingredient-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-charcoal/40 backdrop-blur-md transition-all duration-300">
-    <div class="glass-modal w-full max-w-md rounded-3xl p-6 md:p-8 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center border-b border-pinkglass-200 pb-3">
-        <h3 id="ingredient-modal-title" class="text-lg font-bold text-charcoal">Tambah / Edit Bahan Baku</h3>
-        <button onclick="window.closeIngredientModal()" class="text-pinkglass-700 hover:text-charcoal p-1">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      <input type="hidden" id="im-ingredient-id">
-      <div class="space-y-3">
-        <div>
-          <label class="text-xs font-bold text-pinkglass-900">Nama Bahan Baku</label>
-          <input type="text" id="im-name" placeholder="misal: Mentega Wijsman / Tepung Terigu" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="text-xs font-bold text-pinkglass-900">Stok Fisik Saat Ini</label>
-            <input type="number" id="im-stock" placeholder="misal: 10000" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
-          </div>
-          <div>
-            <label class="text-xs font-bold text-pinkglass-900">Satuan Takaran</label>
-            <select id="im-unit" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400 font-medium">
-              <option value="gram">gram</option>
-              <option value="ml">ml</option>
-              <option value="pcs">pcs</option>
-              <option value="kg">kg</option>
-              <option value="liter">liter</option>
-            </select>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="text-xs font-bold text-pinkglass-900">Harga / Biaya Per Unit (Rp)</label>
-            <input type="number" id="im-cost" placeholder="misal: 45" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
-          </div>
-          <div>
-            <label class="text-xs font-bold text-pinkglass-900">Batas Minimum (Alert)</label>
-            <input type="number" id="im-min-stock" placeholder="misal: 2000" class="w-full bg-white/90 border border-pinkglass-300 rounded-xl p-2.5 text-xs text-charcoal focus:outline-none focus:ring-2 focus:ring-pinkglass-400">
-          </div>
-        </div>
-      </div>
-      <button onclick="window.saveIngredientFromModal()" class="w-full bg-gradient-to-r from-pinkglass-600 to-pinkglass-500 hover:from-pinkglass-700 hover:to-pinkglass-600 text-white font-bold py-3 rounded-2xl text-xs md:text-sm shadow-md transition-all active:scale-95">
-        Simpan Bahan Baku
-      </button>
-    </div>
-  </div>
-
-  <!-- LUXURY HERO HEADER BANNER (3-COLUMN PERFECT GRID WITH PURE VECTOR LOGO & SLEEK COMPACT HEIGHT) -->
+  <!-- HEADER BANNER -->
   <header class="glass-header relative overflow-hidden px-4 md:px-8 py-2.5 shadow-sm border-b border-pinkglass-300/80 w-full">
-    <!-- Background Glow Accents -->
     <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-[700px] h-[120px] bg-gradient-to-r from-pinkglass-200/50 via-pinkglass-300/40 to-pinkglass-200/50 rounded-full blur-3xl pointer-events-none"></div>
 
     <div class="w-full grid grid-cols-1 md:grid-cols-3 items-center gap-3 relative z-10">
-      
-      <!-- SISI UJUNG KIRI (COLUMN 1): Card Jam Digital Besar + Indikator Sync -->
       <div class="flex flex-col space-y-1 justify-self-start">
-        <!-- Big Digital Clock Card -->
         <div class="bg-white/90 backdrop-blur-md p-2 px-3.5 rounded-2xl border border-pinkglass-300/80 shadow-2xs flex items-center space-x-2.5">
           <div class="w-7 h-7 rounded-xl border border-pinkglass-300 flex items-center justify-center text-pinkglass-600 bg-pinkglass-50 shadow-2xs">
             <i data-lucide="clock" class="w-3.5 h-3.5"></i>
@@ -282,17 +176,14 @@
           </div>
         </div>
 
-        <!-- Online Sync Active Badge -->
         <div class="bg-white/90 backdrop-blur-md px-3 py-0.5 rounded-full border border-pinkglass-200 shadow-2xs flex items-center space-x-1.5 w-fit">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
           <span id="sync-status" class="text-[10px] font-bold text-pinkglass-800">Online Sync Active</span>
         </div>
       </div>
 
-      <!-- SISI TENGAH PRESISI (COLUMN 2): PURE VECTOR LOGO & TYPOGRAPHY -->
       <div class="flex flex-col items-center justify-center text-center justify-self-center py-0.5 select-none">
         <div class="flex items-center space-x-2.5">
-          <!-- Scalable Royal Crown SVG Badge -->
           <div class="w-9 h-9 md:w-10 md:h-10 rounded-2xl bg-gradient-to-tr from-pinkglass-600 via-pinkglass-500 to-pinkglass-400 p-0.5 shadow-md flex items-center justify-center transform hover:scale-105 transition-transform duration-300">
             <div class="w-full h-full bg-white rounded-[13px] flex items-center justify-center border border-pinkglass-200">
               <svg class="w-5 h-5 md:w-6 md:h-6 text-pinkglass-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -309,7 +200,6 @@
             </div>
           </div>
 
-          <!-- Luxury Typography Brand Name -->
           <div class="text-left">
             <h1 class="text-lg md:text-2xl font-extrabold text-pinkglass-950 font-luxury tracking-[0.16em] leading-none uppercase">
               ALESSIA CAKE
@@ -323,16 +213,13 @@
         </div>
       </div>
 
-      <!-- SISI UJUNG KANAN (COLUMN 3): USER PROFILE & LOGOUT -->
       <div class="flex items-center justify-end space-x-2 justify-self-end w-full md:w-auto">
-        <!-- User Badge -->
         <div id="user-profile-badge" class="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full border border-pinkglass-300 shadow-2xs flex items-center space-x-2">
           <i data-lucide="user" class="w-3.5 h-3.5 text-pinkglass-700"></i>
           <span id="display-user-name" class="text-xs font-bold text-charcoal max-w-[110px] truncate">OWNER Staff</span>
           <button onclick="window.openAuthModal()" class="text-[10px] bg-pinkglass-600 text-white px-2 py-0.5 rounded-full hover:bg-pinkglass-700 font-bold transition-all shadow-2xs ml-1">Ganti</button>
         </div>
 
-        <!-- Logout Button -->
         <button onclick="window.logoutUser()" class="bg-gradient-to-r from-pinkglass-600 to-pinkglass-500 hover:from-pinkglass-700 hover:to-pinkglass-600 text-white text-xs font-bold px-3.5 py-1 rounded-2xl shadow-md flex items-center space-x-1.5 transition-all active:scale-95">
           <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
           <span>Keluar</span>
@@ -341,42 +228,452 @@
     </div>
   </header>
 
-  <!-- MAIN CONTAINER (FULL HEIGHT STRETCH & EDGE-TO-EDGE VIEWPORT) -->
+  <!-- MAIN CONTAINER -->
   <div class="flex-1 flex flex-col md:flex-row overflow-hidden relative w-full h-full">
-    
-    <!-- Sidebar Desktop Navigation (Full Height & Flush Left Edge) -->
     <aside id="sidebar-nav" class="hidden md:flex w-64 bg-white/70 backdrop-blur-md border-r border-pinkglass-200 flex-col p-4 space-y-1.5 z-20 shadow-sm min-h-full shrink-0">
-      <!-- Injected dynamically via JS -->
     </aside>
 
-    <!-- Mobile Bottom Navigation Bar -->
     <nav id="mobile-bottom-nav" class="md:hidden bg-white/95 backdrop-blur-md border-t border-pinkglass-200 flex items-center justify-around py-2.5 px-2 fixed bottom-0 left-0 right-0 z-50 shadow-lg">
-      <!-- Injected dynamically via JS -->
     </nav>
 
-    <!-- Main Content Dynamic Viewport (Fills All Remaining Space Edge-to-Edge) -->
     <main id="main-viewport" class="flex-1 overflow-y-auto p-4 md:p-6 pb-24 md:pb-8 w-full h-full">
-      <!-- Dynamic View Injected Here -->
     </main>
   </div>
 
-  <!-- MODULAR JS ENGINE INJECTION IN ORDER -->
-  <script src="js/data.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/inventory.js"></script>
-  <script src="js/sales.js"></script>
-  <script src="js/finance.js"></script>
-
-  <!-- INITIALIZATION BOOTSTRAPPER -->
+  <!-- CONSOLIDATED JARS ENGINE -->
   <script>
+    /* ==========================================================
+     * 1. DATA & STATE MODULE
+     * ========================================================== */
+    let GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzX4rjfDx1V31yJsgoxHsnyA78EghxGTCnS7llUalyGClZEQNzYfaQvq5Egl-TL6mjJ/exec'; 
+
+    let currentRole = 'customer';
+    let currentTab = 'catalog';
+
+    let catalogFilter = { search: '', category: 'all', sort: 'default' };
+    let orderHubFilter = 'all';
+
+    const STORE_CONFIG = {
+      owner_name: 'Pemilik Toko Alessia',
+      phone: '6285692165709',
+      staff_pin: '123456',
+      location_name: 'Kab. Bekasi',
+      printer_type: 'driver',
+      printer_paper: '58mm',
+      qris_image_url: 'images/qrcode.jpg'
+    };
+
+    let currentUser = { name: '', phone: '', role: 'customer', isLoggedIn: false };
+
+    let appData = {
+      products: [
+        { product_id: 'PRD-01', category: 'Whole Cake', name: 'Pink Champagne Velvet', description: 'Kue red velvet lembut berbalut krim stroberi mawar.', base_price: 350000, image_url: 'https://images.unsplash.com/photo-1586985289688-ca3cf47d3e6e?q=80&w=600', is_active: true, stock_qty: 12 },
+        { product_id: 'PRD-02', category: 'Slice', name: 'Rose Petal Opera Slice', description: 'Kue lapis moka cokelat halus beraroma mawar.', base_price: 45000, image_url: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?q=80&w=600', is_active: true, stock_qty: 25 },
+        { product_id: 'PRD-03', category: 'Pastry', name: 'Berry Glazed Croissant', description: 'Croissant renyah mentega Prancis dengan selai beri.', base_price: 28000, image_url: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?q=80&w=600', is_active: true, stock_qty: 40 },
+        { product_id: 'PRD-04', category: 'Whole Cake', name: 'Ruby Chocolate Ganache', description: 'Cokelat ruby merah muda alami.', base_price: 380000, image_url: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=600', is_active: true, stock_qty: 8 }
+      ],
+      ingredients: [
+        { ingredient_id: 'ING-01', name: 'Tepung Terigu Premium', current_stock: 45000, min_stock_alert: 5000, unit: 'gram', cost_per_unit: 15 },
+        { ingredient_id: 'ING-02', name: 'Ruby Chocolate Bel', current_stock: 22000, min_stock_alert: 3000, unit: 'gram', cost_per_unit: 120 },
+        { ingredient_id: 'ING-03', name: 'Mentega Prancis Pure Butter', current_stock: 15000, min_stock_alert: 2000, unit: 'gram', cost_per_unit: 45 }
+      ],
+      recipes: [],
+      orders: [
+        { 
+          order_id: 'ORD-7263', 
+          order_type: 'Online (QRIS/Transfer)', 
+          customer_name: 'Manong', 
+          customer_phone: '08123456789', 
+          total_amount: 300000, 
+          payment_status: 'PAID', 
+          order_status: 'Dibuat', 
+          created_at: new Date(Date.now() - 15 * 60000).toISOString(),
+          items: [{ name: 'Pink Champagne Velvet', qty: 1 }]
+        },
+        { 
+          order_id: 'ORD-3788', 
+          order_type: 'Online (Bayar di Tempat / COD)', 
+          customer_name: 'Manong', 
+          customer_phone: '08123456789', 
+          total_amount: 280000, 
+          payment_status: 'UNPAID', 
+          order_status: 'Siap', 
+          created_at: new Date(Date.now() - 30 * 60000).toISOString(),
+          items: [{ name: 'Berry Glazed Croissant', qty: 2 }]
+        }
+      ],
+      expenses: [],
+      cart: []
+    };
+
+    const roleTabs = {
+      owner: [
+        { id: 'dashboard', name: 'Halaman Utama', icon: 'bar-chart-3' },
+        { id: 'web_orders', name: 'Pesanan Online Masuk', icon: 'bell' },
+        { id: 'offline_orders', name: 'Pesanan Offline', icon: 'calculator' },
+        { id: 'kds', name: 'SEDANG DALAM PROSES', icon: 'chef-hat' },
+        { id: 'catalog', name: 'Katalog Produk', icon: 'package' },
+        { id: 'bom', name: 'Resep KUE', icon: 'book-open' },
+        { id: 'update_stock', name: 'Stok Bahan-Bahan', icon: 'database' },
+        { id: 'finance', name: 'Bank Alessia', icon: 'wallet' },
+        { id: 'settings', name: 'Pengaturan Owner', icon: 'settings' }
+      ],
+      customer: [
+        { id: 'catalog', name: 'Menu Utama', icon: 'shopping-bag' },
+        { id: 'custom_builder', name: 'Custom Cake', icon: 'sliders' },
+        { id: 'checkout', name: 'Keranjang', icon: 'shopping-cart' }
+      ]
+    };
+
+    window.initLuxuryClock = function() {
+      if (window.clockTimerId) clearInterval(window.clockTimerId);
+      function updateClock() {
+        const timeEl = document.getElementById('luxury-clock-time');
+        const dateEl = document.getElementById('luxury-clock-date');
+        if (!timeEl || !dateEl) return;
+        const now = new Date();
+        timeEl.innerText = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+        dateEl.innerText = `${STORE_CONFIG.location_name || 'Kab. Bekasi'} • ${now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}`;
+      }
+      updateClock();
+      window.clockTimerId = setInterval(updateClock, 1000);
+    };
+
+    /* ==========================================================
+     * 2. AUTHENTICATION MODULE
+     * ========================================================== */
+    window.openAuthModal = function() {
+      const modal = document.getElementById('auth-gatekeeper-modal');
+      if (modal) modal.classList.remove('hidden');
+    };
+
+    window.closeAuthModal = function() {
+      const modal = document.getElementById('auth-gatekeeper-modal');
+      if (modal) modal.classList.add('hidden');
+    };
+
+    window.switchAuthTab = function(type) {
+      const custBtn = document.getElementById('tab-auth-customer');
+      const staffBtn = document.getElementById('tab-auth-staff');
+      const custForm = document.getElementById('auth-customer-form');
+      const staffForm = document.getElementById('auth-staff-form');
+
+      if (type === 'customer') {
+        custBtn.className = 'flex-1 py-2.5 text-xs font-bold rounded-xl bg-pinkglass-600 text-white shadow-md transition-all';
+        staffBtn.className = 'flex-1 py-2.5 text-xs font-bold rounded-xl text-pinkglass-800 hover:text-charcoal transition-all';
+        custForm.classList.remove('hidden');
+        staffForm.classList.add('hidden');
+      } else {
+        staffBtn.className = 'flex-1 py-2.5 text-xs font-bold rounded-xl bg-pinkglass-600 text-white shadow-md transition-all';
+        custBtn.className = 'flex-1 py-2.5 text-xs font-bold rounded-xl text-pinkglass-800 hover:text-charcoal transition-all';
+        staffForm.classList.remove('hidden');
+        custForm.classList.add('hidden');
+      }
+    };
+
+    window.submitCustomerLogin = function() {
+      const name = document.getElementById('login-cust-name')?.value.trim();
+      const phone = document.getElementById('login-cust-phone')?.value.trim();
+      if (!name || !phone) return alert('Mohon isi nama dan WhatsApp');
+      currentUser = { name, phone, role: 'customer', isLoggedIn: true };
+      localStorage.setItem('ALESSIA_USER', JSON.stringify(currentUser));
+      window.updateUserProfileDisplay();
+      window.closeAuthModal();
+      window.switchRole('customer');
+    };
+
+    window.submitStaffLogin = function() {
+      const pin = document.getElementById('login-staff-pin')?.value.trim();
+      if (pin !== STORE_CONFIG.staff_pin) return alert('PIN Keamanan Staf salah!');
+      currentUser = { name: STORE_CONFIG.owner_name, phone: 'INTERNAL', role: 'owner', isLoggedIn: true };
+      localStorage.setItem('ALESSIA_USER', JSON.stringify(currentUser));
+      window.updateUserProfileDisplay();
+      window.closeAuthModal();
+      window.switchRole('owner');
+    };
+
+    window.updateUserProfileDisplay = function() {
+      const el = document.getElementById('display-user-name');
+      if (el) el.innerText = currentUser.name || 'Tamu VIP';
+    };
+
+    window.logoutUser = function() {
+      localStorage.removeItem('ALESSIA_USER');
+      currentUser = { name: '', phone: '', role: 'customer', isLoggedIn: false };
+      window.updateUserProfileDisplay();
+      window.switchRole('customer');
+      window.openAuthModal();
+    };
+
+    window.switchRole = function(role) {
+      currentRole = role;
+      currentUser.role = role;
+      const tabs = roleTabs[role] || roleTabs['customer'];
+      currentTab = tabs[0].id;
+      window.renderNavigation();
+      window.renderViewport();
+    };
+
+    window.changeTab = function(tabId) {
+      currentTab = tabId;
+      window.renderNavigation();
+      window.renderViewport();
+    };
+
+    window.renderNavigation = function() {
+      const sidebar = document.getElementById('sidebar-nav');
+      const mobileNav = document.getElementById('mobile-bottom-nav');
+      const tabs = roleTabs[currentRole] || roleTabs['customer'];
+
+      const pendingOrdersCount = appData.orders.filter(o => o.order_status === 'Pending').length;
+      const processOrdersCount = appData.orders.filter(o => ['Dibuat', 'Dihias', 'Siap'].includes(o.order_status)).length;
+
+      if (sidebar) {
+        let sideHtml = `<div class="text-[11px] font-bold uppercase tracking-wider text-pinkglass-700 px-3 py-2">Menu ${currentRole.toUpperCase()}</div>`;
+        tabs.forEach(tab => {
+          const active = currentTab === tab.id;
+          let badge = '';
+          if (tab.id === 'web_orders' && pendingOrdersCount > 0) {
+            badge = `<span class="ml-auto bg-rose-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full animate-pulse">${pendingOrdersCount}</span>`;
+          } else if (tab.id === 'kds' && processOrdersCount > 0) {
+            badge = `<span class="ml-auto bg-amber-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">${processOrdersCount}</span>`;
+          }
+
+          sideHtml += `
+            <button onclick="window.changeTab('${tab.id}')" class="flex items-center space-x-3 px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all ${active ? 'bg-pinkglass-600 text-white shadow-md' : 'text-charcoal hover:bg-pinkglass-100/60'}">
+              <i data-lucide="${tab.icon}" class="w-4 h-4 shrink-0"></i>
+              <span class="truncate">${tab.name}</span>
+              ${badge}
+            </button>
+          `;
+        });
+        sidebar.innerHTML = sideHtml;
+      }
+
+      if (mobileNav) {
+        let mobHtml = '';
+        tabs.forEach(tab => {
+          const active = currentTab === tab.id;
+          mobHtml += `
+            <button onclick="window.changeTab('${tab.id}')" class="flex flex-col items-center justify-center flex-1 py-1 px-1 transition-all ${active ? 'text-pinkglass-700 font-bold' : 'text-pinkglass-500'}">
+              <i data-lucide="${tab.icon}" class="w-5 h-5 mb-0.5"></i>
+              <span class="text-[10px] truncate max-w-[65px]">${tab.name}</span>
+            </button>
+          `;
+        });
+        mobileNav.innerHTML = mobHtml;
+      }
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    };
+
+    /* ==========================================================
+     * 3. SALES & KDS BOARD MODULE (UPGRADED FULL WIDTH)
+     * ========================================================== */
+    window.formatOrderTime = function(isoString) {
+      if (!isoString) return '-';
+      try {
+        const d = new Date(isoString);
+        return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+      } catch (e) { return '-'; }
+    };
+
+    window.getElapsedTimeFormatted = function(createdIso) {
+      if (!createdIso) return '00m 00s';
+      const created = new Date(createdIso).getTime();
+      const diffMs = Math.max(0, Date.now() - created);
+      const mins = Math.floor(diffMs / 60000);
+      const secs = Math.floor((diffMs % 60000) / 1000);
+      return `${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
+    };
+
+    window.renderKDS = function(container) {
+      const activeOrders = appData.orders.filter(o => o.order_status !== 'Cancelled' && o.order_status !== 'Selesai');
+
+      const dibuatList = activeOrders.filter(o => o.order_status === 'Dibuat' || o.order_status === 'Baking' || o.order_status === 'Pending');
+      const dihiasList = activeOrders.filter(o => o.order_status === 'Dihias');
+      const siapList = activeOrders.filter(o => o.order_status === 'Siap' || o.order_status === 'Ready');
+
+      let html = `
+        <div class="space-y-6 w-full">
+          <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h2 class="text-xl md:text-2xl font-bold text-charcoal flex items-center gap-2">
+                <i data-lucide="chef-hat" class="w-6 h-6 text-pinkglass-600"></i>
+                <span>SEDANG DALAM PROSES (KDS Queue)</span>
+              </h2>
+              <p class="text-xs text-pinkglass-800">Klik kartu pesanan pembeli untuk memindahkan status ke tahapan berikutnya hingga Selesai.</p>
+            </div>
+            <div class="flex items-center space-x-2 bg-pinkglass-100 px-3.5 py-1.5 rounded-2xl border border-pinkglass-200 shadow-xs">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span class="text-xs font-bold text-pinkglass-900">Live Stage Tracker Active</span>
+            </div>
+          </div>
+
+          <!-- KANBAN BOARD 3 CONTAINER (FULL WIDTH) -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+            <!-- KONTAINER 1: PESANAN SEDANG DIBUAT -->
+            <div class="bg-amber-50/50 p-4 rounded-3xl border border-amber-200/80 space-y-3 flex flex-col min-h-[500px]">
+              <div class="flex justify-between items-center border-b border-amber-200 pb-2.5">
+                <h3 class="font-extrabold text-sm text-amber-900 flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                  <span>Pesanan Sedang Dibuat</span>
+                </h3>
+                <span class="text-xs font-bold bg-amber-200 text-amber-900 px-2.5 py-0.5 rounded-full">${dibuatList.length}</span>
+              </div>
+              <div class="space-y-3 flex-1 overflow-y-auto max-h-[70vh] pr-1">
+                ${dibuatList.length === 0 ? '<p class="text-xs text-amber-800/70 text-center py-8">Tidak ada pesanan sedang dibuat.</p>' : dibuatList.map(o => window.renderKDSCard(o, 'Proses ke Dihias →', 'bg-amber-500 hover:bg-amber-600')).join('')}
+              </div>
+            </div>
+
+            <!-- KONTAINER 2: PESANAN SEDANG DIHIAS -->
+            <div class="bg-purple-50/50 p-4 rounded-3xl border border-purple-200/80 space-y-3 flex flex-col min-h-[500px]">
+              <div class="flex justify-between items-center border-b border-purple-200 pb-2.5">
+                <h3 class="font-extrabold text-sm text-purple-900 flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-purple-500"></span>
+                  <span>Pesanan Sedang Dihias</span>
+                </h3>
+                <span class="text-xs font-bold bg-purple-200 text-purple-900 px-2.5 py-0.5 rounded-full">${dihiasList.length}</span>
+              </div>
+              <div class="space-y-3 flex-1 overflow-y-auto max-h-[70vh] pr-1">
+                ${dihiasList.length === 0 ? '<p class="text-xs text-purple-800/70 text-center py-8">Tidak ada pesanan sedang dihias.</p>' : dihiasList.map(o => window.renderKDSCard(o, 'Proses ke Sudah Siap →', 'bg-purple-600 hover:bg-purple-700')).join('')}
+              </div>
+            </div>
+
+            <!-- KONTAINER 3: PESANAN SUDAH SIAP -->
+            <div class="bg-emerald-50/50 p-4 rounded-3xl border border-emerald-200/80 space-y-3 flex flex-col min-h-[500px]">
+              <div class="flex justify-between items-center border-b border-emerald-200 pb-2.5">
+                <h3 class="font-extrabold text-sm text-emerald-900 flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>Pesanan Sudah Siap</span>
+                </h3>
+                <span class="text-xs font-bold bg-emerald-200 text-emerald-900 px-2.5 py-0.5 rounded-full">${siapList.length}</span>
+              </div>
+              <div class="space-y-3 flex-1 overflow-y-auto max-h-[70vh] pr-1">
+                ${siapList.length === 0 ? '<p class="text-xs text-emerald-800/70 text-center py-8">Tidak ada pesanan siap.</p>' : siapList.map(o => window.renderKDSCard(o, 'Selesaikan Pesanan ✓', 'bg-emerald-600 hover:bg-emerald-700')).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      container.innerHTML = html;
+    };
+
+    window.renderKDSCard = function(o, btnText, btnColor) {
+      const isOffline = String(o.order_type || '').includes('Offline');
+      const itemsFormatted = (o.items && o.items.length > 0) 
+        ? o.items.map(i => `${i.name || 'Kue'} (x${i.qty || 1})`).join(', ')
+        : 'Pesanan Kue Artisan';
+
+      return `
+        <div class="bg-white p-4 rounded-2xl border border-pinkglass-200 space-y-3 shadow-xs hover:border-pinkglass-400 transition-all">
+          <div class="flex justify-between items-center">
+            <span class="text-[10px] font-bold bg-pinkglass-100 text-pinkglass-900 px-2 py-0.5 rounded-full font-mono">${o.order_id}</span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isOffline ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800'}">${o.order_type}</span>
+          </div>
+
+          <div>
+            <h4 class="font-extrabold text-charcoal text-sm">${o.customer_name}</h4>
+            <div class="mt-1 bg-pinkglass-50 p-2 rounded-xl border border-pinkglass-100 text-xs font-semibold text-pinkglass-950 flex items-start gap-1">
+              <span>🎂</span>
+              <span class="line-clamp-2">${itemsFormatted}</span>
+            </div>
+            <p class="text-[11px] text-pinkglass-800 font-medium mt-1.5">🕒 Masuk: ${window.formatOrderTime(o.created_at)}</p>
+          </div>
+
+          <div class="pt-2 border-t border-pinkglass-100 flex items-center justify-between gap-2">
+            <span class="font-mono text-[11px] font-bold text-pinkglass-900 bg-pinkglass-50 px-2 py-1 rounded-lg border border-pinkglass-200">
+              ⏱️ ${window.getElapsedTimeFormatted(o.created_at)}
+            </span>
+            <button onclick="window.advanceOrderStatus('${o.order_id}')" class="${btnColor} text-white font-bold px-3 py-1.5 rounded-xl text-xs transition-all active:scale-95 shadow-2xs">
+              ${btnText}
+            </button>
+          </div>
+
+          <button onclick="window.cancelOrder('${o.order_id}')" class="w-full bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold py-1.5 rounded-xl text-[11px] transition-all border border-rose-200 flex items-center justify-center gap-1">
+            <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
+            <span>Batalkan Pesanan (Restore Stok)</span>
+          </button>
+        </div>
+      `;
+    };
+
+    window.advanceOrderStatus = function(orderId) {
+      const ord = appData.orders.find(o => o.order_id === orderId);
+      if (!ord) return;
+
+      if (ord.order_status === 'Dibuat' || ord.order_status === 'Baking' || ord.order_status === 'Pending') {
+        ord.order_status = 'Dihias';
+      } else if (ord.order_status === 'Dihias') {
+        ord.order_status = 'Siap';
+      } else if (ord.order_status === 'Siap' || ord.order_status === 'Ready') {
+        ord.order_status = 'Selesai';
+      }
+
+      window.renderNavigation();
+      window.renderViewport();
+
+      const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
+      if (savedUrl && !savedUrl.includes('PASTE_YOUR')) {
+        fetch(savedUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ action: 'updateOrderStatus', order_id: orderId, new_status: ord.order_status, user_role: currentRole })
+        }).catch(e => console.error(e));
+      }
+    };
+
+    window.cancelOrder = function(orderId) {
+      if (!confirm(`Batalkan pesanan ${orderId}? Stok bahan baku akan dikembalikan.`)) return;
+      const ord = appData.orders.find(o => o.order_id === orderId);
+      if (ord) ord.order_status = 'Cancelled';
+      window.renderNavigation();
+      window.renderViewport();
+    };
+
+    window.renderDashboard = function(container) {
+      const activeCount = appData.orders.filter(o => ['Dibuat', 'Dihias', 'Siap', 'Pending'].includes(o.order_status)).length;
+      const totalOmset = appData.orders.filter(o => o.order_status === 'Selesai').reduce((a, b) => a + (b.total_amount || 0), 0);
+
+      container.innerHTML = `
+        <div class="space-y-6 max-w-7xl mx-auto">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-white/80 p-5 rounded-3xl border border-pinkglass-200 glass-card shadow-sm space-y-1">
+              <span class="text-xs font-bold text-pinkglass-800 uppercase">Total Omset Selesai</span>
+              <h3 class="text-2xl font-extrabold text-pinkglass-950">Rp ${totalOmset.toLocaleString('id-ID')}</h3>
+            </div>
+            <div class="bg-white/80 p-5 rounded-3xl border border-pinkglass-200 glass-card shadow-sm space-y-1">
+              <span class="text-xs font-bold text-pinkglass-800 uppercase">Pesanan Aktif KDS</span>
+              <h3 class="text-2xl font-extrabold text-amber-600">${activeCount} Antrean</h3>
+            </div>
+            <div class="bg-white/80 p-5 rounded-3xl border border-pinkglass-200 glass-card shadow-sm space-y-1">
+              <span class="text-xs font-bold text-pinkglass-800 uppercase">Status Sistem</span>
+              <h3 class="text-2xl font-extrabold text-emerald-600">Online Sync</h3>
+            </div>
+          </div>
+        </div>
+      `;
+    };
+
+    window.renderViewport = function() {
+      const vp = document.getElementById('main-viewport');
+      if (!vp) return;
+
+      if (currentRole === 'customer') {
+        vp.innerHTML = `<div class="bg-white p-6 rounded-3xl text-center">Halaman Pelanggan</div>`;
+      } else {
+        if (currentTab === 'dashboard') window.renderDashboard(vp);
+        else if (currentTab === 'kds') window.renderKDS(vp);
+        else vp.innerHTML = `<div class="bg-white/80 p-8 rounded-3xl text-center text-pinkglass-900 font-bold border border-pinkglass-200 glass-card">Modul ${currentTab.toUpperCase()} Siap Digunakan</div>`;
+      }
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    };
+
+    /* ==========================================================
+     * INITIALIZATION BOOTSTRAPPER
+     * ========================================================== */
     window.addEventListener('DOMContentLoaded', () => {
-      // Start Realtime Luxury Clock
-      if (typeof window.initLuxuryClock === 'function') window.initLuxuryClock();
-
-      const savedUrl = localStorage.getItem('ALESSIA_GAS_URL');
-      if (savedUrl) GAS_API_URL = savedUrl;
-
+      window.initLuxuryClock();
       const savedUser = localStorage.getItem('ALESSIA_USER');
       if (savedUser) {
         try {
@@ -392,8 +689,6 @@
         window.openAuthModal();
         window.switchRole('customer');
       }
-
-      window.fetchInitialDataFromGAS();
     });
   </script>
 </body>
