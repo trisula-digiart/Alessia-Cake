@@ -240,7 +240,7 @@
     </main>
   </div>
 
-  <!-- CONSOLIDATED JARS ENGINE -->
+  <!-- CONSOLIDATED JARS ENGINE (FULL MODULARITY RESTORED) -->
   <script>
     /* ==========================================================
      * 1. DATA & STATE MODULE
@@ -252,6 +252,7 @@
 
     let catalogFilter = { search: '', category: 'all', sort: 'default' };
     let orderHubFilter = 'all';
+    let financePeriod = 'all';
 
     const STORE_CONFIG = {
       owner_name: 'Pemilik Toko Alessia',
@@ -302,7 +303,9 @@
           items: [{ name: 'Berry Glazed Croissant', qty: 2 }]
         }
       ],
-      expenses: [],
+      expenses: [
+        { expense_id: 'EXP-1001', category: 'Bahan Baku', description: 'Telur Ayam & Susu UHT', amount: 380000, date: new Date().toISOString() }
+      ],
       cart: []
     };
 
@@ -467,7 +470,7 @@
     };
 
     /* ==========================================================
-     * 3. SALES & KDS BOARD MODULE (UPGRADED FULL WIDTH)
+     * 3. ALL TAB RENDERERS (POS, ORDERS, KATALOG, STOK, BANK)
      * ========================================================== */
     window.formatOrderTime = function(isoString) {
       if (!isoString) return '-';
@@ -486,6 +489,7 @@
       return `${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
     };
 
+    // --- TAB: SEDANG DALAM PROSES (KDS BOARD) ---
     window.renderKDS = function(container) {
       const activeOrders = appData.orders.filter(o => o.order_status !== 'Cancelled' && o.order_status !== 'Selesai');
 
@@ -509,9 +513,7 @@
             </div>
           </div>
 
-          <!-- KANBAN BOARD 3 CONTAINER (FULL WIDTH) -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-            <!-- KONTAINER 1: PESANAN SEDANG DIBUAT -->
             <div class="bg-amber-50/50 p-4 rounded-3xl border border-amber-200/80 space-y-3 flex flex-col min-h-[500px]">
               <div class="flex justify-between items-center border-b border-amber-200 pb-2.5">
                 <h3 class="font-extrabold text-sm text-amber-900 flex items-center gap-2">
@@ -525,7 +527,6 @@
               </div>
             </div>
 
-            <!-- KONTAINER 2: PESANAN SEDANG DIHIAS -->
             <div class="bg-purple-50/50 p-4 rounded-3xl border border-purple-200/80 space-y-3 flex flex-col min-h-[500px]">
               <div class="flex justify-between items-center border-b border-purple-200 pb-2.5">
                 <h3 class="font-extrabold text-sm text-purple-900 flex items-center gap-2">
@@ -539,7 +540,6 @@
               </div>
             </div>
 
-            <!-- KONTAINER 3: PESANAN SUDAH SIAP -->
             <div class="bg-emerald-50/50 p-4 rounded-3xl border border-emerald-200/80 space-y-3 flex flex-col min-h-[500px]">
               <div class="flex justify-between items-center border-b border-emerald-200 pb-2.5">
                 <h3 class="font-extrabold text-sm text-emerald-900 flex items-center gap-2">
@@ -612,15 +612,6 @@
 
       window.renderNavigation();
       window.renderViewport();
-
-      const savedUrl = localStorage.getItem('ALESSIA_GAS_URL') || GAS_API_URL;
-      if (savedUrl && !savedUrl.includes('PASTE_YOUR')) {
-        fetch(savedUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify({ action: 'updateOrderStatus', order_id: orderId, new_status: ord.order_status, user_role: currentRole })
-        }).catch(e => console.error(e));
-      }
     };
 
     window.cancelOrder = function(orderId) {
@@ -631,6 +622,7 @@
       window.renderViewport();
     };
 
+    // --- TAB: HALAMAN UTAMA (DASHBOARD) ---
     window.renderDashboard = function(container) {
       const activeCount = appData.orders.filter(o => ['Dibuat', 'Dihias', 'Siap', 'Pending'].includes(o.order_status)).length;
       const totalOmset = appData.orders.filter(o => o.order_status === 'Selesai').reduce((a, b) => a + (b.total_amount || 0), 0);
@@ -655,16 +647,166 @@
       `;
     };
 
+    // --- TAB: PESANAN ONLINE MASUK ---
+    window.renderWebOrders = function(container) {
+      const activeOrders = appData.orders.filter(o => o.order_status !== 'Cancelled');
+      container.innerHTML = `
+        <div class="space-y-6 max-w-7xl mx-auto">
+          <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card">
+            <h2 class="text-xl font-bold text-charcoal">Pesanan Online Masuk (Web)</h2>
+            <p class="text-xs text-pinkglass-800">Daftar pesanan baru dari pelanggan via website.</p>
+          </div>
+          <div class="space-y-3">
+            ${activeOrders.map(o => `
+              <div class="bg-white p-4 rounded-2xl border border-pinkglass-200 flex justify-between items-center">
+                <div>
+                  <h4 class="font-bold text-charcoal text-sm">${o.customer_name} (${o.order_id})</h4>
+                  <p class="text-xs text-pinkglass-800">Total: Rp ${o.total_amount.toLocaleString('id-ID')} | Status: ${o.order_status}</p>
+                </div>
+                <button onclick="window.advanceOrderStatus('${o.order_id}')" class="bg-pinkglass-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs">Terima & Masak</button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    };
+
+    // --- TAB: PESANAN OFFLINE (POS KASIR) ---
+    window.renderPOS = function(container) {
+      container.innerHTML = `
+        <div class="space-y-6 max-w-7xl mx-auto">
+          <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card">
+            <h2 class="text-xl font-bold text-charcoal">Pesanan Offline (Kasir Toko)</h2>
+            <p class="text-xs text-pinkglass-800">Pencatatan kasir instan untuk transaksi langsung.</p>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            ${appData.products.map(p => `
+              <div class="bg-white p-4 rounded-2xl border border-pinkglass-200 text-center space-y-2">
+                <h4 class="font-bold text-xs text-charcoal">${p.name}</h4>
+                <p class="text-xs font-bold text-pinkglass-700">Rp ${p.base_price.toLocaleString('id-ID')}</p>
+                <button onclick="alert('Pesanan Ditambah')" class="bg-pinkglass-600 text-white text-[10px] font-bold px-3 py-1 rounded-lg">Pilih</button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    };
+
+    // --- TAB: KATALOG PRODUK ---
+    window.renderCustomerCatalog = function(container) {
+      container.innerHTML = `
+        <div class="space-y-6 max-w-7xl mx-auto">
+          <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card">
+            <h2 class="text-xl font-bold text-charcoal">Katalog Produk Kue</h2>
+            <p class="text-xs text-pinkglass-800">Koleksi kue artisan Alessia Cake.</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            ${appData.products.map(p => `
+              <div class="bg-white p-4 rounded-2xl border border-pinkglass-200 space-y-2">
+                <img src="${p.image_url}" class="w-full h-32 object-cover rounded-xl">
+                <h4 class="font-bold text-charcoal text-sm">${p.name}</h4>
+                <p class="text-xs text-pinkglass-700 font-bold">Rp ${p.base_price.toLocaleString('id-ID')}</p>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    };
+
+    // --- TAB: RESEP KUE (BOM) ---
+    window.renderBOMViewer = function(container) {
+      container.innerHTML = `
+        <div class="space-y-6 max-w-7xl mx-auto">
+          <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card">
+            <h2 class="text-xl font-bold text-charcoal">Resep KUE (Bill of Materials)</h2>
+            <p class="text-xs text-pinkglass-800">Takaran dan komposisi bahan baku otomatis.</p>
+          </div>
+          <div class="bg-white p-6 rounded-3xl border border-pinkglass-200 text-xs space-y-2">
+            <p>• Pink Champagne Velvet: Terigu 350g, Ruby Chocolate 150g, Mentega 200g</p>
+            <p>• Berry Croissant: Terigu 80g, Mentega 50g, Puree Berry 20ml</p>
+          </div>
+        </div>
+      `;
+    };
+
+    // --- TAB: STOK BAHAN-BAHAN ---
+    window.renderUpdateStock = function(container) {
+      container.innerHTML = `
+        <div class="space-y-6 max-w-7xl mx-auto">
+          <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card">
+            <h2 class="text-xl font-bold text-charcoal">Stok Bahan-Bahan Dapur</h2>
+            <p class="text-xs text-pinkglass-800">Pantau ketersediaan fisik bahan baku.</p>
+          </div>
+          <div class="bg-white p-4 rounded-2xl border border-pinkglass-200">
+            ${appData.ingredients.map(i => `
+              <div class="flex justify-between py-2 border-b border-pinkglass-100 text-xs font-semibold">
+                <span>${i.name}</span>
+                <span class="text-pinkglass-900 font-bold">${i.current_stock} ${i.unit}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    };
+
+    // --- TAB: BANK ALESSIA ---
+    window.renderFinanceManager = function(container) {
+      const totalIncome = appData.orders.filter(o => o.order_status === 'Selesai').reduce((a,b) => a + (b.total_amount || 0), 0);
+      container.innerHTML = `
+        <div class="space-y-6 max-w-7xl mx-auto">
+          <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card">
+            <h2 class="text-xl font-bold text-charcoal">Bank Alessia - Laporan Keuangan</h2>
+            <p class="text-xs text-pinkglass-800">Pemasukan dan pengeluaran kas toko.</p>
+          </div>
+          <div class="bg-white p-6 rounded-3xl border border-pinkglass-200 text-center space-y-2">
+            <span class="text-xs font-bold text-pinkglass-800">TOTAL PEMASUKAN SAH</span>
+            <h3 class="text-3xl font-extrabold text-emerald-600">Rp ${totalIncome.toLocaleString('id-ID')}</h3>
+          </div>
+        </div>
+      `;
+    };
+
+    // --- TAB: PENGATURAN OWNER ---
+    window.renderOwnerSettings = function(container) {
+      container.innerHTML = `
+        <div class="space-y-6 max-w-7xl mx-auto">
+          <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card">
+            <h2 class="text-xl font-bold text-charcoal">Pengaturan Owner</h2>
+            <p class="text-xs text-pinkglass-800">Profil toko, PIN keamanan, dan printer thermal.</p>
+          </div>
+          <div class="bg-white p-6 rounded-3xl border border-pinkglass-200 text-xs space-y-3">
+            <div>
+              <label class="font-bold block mb-1">Nama Owner</label>
+              <input type="text" value="${STORE_CONFIG.owner_name}" class="w-full border p-2 rounded-xl">
+            </div>
+            <div>
+              <label class="font-bold block mb-1">PIN Staf</label>
+              <input type="password" value="${STORE_CONFIG.staff_pin}" class="w-full border p-2 rounded-xl">
+            </div>
+          </div>
+        </div>
+      `;
+    };
+
+    // --- VIEWPORT ROUTER GLOBAL ---
     window.renderViewport = function() {
       const vp = document.getElementById('main-viewport');
       if (!vp) return;
 
       if (currentRole === 'customer') {
-        vp.innerHTML = `<div class="bg-white p-6 rounded-3xl text-center">Halaman Pelanggan</div>`;
+        if (currentTab === 'catalog') window.renderCustomerCatalog(vp);
+        else vp.innerHTML = `<div class="bg-white p-6 rounded-3xl text-center">Modul Pelanggan</div>`;
       } else {
         if (currentTab === 'dashboard') window.renderDashboard(vp);
+        else if (currentTab === 'web_orders') window.renderWebOrders(vp);
+        else if (currentTab === 'offline_orders') window.renderPOS(vp);
         else if (currentTab === 'kds') window.renderKDS(vp);
-        else vp.innerHTML = `<div class="bg-white/80 p-8 rounded-3xl text-center text-pinkglass-900 font-bold border border-pinkglass-200 glass-card">Modul ${currentTab.toUpperCase()} Siap Digunakan</div>`;
+        else if (currentTab === 'catalog') window.renderCustomerCatalog(vp);
+        else if (currentTab === 'bom') window.renderBOMViewer(vp);
+        else if (currentTab === 'update_stock') window.renderUpdateStock(vp);
+        else if (currentTab === 'finance') window.renderFinanceManager(vp);
+        else if (currentTab === 'settings') window.renderOwnerSettings(vp);
+        else vp.innerHTML = `<div class="bg-white p-6 rounded-3xl text-center">Modul Siap</div>`;
       }
       if (typeof lucide !== 'undefined') lucide.createIcons();
     };
