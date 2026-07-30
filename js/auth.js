@@ -2,7 +2,7 @@
  * ALESSIA CAKE - AUTHENTICATION & VIEWPORT ROUTER ENGINE (JS)
  * TRISULACODER v9.6 Enterprise Engine
  * ========================================================== */
-
+ 
 // Inactivity Timer State (10 Menit Khusus Customer)
 window.customerInactivityTimer = null;
 const CUSTOMER_TIMEOUT_MS = 10 * 60 * 1000; // 10 Menit = 600.000 ms
