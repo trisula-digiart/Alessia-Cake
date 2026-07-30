@@ -1,6 +1,6 @@
 /* ==========================================================
- * ALESSIA CAKE - BANK ALESSIA & FINANCIAL MANAGER (JS)
- * Fully Synchronized with Orders, Expenses, & Filter States
+ * ALESSIA CAKE - CLEAN DASHBOARD, FINANCIAL & ROUTER ENGINE
+ * TRISULACODER v13.0 Production Edition
  * ========================================================== */
 
 let financePeriod = 'all'; // Options: 'today', '7days', '30days', 'all'
@@ -8,7 +8,6 @@ let financePeriod = 'all'; // Options: 'today', '7days', '30days', 'all'
 // Temporary row buffer for multi-ingredient purchase modal
 window.expenseIngredientRows = [];
 
-// Ensure appData.expenses exists
 if (typeof appData !== 'undefined' && !appData.expenses) {
   appData.expenses = [
     { expense_id: 'EXP-1001', category: 'Bahan Baku Pasar (Mentega/Telur/Dll)', description: 'Beli Telur Ayam Fresh 15kg & Susu UHT', amount: 380000, date: new Date().toISOString() },
@@ -16,6 +15,84 @@ if (typeof appData !== 'undefined' && !appData.expenses) {
     { expense_id: 'EXP-1003', category: 'Kemasan & Plastik Branding', description: 'Beli Box Premium Pink Glass 100 Pcs', amount: 250000, date: new Date(Date.now() - 5 * 86400000).toISOString() }
   ];
 }
+
+/* ==========================================================
+ * CLEAN HALAMAN UTAMA DASHBOARD (GAMBAR 1 MODIFICATION)
+ * ========================================================== */
+window.renderDashboard = function(container) {
+  if (!container) return;
+
+  const validOrders = appData.orders.filter(o => o.order_status !== 'Pending' && o.order_status !== 'Cancelled');
+  const totalOmset = validOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+  const totalExpense = (appData.expenses || []).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+  const estimasiUntung = totalOmset - totalExpense;
+
+  const activeProcessCount = appData.orders.filter(o => o.order_status === 'Dibuat' || o.order_status === 'Dihias' || o.order_status === 'Siap').length;
+  const lowStockCount = appData.ingredients.filter(i => Number(i.current_stock) <= Number(i.min_stock_alert)).length;
+
+  let html = `
+    <div class="space-y-6 max-w-7xl mx-auto">
+      <!-- STATS KPI CARD ROW (CLEAN VIEW WITHOUT ANALYTICS BANNER & WIDGETS) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Total Omset -->
+        <div class="bg-white/80 p-5 rounded-3xl border border-pinkglass-200 glass-card shadow-sm space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="text-[11px] font-bold text-pinkglass-800 uppercase tracking-wider">Total Omset</span>
+            <div class="p-2 rounded-xl bg-pinkglass-100 text-pinkglass-700">
+              <i data-lucide="dollar-sign" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <h3 class="text-xl md:text-2xl font-extrabold text-charcoal">Rp ${totalOmset.toLocaleString('id-ID')}</h3>
+          <p class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+            <i data-lucide="trending-up" class="w-3 h-3"></i>
+            <span>Omset Penjualan Terkonfirmasi</span>
+          </p>
+        </div>
+
+        <!-- Estimasi Untung Bersih -->
+        <div class="bg-white/80 p-5 rounded-3xl border border-pinkglass-200 glass-card shadow-sm space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="text-[11px] font-bold text-pinkglass-800 uppercase tracking-wider">Estimasi Untung Bersih</span>
+            <div class="p-2 rounded-xl bg-emerald-100 text-emerald-700">
+              <i data-lucide="trending-up" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <h3 class="text-xl md:text-2xl font-extrabold ${estimasiUntung >= 0 ? 'text-emerald-700' : 'text-rose-600'}">Rp ${estimasiUntung.toLocaleString('id-ID')}</h3>
+          <p class="text-[10px] text-pinkglass-800 font-medium">Pemasukan dikurangi Pengeluaran Kas</p>
+        </div>
+
+        <!-- Pesanan Aktif KDS -->
+        <div onclick="window.changeTab('kds')" class="bg-white/80 p-5 rounded-3xl border border-pinkglass-200 glass-card shadow-sm space-y-2 cursor-pointer hover:border-pinkglass-400 transition-all">
+          <div class="flex justify-between items-center">
+            <span class="text-[11px] font-bold text-pinkglass-800 uppercase tracking-wider">Pesanan Aktif KDS</span>
+            <div class="p-2 rounded-xl bg-amber-100 text-amber-700">
+              <i data-lucide="chef-hat" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <h3 class="text-xl md:text-2xl font-extrabold text-charcoal">${activeProcessCount} Antrean</h3>
+          <p class="text-[10px] text-amber-700 font-bold">Sedang Diproses Dapur →</p>
+        </div>
+
+        <!-- Low Stock Bahan -->
+        <div onclick="window.changeTab('update_stock')" class="bg-white/80 p-5 rounded-3xl border border-pinkglass-200 glass-card shadow-sm space-y-2 cursor-pointer hover:border-pinkglass-400 transition-all">
+          <div class="flex justify-between items-center">
+            <span class="text-[11px] font-bold text-pinkglass-800 uppercase tracking-wider">Low Stock Bahan</span>
+            <div class="p-2 rounded-xl bg-rose-100 text-rose-700">
+              <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <h3 class="text-xl md:text-2xl font-extrabold text-rose-600">${lowStockCount} Bahan</h3>
+          <p class="text-[10px] text-rose-600 font-bold">Perlu Restock Segera →</p>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+};
 
 window.setFinancePeriod = function(period) {
   financePeriod = period;
@@ -31,7 +108,6 @@ window.openExpenseModal = function() {
     document.body.appendChild(modal);
   }
 
-  // Reset ingredient rows buffer with 1 default row
   const firstIng = (typeof appData !== 'undefined' && appData.ingredients && appData.ingredients.length > 0) 
     ? appData.ingredients[0] 
     : null;
@@ -66,7 +142,6 @@ window.openExpenseModal = function() {
           </select>
         </div>
 
-        <!-- DYNAMIC INGREDIENT PURCHASES SECTION (For Bahan Baku) -->
         <div id="exp-ingredient-fields" class="space-y-3 bg-pinkglass-50/70 p-4 rounded-2xl border border-pinkglass-200">
           <div class="flex justify-between items-center border-b border-pinkglass-200 pb-2">
             <span class="text-xs font-bold text-pinkglass-900 flex items-center gap-1.5">
@@ -78,9 +153,7 @@ window.openExpenseModal = function() {
             </span>
           </div>
 
-          <!-- Dynamic Ingredient Rows Scroll Container -->
           <div id="exp-ingredient-rows-container" class="space-y-2 max-h-56 overflow-y-auto pr-1">
-            <!-- Rows injected via JS -->
           </div>
 
           <div class="pt-1 flex flex-col sm:flex-row justify-between items-center gap-2">
@@ -95,7 +168,6 @@ window.openExpenseModal = function() {
             </div>
           </div>
 
-          <!-- Auto Stock & Master Price Options -->
           <div class="pt-2 border-t border-pinkglass-200/80 space-y-1.5 text-xs">
             <label class="flex items-center space-x-2 cursor-pointer font-semibold text-charcoal">
               <input type="checkbox" id="exp-auto-add-stock" checked class="w-4 h-4 text-pinkglass-600 rounded focus:ring-pinkglass-400">
@@ -108,7 +180,6 @@ window.openExpenseModal = function() {
           </div>
         </div>
 
-        <!-- REGULAR EXPENSE FIELDS (For Non-Bahan Baku) -->
         <div id="exp-regular-fields" class="space-y-3 hidden">
           <div>
             <label class="text-xs font-bold text-pinkglass-900 block mb-1">Keterangan Pengeluaran</label>
@@ -389,7 +460,7 @@ window.filterItemsByPeriod = function(items, dateField) {
 window.renderFinanceManager = function(container) {
   if (!appData.expenses) appData.expenses = [];
 
-  // EXCLUDE 'Pending' and 'Cancelled' orders from financial income calculations
+  // Exclude Pending & Cancelled orders from Financial income
   const confirmedOrders = appData.orders.filter(o => o.order_status !== 'Pending' && o.order_status !== 'Cancelled');
 
   const filteredOrders = window.filterItemsByPeriod(confirmedOrders, 'created_at');
@@ -399,7 +470,6 @@ window.renderFinanceManager = function(container) {
   const totalExpense = filteredExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
   const netBalance = totalIncome - totalExpense;
 
-  // Split Channel Calculation for Valid Confirmed Orders
   const bankIncome = filteredOrders.filter(o => !String(o.order_type || '').includes('Tunai')).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
   const cashIncome = filteredOrders.filter(o => String(o.order_type || '').includes('Tunai')).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
 
@@ -410,7 +480,6 @@ window.renderFinanceManager = function(container) {
 
   let html = `
     <div class="space-y-6 max-w-7xl mx-auto">
-      <!-- Header Module -->
       <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card">
         <div>
           <h2 class="text-xl md:text-2xl font-extrabold text-charcoal flex items-center gap-2">
@@ -420,7 +489,6 @@ window.renderFinanceManager = function(container) {
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-          <!-- Filter Buttons -->
           <div class="flex bg-pinkglass-100 p-1.5 rounded-2xl border border-pinkglass-200 space-x-1">
             <button onclick="window.setFinancePeriod('today')" class="px-3 py-1.5 text-xs font-bold rounded-xl transition-all ${financePeriod === 'today' ? 'bg-pinkglass-600 text-white shadow-sm' : 'text-pinkglass-800 hover:text-charcoal'}">Hari Ini</button>
             <button onclick="window.setFinancePeriod('7days')" class="px-3 py-1.5 text-xs font-bold rounded-xl transition-all ${financePeriod === '7days' ? 'bg-pinkglass-600 text-white shadow-sm' : 'text-pinkglass-800 hover:text-charcoal'}">7 Hari</button>
@@ -440,9 +508,7 @@ window.renderFinanceManager = function(container) {
         </div>
       </div>
 
-      <!-- KPI Executive Financial Summary Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <!-- Card Pemasukan -->
         <div class="bg-white/80 p-5 rounded-3xl border border-pinkglass-200 glass-card shadow-sm space-y-1">
           <div class="flex justify-between items-center text-emerald-700">
             <span class="text-[11px] font-bold uppercase tracking-wider">Total Pemasukan Sah</span>
@@ -452,7 +518,6 @@ window.renderFinanceManager = function(container) {
           <p class="text-[10px] text-pinkglass-800 font-medium">Periode: ${periodLabel} (${filteredOrders.length} Trx Terkonfirmasi)</p>
         </div>
 
-        <!-- Card Pengeluaran -->
         <div class="bg-white/80 p-5 rounded-3xl border border-pinkglass-200 glass-card shadow-sm space-y-1">
           <div class="flex justify-between items-center text-rose-700">
             <span class="text-[11px] font-bold uppercase tracking-wider">Total Pengeluaran Kas</span>
@@ -462,7 +527,6 @@ window.renderFinanceManager = function(container) {
           <p class="text-[10px] text-pinkglass-800 font-medium">Periode: ${periodLabel} (${filteredExpenses.length} Catatan)</p>
         </div>
 
-        <!-- Card Net Balance (Saldo Akhir) -->
         <div class="bg-white/80 p-5 rounded-3xl border border-pinkglass-200 glass-card shadow-sm space-y-1">
           <div class="flex justify-between items-center text-pinkglass-800">
             <span class="text-[11px] font-bold uppercase tracking-wider">Hasil Akhir Saldo Bersih</span>
@@ -475,7 +539,6 @@ window.renderFinanceManager = function(container) {
         </div>
       </div>
 
-      <!-- Split QRIS/Bank vs Cash Breakdown Card -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="bg-white/80 p-4 rounded-2xl border border-pinkglass-200 glass-card flex items-center justify-between shadow-2xs">
           <div class="flex items-center space-x-3">
@@ -500,9 +563,7 @@ window.renderFinanceManager = function(container) {
         </div>
       </div>
 
-      <!-- Two Data Tables: Pemasukan & Pengeluaran -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Tabel Pemasukan -->
         <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card space-y-4 shadow-sm">
           <h3 class="font-bold text-base text-charcoal border-b border-pinkglass-200 pb-3 flex justify-between items-center">
             <span class="flex items-center gap-1.5"><i data-lucide="trending-up" class="w-4 h-4 text-emerald-600"></i> Rincian Kas Masuk (Pesanan Diterima)</span>
@@ -514,7 +575,7 @@ window.renderFinanceManager = function(container) {
               <thead>
                 <tr class="border-b border-pinkglass-100 text-[10px] font-bold text-pinkglass-900 uppercase">
                   <th class="py-2 px-3">ID / Pelanggan</th>
-                  <th class="py-2 px-3">Channel / Metode</th>
+                  <th class="py-2 px-3">Channel / Status</th>
                   <th class="py-2 px-3 text-right">Nominal</th>
                 </tr>
               </thead>
@@ -531,6 +592,7 @@ window.renderFinanceManager = function(container) {
                       <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${String(o.order_type || '').includes('Offline') ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800'}">
                         ${o.order_type}
                       </span>
+                      <span class="text-[10px] font-bold text-pinkglass-800 ml-1">(${o.order_status})</span>
                     </td>
                     <td class="py-2.5 px-3 text-right font-bold text-emerald-700">
                       +Rp ${Number(o.total_amount).toLocaleString('id-ID')}
@@ -542,7 +604,6 @@ window.renderFinanceManager = function(container) {
           </div>
         </div>
 
-        <!-- Tabel Pengeluaran -->
         <div class="bg-white/80 p-6 rounded-3xl border border-pinkglass-200 glass-card space-y-4 shadow-sm">
           <h3 class="font-bold text-base text-charcoal border-b border-pinkglass-200 pb-3 flex justify-between items-center">
             <span class="flex items-center gap-1.5"><i data-lucide="trending-down" class="w-4 h-4 text-rose-600"></i> Rincian Kas Keluar (Pengeluaran)</span>
@@ -584,4 +645,282 @@ window.renderFinanceManager = function(container) {
 
 window.printFinanceReport = function() {
   window.print();
+};
+
+/* ==========================================================
+ * AUTHENTICATION & VIEWPORT ROUTER ENGINE (JS)
+ * ========================================================== */
+window.customerInactivityTimer = null;
+const CUSTOMER_TIMEOUT_MS = 10 * 60 * 1000; // 10 Menit
+
+window.openAuthModal = function() {
+  const modal = document.getElementById('auth-gatekeeper-modal');
+  if (modal) modal.classList.remove('hidden');
+
+  const nameEl = document.getElementById('login-cust-name');
+  const phoneEl = document.getElementById('login-cust-phone');
+  if (nameEl && !currentUser.isLoggedIn) nameEl.value = '';
+  if (phoneEl && !currentUser.isLoggedIn) phoneEl.value = '';
+};
+
+window.closeAuthModal = function() {
+  const modal = document.getElementById('auth-gatekeeper-modal');
+  if (modal) modal.classList.add('hidden');
+};
+
+window.switchAuthTab = function(type) {
+  const custBtn = document.getElementById('tab-auth-customer');
+  const staffBtn = document.getElementById('tab-auth-staff');
+  const custForm = document.getElementById('auth-customer-form');
+  const staffForm = document.getElementById('auth-staff-form');
+
+  if (!custBtn || !staffBtn || !custForm || !staffForm) return;
+
+  if (type === 'customer') {
+    custBtn.className = 'flex-1 py-2 text-xs font-bold rounded-xl bg-pinkglass-600 text-white shadow-md transition-all';
+    staffBtn.className = 'flex-1 py-2 text-xs font-bold rounded-xl text-pinkglass-800 hover:text-charcoal transition-all';
+    custForm.classList.remove('hidden');
+    staffForm.classList.add('hidden');
+  } else {
+    staffBtn.className = 'flex-1 py-2 text-xs font-bold rounded-xl bg-pinkglass-600 text-white shadow-md transition-all';
+    custBtn.className = 'flex-1 py-2 text-xs font-bold rounded-xl text-pinkglass-800 hover:text-charcoal transition-all';
+    staffForm.classList.remove('hidden');
+    custForm.classList.add('hidden');
+  }
+};
+
+window.submitCustomerLogin = function() {
+  const nameEl = document.getElementById('login-cust-name');
+  const phoneEl = document.getElementById('login-cust-phone');
+  
+  const nameInput = nameEl ? nameEl.value.trim() : '';
+  const phoneInput = phoneEl ? phoneEl.value.trim() : '';
+
+  if (!nameInput || !phoneInput) {
+    if (typeof window.showToast === 'function') window.showToast('Mohon isi nama dan nomor WhatsApp kamu terlebih dahulu!');
+    return;
+  }
+
+  currentUser = {
+    name: nameInput,
+    phone: phoneInput,
+    role: 'customer',
+    isLoggedIn: true
+  };
+
+  localStorage.setItem('ALESSIA_USER', JSON.stringify(currentUser));
+  window.updateUserProfileDisplay();
+  window.closeAuthModal();
+  window.switchRole('customer');
+  if (typeof window.showToast === 'function') window.showToast(`Selamat datang, ${currentUser.name}! Silakan pilih kue impian kamu.`);
+};
+
+window.submitStaffLogin = function() {
+  const roleEl = document.getElementById('login-staff-role');
+  const pinEl = document.getElementById('login-staff-pin');
+
+  const selectedRole = roleEl ? roleEl.value : 'owner';
+  const pinInput = pinEl ? pinEl.value.trim() : '';
+
+  const validPin = (typeof STORE_CONFIG !== 'undefined' && STORE_CONFIG.staff_pin) ? STORE_CONFIG.staff_pin : '123456';
+
+  if (!pinInput) {
+    if (typeof window.showToast === 'function') window.showToast('Masukkan PIN staf kamu!');
+    return;
+  }
+
+  if (pinInput !== validPin) {
+    if (typeof window.showToast === 'function') window.showToast('PIN Keamanan Staf salah! Silakan coba lagi.');
+    return;
+  }
+
+  const ownerName = (typeof STORE_CONFIG !== 'undefined' && STORE_CONFIG.owner_name) ? STORE_CONFIG.owner_name : 'OWNER Staff';
+
+  currentUser = {
+    name: ownerName,
+    phone: 'INTERNAL',
+    role: 'owner',
+    isLoggedIn: true
+  };
+
+  localStorage.setItem('ALESSIA_USER', JSON.stringify(currentUser));
+  window.updateUserProfileDisplay();
+  window.closeAuthModal();
+  window.switchRole('owner');
+  if (typeof window.showToast === 'function') window.showToast(`Akses Owner Berhasil: Selamat bekerja, ${currentUser.name}!`);
+};
+
+window.updateUserProfileDisplay = function() {
+  const nameEl = document.getElementById('display-user-name');
+  if (nameEl) nameEl.innerText = currentUser.name || 'Tamu VIP';
+};
+
+window.logoutUser = function() {
+  if (window.customerInactivityTimer) {
+    clearTimeout(window.customerInactivityTimer);
+    window.customerInactivityTimer = null;
+  }
+
+  localStorage.removeItem('ALESSIA_USER');
+  currentUser = {
+    name: '',
+    phone: '',
+    role: 'customer',
+    isLoggedIn: false
+  };
+  window.updateUserProfileDisplay();
+  window.switchRole('customer');
+  window.openAuthModal();
+  if (typeof window.showToast === 'function') window.showToast('Berhasil keluar dari sistem.');
+};
+
+window.switchRole = function(role) {
+  currentRole = role;
+  currentUser.role = role;
+  const tabs = roleTabs[role] || roleTabs['customer'];
+  currentTab = tabs[0].id;
+
+  window.renderNavigation();
+  window.renderViewport();
+
+  window.resetCustomerInactivityTimer();
+};
+
+window.changeTab = function(tabId) {
+  currentTab = tabId;
+  window.renderNavigation();
+  window.renderViewport();
+
+  window.resetCustomerInactivityTimer();
+};
+
+window.resetCustomerInactivityTimer = function() {
+  if (window.customerInactivityTimer) {
+    clearTimeout(window.customerInactivityTimer);
+    window.customerInactivityTimer = null;
+  }
+
+  if (currentRole !== 'customer' || !currentUser.isLoggedIn) {
+    return;
+  }
+
+  window.customerInactivityTimer = setTimeout(() => {
+    if (currentRole === 'customer' && currentUser.isLoggedIn) {
+      if (typeof window.showToast === 'function') {
+        window.showToast('Sesi kamu telah berakhir karena 10 menit tidak ada aktivitas.');
+      }
+      window.logoutUser();
+    }
+  }, CUSTOMER_TIMEOUT_MS);
+};
+
+window.initCustomerInactivityDetector = function() {
+  const activityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'];
+  
+  activityEvents.forEach(eventType => {
+    window.addEventListener(eventType, () => {
+      if (currentRole === 'customer' && currentUser.isLoggedIn) {
+        window.resetCustomerInactivityTimer();
+      }
+    }, { passive: true });
+  });
+};
+
+window.initCustomerInactivityDetector();
+
+window.renderNavigation = function() {
+  const sidebar = document.getElementById('sidebar-nav');
+  const mobileNav = document.getElementById('mobile-bottom-nav');
+  const tabs = roleTabs[currentRole] || roleTabs['customer'];
+  
+  const pendingOrdersCount = (typeof appData !== 'undefined' && appData.orders) 
+    ? appData.orders.filter(o => o.order_status === 'Pending' && !String(o.order_type || '').includes('Offline')).length 
+    : 0;
+
+  // Active orders inside the 3 stage containers (Dibuat, Dihias, Siap)
+  const processOrdersCount = (typeof appData !== 'undefined' && appData.orders) 
+    ? appData.orders.filter(o => o.order_status === 'Dibuat' || o.order_status === 'Baking' || o.order_status === 'Dihias' || o.order_status === 'Siap' || o.order_status === 'Ready').length 
+    : 0;
+
+  if (sidebar) {
+    let sideHtml = `<div class="text-[11px] font-bold uppercase tracking-wider text-pinkglass-700 px-3 py-2">Menu ${currentRole.toUpperCase()}</div>`;
+    tabs.forEach(tab => {
+      const active = currentTab === tab.id;
+      
+      let badgeHtml = '';
+      if (tab.id === 'web_orders' && pendingOrdersCount > 0) {
+        badgeHtml = `<span class="ml-auto bg-rose-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full animate-pulse shadow-xs">${pendingOrdersCount}</span>`;
+      } else if (tab.id === 'kds' && processOrdersCount > 0) {
+        badgeHtml = `<span class="ml-auto bg-amber-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-xs">${processOrdersCount}</span>`;
+      }
+
+      sideHtml += `
+        <button onclick="window.changeTab('${tab.id}')" class="flex items-center space-x-3 px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all ${active ? 'bg-pinkglass-600 text-white shadow-md' : 'text-charcoal hover:bg-pinkglass-100/60'}">
+          <i data-lucide="${tab.icon}" class="w-4 h-4 shrink-0"></i>
+          <span class="truncate">${tab.name}</span>
+          ${badgeHtml}
+        </button>
+      `;
+    });
+    sidebar.innerHTML = sideHtml;
+  }
+
+  if (mobileNav) {
+    let mobHtml = '';
+    tabs.forEach(tab => {
+      const active = currentTab === tab.id;
+
+      let mobBadge = '';
+      if (tab.id === 'web_orders' && pendingOrdersCount > 0) {
+        mobBadge = `<span class="absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center border border-white animate-pulse">${pendingOrdersCount}</span>`;
+      } else if (tab.id === 'kds' && processOrdersCount > 0) {
+        mobBadge = `<span class="absolute -top-1 -right-1 bg-amber-500 text-white text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center border border-white">${processOrdersCount}</span>`;
+      }
+
+      mobHtml += `
+        <button onclick="window.changeTab('${tab.id}')" class="flex flex-col items-center justify-center flex-1 py-1 px-1 transition-all relative ${active ? 'text-pinkglass-700 font-bold' : 'text-pinkglass-500 hover:text-charcoal'}">
+          <div class="relative inline-block">
+            <i data-lucide="${tab.icon}" class="w-5 h-5 mb-0.5"></i>
+            ${mobBadge}
+          </div>
+          <span class="text-[10px] truncate max-w-[65px]">${tab.name}</span>
+        </button>
+      `;
+    });
+    mobileNav.innerHTML = mobHtml;
+  }
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+};
+
+window.renderViewport = function() {
+  const vp = document.getElementById('main-viewport');
+  if (!vp) return;
+  
+  if (window.kdsIntervalId) {
+    clearInterval(window.kdsIntervalId);
+    window.kdsIntervalId = null;
+  }
+
+  if (window.dashboardClockInterval) {
+    clearInterval(window.dashboardClockInterval);
+    window.dashboardClockInterval = null;
+  }
+
+  if (currentRole === 'customer') {
+    if (currentTab === 'catalog' && typeof window.renderCustomerCatalog === 'function') window.renderCustomerCatalog(vp);
+    else if (currentTab === 'custom_builder' && typeof window.renderCustomBuilder === 'function') window.renderCustomBuilder(vp);
+    else if (currentTab === 'checkout' && typeof window.renderCheckout === 'function') window.renderCheckout(vp);
+  } else {
+    if (currentTab === 'dashboard' && typeof window.renderDashboard === 'function') window.renderDashboard(vp);
+    else if (currentTab === 'offline_orders' && typeof window.renderPOS === 'function') window.renderPOS(vp);
+    else if (currentTab === 'web_orders' && typeof window.renderWebOrders === 'function') window.renderWebOrders(vp);
+    else if (currentTab === 'kds' && typeof window.renderKDS === 'function') window.renderKDS(vp);
+    else if (currentTab === 'catalog' && typeof window.renderCustomerCatalog === 'function') window.renderCustomerCatalog(vp);
+    else if (currentTab === 'bom' && typeof window.renderBOMViewer === 'function') window.renderBOMViewer(vp);
+    else if (currentTab === 'update_stock' && typeof window.renderUpdateStock === 'function') window.renderUpdateStock(vp);
+    else if (currentTab === 'finance' && typeof window.renderFinanceManager === 'function') window.renderFinanceManager(vp);
+    else if (currentTab === 'settings' && typeof window.renderOwnerSettings === 'function') window.renderOwnerSettings(vp);
+    else if (currentTab === 'audit' && typeof window.renderAudit === 'function') window.renderAudit(vp);
+  }
+  if (typeof lucide !== 'undefined') lucide.createIcons();
 };
