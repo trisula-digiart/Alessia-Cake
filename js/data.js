@@ -1,6 +1,6 @@
 /* ==========================================================
  * ALESSIA CAKE - DATA STATE, CONFIGURATION & PRINTER ENGINE
- * TRISULACODER v9.6 Enterprise Engine
+ * TRISULACODER v13.0 Production Edition
  * ========================================================== */
 
 let GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzX4rjfDx1V31yJsgoxHsnyA78EghxGTCnS7llUalyGClZEQNzYfaQvq5Egl-TL6mjJ/exec'; 
@@ -38,7 +38,6 @@ try {
     if (parsed.location_name) STORE_CONFIG.location_name = parsed.location_name;
     if (parsed.printer_type) STORE_CONFIG.printer_type = parsed.printer_type;
     if (parsed.printer_paper) STORE_CONFIG.printer_paper = parsed.printer_paper;
-    // Auto purge any old dummy QRIS URL from cache and force local image
     if (parsed.qris_image_url && !parsed.qris_image_url.includes('qrserver.com')) {
       STORE_CONFIG.qris_image_url = parsed.qris_image_url;
     } else {
@@ -108,13 +107,13 @@ let appData = {
     }
   ],
   orders: [
-    { order_id: 'ORD-9901', order_type: 'Online (Web)', customer_name: 'Bina Santoso', customer_phone: '08123456789', table_no: '-', total_amount: 395000, dp_amount: 0, payment_status: 'PAID', order_status: 'Baking', reference_photo_url: '', created_at: new Date().toISOString(), pickup_delivery_date: '2026-06-07' },
-    { order_id: 'ORD-9902', order_type: 'Offline (Kasir Toko)', customer_name: 'Pelanggan Walk-In', customer_phone: '08110000111', table_no: 'Meja 04', total_amount: 150000, dp_amount: 0, payment_status: 'PAID', order_status: 'Pending', reference_photo_url: '', created_at: new Date().toISOString(), pickup_delivery_date: '2026-06-07' }
+    { order_id: 'ORD-9901', order_type: 'Online (Web)', customer_name: 'Bina Santoso', customer_phone: '08123456789', table_no: '-', total_amount: 395000, dp_amount: 0, payment_status: 'PAID', order_status: 'Dibuat', reference_photo_url: '', created_at: new Date().toISOString(), pickup_delivery_date: '2026-06-07' },
+    { order_id: 'ORD-9902', order_type: 'Offline (Kasir Toko)', customer_name: 'Pelanggan Walk-In', customer_phone: '08110000111', table_no: 'Meja 04', total_amount: 150000, dp_amount: 0, payment_status: 'PAID', order_status: 'Dihias', reference_photo_url: '', created_at: new Date().toISOString(), pickup_delivery_date: '2026-06-07' }
   ],
   expenses: [
-    { expense_id: 'EXP-1001', category: 'Bahan Baku', description: 'Beli Telur Ayam Fresh 15kg & Susu UHT', amount: 380000, date: new Date().toISOString() },
-    { expense_id: 'EXP-1002', category: 'Operasional', description: 'Listrik PLN & Wifi Toko Harian', amount: 150000, date: new Date(Date.now() - 2 * 86400000).toISOString() },
-    { expense_id: 'EXP-1003', category: 'Kemasan', description: 'Beli Box Premium Pink Glass 100 Pcs', amount: 250000, date: new Date(Date.now() - 5 * 86400000).toISOString() }
+    { expense_id: 'EXP-1001', category: 'Bahan Baku Pasar (Mentega/Telur/Dll)', description: 'Beli Telur Ayam Fresh 15kg & Susu UHT', amount: 380000, date: new Date().toISOString() },
+    { expense_id: 'EXP-1002', category: 'Operasional (Listrik/Air/Wifi/Gaji)', description: 'Listrik PLN & Wifi Toko Harian', amount: 150000, date: new Date(Date.now() - 2 * 86400000).toISOString() },
+    { expense_id: 'EXP-1003', category: 'Kemasan & Plastik Branding', description: 'Beli Box Premium Pink Glass 100 Pcs', amount: 250000, date: new Date(Date.now() - 5 * 86400000).toISOString() }
   ],
   cart: []
 };
@@ -124,7 +123,7 @@ const roleTabs = {
     { id: 'dashboard', name: 'Halaman Utama', icon: 'bar-chart-3' },
     { id: 'web_orders', name: 'Pesanan Online Masuk', icon: 'bell' },
     { id: 'offline_orders', name: 'Pesanan Offline', icon: 'calculator' },
-    { id: 'kds', name: 'Selesaikan Pesanan', icon: 'chef-hat' },
+    { id: 'kds', name: 'SEDANG DALAM PROSES', icon: 'chef-hat' },
     { id: 'catalog', name: 'Katalog Produk', icon: 'package' },
     { id: 'bom', name: 'Resep KUE', icon: 'book-open' },
     { id: 'update_stock', name: 'Stok Bahan-Bahan', icon: 'database' },
@@ -363,7 +362,6 @@ window.saveOwnerSettings = function() {
   if (printerTypeEl) STORE_CONFIG.printer_type = printerTypeEl.value;
   if (printerPaperEl) STORE_CONFIG.printer_paper = printerPaperEl.value;
 
-  // Save permanently to localStorage
   try {
     localStorage.setItem('ALESSIA_STORE_CONFIG', JSON.stringify(STORE_CONFIG));
   } catch(e) { console.error(e); }
@@ -446,7 +444,6 @@ window.printThermalReceipt = function(orderObj = null) {
     </html>
   `;
 
-  // Handle Web Bluetooth Thermal Printer Connection if selected
   if (STORE_CONFIG.printer_type === 'bluetooth' && navigator.bluetooth) {
     if (typeof window.showToast === 'function') window.showToast('Mencari printer thermal Bluetooth...');
     navigator.bluetooth.requestDevice({
